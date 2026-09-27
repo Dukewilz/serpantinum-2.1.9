@@ -84,7 +84,7 @@ Item {
     property int cavaBarWidth: barSettings.cava && barSettings.cava.barWidth !== undefined ? barSettings.cava.barWidth : 3
     property int cavaSpacing: barSettings.cava && barSettings.cava.spacing !== undefined ? barSettings.cava.spacing : 3
     property bool innerPillEnabled: !barSettings.innerPill || barSettings.innerPill.enabled !== false
-    property string innerPillStyle: barSettings.innerPill && barSettings.innerPill.style !== undefined ? barSettings.innerPill.style : "adaptive"
+    property string innerPillStyle: "end4"
     property int innerPillElevation: barSettings.innerPill && barSettings.innerPill.elevationPercent !== undefined ? barSettings.innerPill.elevationPercent : 8
     property int innerPillBorder: barSettings.innerPill && barSettings.innerPill.borderPercent !== undefined ? barSettings.innerPill.borderPercent : 10
     property int innerPillPadding: barSettings.innerPill && barSettings.innerPill.verticalPadding !== undefined ? barSettings.innerPill.verticalPadding : 5
@@ -820,7 +820,7 @@ Item {
         barTabRoot.cavaSpacing = cava.spacing !== undefined ? cava.spacing : 3;
         let pill = ts.innerPill || barTabRoot.defaultBarSettings.innerPill;
         barTabRoot.innerPillEnabled = pill.enabled !== false;
-        barTabRoot.innerPillStyle = pill.style !== undefined ? pill.style : "adaptive";
+        barTabRoot.innerPillStyle = "end4";
         barTabRoot.innerPillElevation = pill.elevationPercent !== undefined ? pill.elevationPercent : 8;
         barTabRoot.innerPillBorder = pill.borderPercent !== undefined ? pill.borderPercent : 10;
         barTabRoot.innerPillPadding = pill.verticalPadding !== undefined ? pill.verticalPadding : 5;
@@ -1437,58 +1437,26 @@ Item {
                         anchors.margins: rootObj.s(14)
                         spacing: rootObj.s(10)
 
-                        // Header: title + desc + toggle
-                        ColumnLayout {
+                        RowLayout {
                             Layout.fillWidth: true
-                            spacing: rootObj.s(7)
-
+                            spacing: rootObj.s(12)
+                            IconButton {
+                                enabled: false; size: rootObj.s(32)
+                                Layout.preferredWidth: rootObj.s(32); Layout.preferredHeight: rootObj.s(32)
+                                buttonIcon: "󰒓"; iconFontSize: rootObj.s(16)
+                                cornerRadius: ThemeBackend.borderRadius
+                                accentColor: ThemeBackend.surface0; textColor: ThemeBackend.text
+                            }
                             ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: rootObj.s(2)
-                                Text {
-                                    text: "Inner pill surface"
-                                    font.family: ThemeBackend.fontFamily
-                                    font.weight: Font.DemiBold
-                                    font.pixelSize: rootObj.s(14)
-                                    color: ThemeBackend.text
-                                }
-                                Text {
-                                    text: "Floating capsules inside Solid and Fill surfaces, restored from v24."
-                                    font.family: ThemeBackend.fontFamily
-                                    font.pixelSize: rootObj.s(10.5)
-                                    color: ThemeBackend.subtext0
-                                    wrapMode: Text.WordWrap
-                                    Layout.fillWidth: true
-                                }
+                                Layout.fillWidth: true; spacing: rootObj.s(2)
+                                Text { text: "Inner pill surface"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
+                                Text { Layout.fillWidth: true; text: "Capsule surfaces, spacing and visibility"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0; wrapMode: Text.WordWrap }
                             }
-
                             Toggle {
-                                Layout.alignment: Qt.AlignLeft
                                 checked: barTabRoot.innerPillEnabled
-                                accentColor: ThemeBackend.mauve
-                                baseColor: ThemeBackend.surface1
-                                handleColor: ThemeBackend.crust
-                                handleOffColor: ThemeBackend.text
+                                accentColor: ThemeBackend.mauve; baseColor: ThemeBackend.surface1
+                                handleColor: ThemeBackend.crust; handleOffColor: ThemeBackend.text
                                 onToggled: function(c) { barTabRoot.innerPillEnabled = c; barTabRoot.updateBarSettings(); }
-                            }
-                        }
-
-                        // Style switch
-                        Switch {
-                            Layout.alignment: Qt.AlignLeft
-                            implicitWidth: rootObj.s(420)
-                            implicitHeight: rootObj.s(34)
-                            options: ["Adaptive", "end-4", "Caelestia", "Ilyamiro"]
-                            currentIndex: Math.max(0, ["adaptive", "end4", "caelestia", "ilyamiro"].indexOf(barTabRoot.innerPillStyle))
-                            accentColor: ThemeBackend.mauve
-                            baseColor: ThemeBackend.mantle
-                            textColor: ThemeBackend.subtext0
-                            activeTextColor: ThemeBackend.crust
-                            cornerRadius: ThemeBackend.borderRadius
-                            fontPixelSize: rootObj.s(10.5)
-                            onValueChanged: function(index, value) {
-                                barTabRoot.innerPillStyle = ["adaptive", "end4", "caelestia", "ilyamiro"][Math.max(0, index)];
-                                barTabRoot.updateBarSettings();
                             }
                         }
 
@@ -1726,12 +1694,13 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        IconButton { enabled: false; size: rootObj.s(32); buttonIcon: "󰝚"; iconFontSize: rootObj.s(16); cornerRadius: ThemeBackend.borderRadius; accentColor: ThemeBackend.surface0; textColor: ThemeBackend.text }
+                        spacing: rootObj.s(12)
+                        IconButton { enabled: false; size: rootObj.s(32); Layout.preferredWidth: rootObj.s(32); Layout.preferredHeight: rootObj.s(32); buttonIcon: "󰝚"; iconFontSize: rootObj.s(16); cornerRadius: ThemeBackend.borderRadius; accentColor: ThemeBackend.surface0; textColor: ThemeBackend.text }
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: rootObj.s(2)
                             Text { text: "Cava bar"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                            Text { text: "Visualizer bar density, width and gap controls for the CAVA spectrum bar"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(10); color: ThemeBackend.subtext0; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                            Text { text: "Bar count, thickness and spacing for every bar position"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(10); color: ThemeBackend.subtext0; wrapMode: Text.WordWrap; Layout.fillWidth: true }
                         }
                     }
 

@@ -667,7 +667,10 @@
   },
   "applauncher": {
     "search": "Որոնել",
-    "placeholder": "Հրաման մուտքագրելու համար սկսեք > նշանով..."
+    "placeholder": "Հրաման մուտքագրելու համար սկսեք > նշանով...",
+    "tab_applications": "Հավելվածներ",
+    "tab_files": "Ֆայլեր",
+    "placeholder_files": "Որոնել ֆայլեր կամ մուտքագրել ուղին..."
   },
   "calendar": {
     "loading": "Բեռնվում է...",
@@ -1033,7 +1036,10 @@
       "rounded": "Կլորացված",
       "bars": "Սյունակներ",
       "continuous": "Անընդհատ",
-      "default": "Լռելյայն"
+      "default": "Լռելյայն",
+      "material": "Մատերիալ",
+      "materialAnalog": "Մատերիալ անալոգային",
+      "lumen": "Լյումեն"
     },
     "presets": {
       "minimal": {

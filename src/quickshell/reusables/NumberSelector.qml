@@ -249,8 +249,6 @@ Item {
         radius: root.cornerRadius
         clip: true
         color: root.isHoveredOrHighlighted ? Qt.darker(root.baseColor, 1.14) : root.baseColor
-        border.color: root.action_highlight ? root.accentColor : (root.isHoveredOrHighlighted ? Qt.lighter(root.borderColor, 1.2) : root.borderColor)
-        border.width: 1
         opacity: root.enabled ? 1.0 : 0.5
 
         Behavior on color { ColorAnimation { duration: 180 } }

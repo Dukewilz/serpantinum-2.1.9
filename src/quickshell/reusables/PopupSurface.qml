@@ -98,59 +98,5 @@ Item {
             border.color: Qt.alpha(ThemeBackend.text, 0.18)
         }
 
-        property real phase: 0
-        NumberAnimation on phase {
-            from: 0
-            to: Math.PI * 2
-            duration: 18000
-            loops: Animation.Infinite
-            running: ambient.active && ambient.animate && ambient.effectiveStrength > 0
-        }
-
-        Rectangle {
-            width: Math.max(parent.width, parent.height) * 0.62
-            height: width
-            radius: width / 2
-            x: parent.width * 0.70 - width / 2 + Math.sin(effectsLayer.phase) * parent.width * 0.055
-            y: parent.height * 0.16 - height / 2 + Math.cos(effectsLayer.phase * 0.8) * parent.height * 0.055
-            color: Qt.alpha(ambient.accentColor, Math.min(0.16, 0.060 * ambient.paletteBoost * ambient.effectiveStrength))
-            border.width: Math.max(1, width * 0.055)
-            border.color: Qt.alpha(ambient.accentColor, Math.min(0.09, 0.030 * ambient.paletteBoost * ambient.effectiveStrength))
-        }
-
-        Rectangle {
-        width: Math.max(parent.width, parent.height) * 0.48
-        height: width
-        radius: width / 2
-        x: parent.width * 0.18 - width / 2 + Math.cos(effectsLayer.phase * 0.72) * parent.width * 0.045
-        y: parent.height * 0.82 - height / 2 + Math.sin(effectsLayer.phase * 0.9) * parent.height * 0.05
-        color: Qt.alpha(ambient.secondaryColor, Math.min(0.13, 0.047 * ambient.paletteBoost * ambient.effectiveStrength))
-        border.width: Math.max(1, width * 0.07)
-        border.color: Qt.alpha(ambient.secondaryColor, Math.min(0.075, 0.024 * ambient.paletteBoost * ambient.effectiveStrength))
-        }
-
-        Rectangle {
-        width: Math.max(parent.width, parent.height) * 0.32
-        height: width
-        radius: width / 2
-        x: parent.width * 0.48 - width / 2 + Math.sin(effectsLayer.phase * 1.12) * parent.width * 0.035
-        y: parent.height * 0.52 - height / 2 + Math.cos(effectsLayer.phase * 0.64) * parent.height * 0.04
-        color: "transparent"
-        border.width: Math.max(1, width * 0.028)
-        border.color: Qt.alpha(ambient.tertiaryColor, Math.min(0.11, 0.036 * ambient.paletteBoost * ambient.effectiveStrength))
-        }
-
-        Text {
-        visible: ambient.glyph !== ""
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.rightMargin: -font.pixelSize * 0.10
-        anchors.bottomMargin: -font.pixelSize * 0.24
-        text: ambient.glyph
-        font.family: "Iosevka Nerd Font"
-        font.pixelSize: Math.max(parent.height * 0.62, 140)
-        color: Qt.alpha(ambient.accentColor, Math.min(0.12, 0.040 * ambient.paletteBoost * ambient.effectiveStrength))
-        rotation: -8 + Math.sin(effectsLayer.phase) * 2
-        }
     }
 }

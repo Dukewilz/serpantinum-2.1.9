@@ -711,7 +711,10 @@
   },
   "applauncher": {
     "search": "Поиск",
-    "placeholder": "Начните с > для команды..."
+    "placeholder": "Начните с > для команды...",
+    "tab_applications": "Приложения",
+    "tab_files": "Файлы",
+    "placeholder_files": "Поиск файлов или путь..."
   },
   "calendar": {
     "loading": "Загрузка...",
@@ -1077,7 +1080,10 @@
       "rounded": "Скругленный",
       "bars": "Полосы",
       "continuous": "Сплошной",
-      "default": "По умолчанию"
+      "default": "По умолчанию",
+      "material": "Материал",
+      "materialAnalog": "Материал аналоговые",
+      "lumen": "Люмен"
     },
     "presets": {
       "minimal": {

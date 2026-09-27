@@ -117,6 +117,13 @@ Item {
                         }
 
                         Text {
+        id: v24Icon10
+        TextMetrics { id: v24Ink10; text: v24Icon10.text; font: v24Icon10.font }
+        transform: Translate {
+            x: (v24Icon10.implicitWidth - v24Ink10.tightBoundingRect.width) / 2 - v24Ink10.tightBoundingRect.x
+            y: (v24Icon10.implicitHeight - v24Ink10.tightBoundingRect.height) / 2 - v24Ink10.tightBoundingRect.y - v24Icon10.baselineOffset
+        }
+
                             anchors.centerIn: parent
                             visible: !dockIcon.visible
                             text: "󰣆"

@@ -180,6 +180,7 @@ ensure_daemon() {
 
     if [ -z "$pid" ] || ! is_alive "$pid"; then
         rm -f "/tmp/serpantinumd.pid" 2>/dev/null
+        rm -f "/tmp/serpantinumd.lock" 2>/dev/null
 
         [ "$VERBOSE" = true ] && echo "$(t "cli.starting_daemon")"
         "$BIN_DIR/serpantinumd" start > /dev/null 2>&1 &
@@ -224,7 +225,33 @@ if [ $# -eq 0 ]; then
 fi
 
 if [[ "$1" == "kill" ]]; then
-    exec "$BIN_DIR/serpantinumd" stop
+    pid=""
+    if [ -f "/tmp/serpantinumd.pid" ]; then
+        pid="$(cat "/tmp/serpantinumd.pid" 2>/dev/null)"
+    fi
+
+    pkill -TERM -f "focus_daemon.py" 2>/dev/null
+    if [ -n "$MAIN_QML" ]; then
+        pkill -TERM -f "quickshell.*$MAIN_QML" 2>/dev/null
+    fi
+
+    if [ -n "$pid" ] && is_alive "$pid"; then
+        terminate_and_wait "$pid" 2
+    else
+        pkill -TERM -f "serpantinumd" 2>/dev/null
+        sleep 0.2
+        pkill -KILL -f "serpantinumd" 2>/dev/null
+    fi
+
+    pkill -KILL -f "focus_daemon.py" 2>/dev/null
+    if [ -n "$MAIN_QML" ]; then
+        pkill -KILL -f "quickshell.*$MAIN_QML" 2>/dev/null
+    fi
+
+    rm -f "/tmp/serpantinumd.pid" 2>/dev/null
+    rm -f "/tmp/serpantinumd.lock" 2>/dev/null
+    echo "$(t "cli.daemon_stopped")"
+    exit 0
 fi
 
 if [[ "$1" == "launch" ]]; then

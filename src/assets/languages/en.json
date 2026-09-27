@@ -667,7 +667,10 @@
   },
   "applauncher": {
     "search": "Search",
-    "placeholder": "Start with > for a command..."
+    "placeholder": "Start with > for a command...",
+    "tab_applications": "Applications",
+    "tab_files": "Files",
+    "placeholder_files": "Search files or enter path..."
   },
   "calendar": {
     "loading": "Loading...",
@@ -1033,7 +1036,10 @@
       "rounded": "Rounded",
       "bars": "Bars",
       "continuous": "Continuous",
-      "default": "Default"
+      "default": "Default",
+      "material": "Material",
+      "materialAnalog": "Material Analog",
+      "lumen": "Lumen"
     },
     "presets": {
       "minimal": {

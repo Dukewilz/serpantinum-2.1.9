@@ -85,9 +85,12 @@ QtObject {
             defaultHeight: 120,
             defaultVariant: "digital",
             variants: {
-                "digital": { file: "faces/ClockFaceDigital.qml", icon: "1", label: I18n.t("widgets.variants.digital") },
-                "analog":  { file: "faces/ClockFaceAnalog.qml",  icon: "2", label: I18n.t("widgets.variants.analog")  },
-                "minimal": { file: "faces/ClockFaceMinimal.qml", icon: "3", label: I18n.t("widgets.variants.minimal") }
+                "digital":        { file: "faces/ClockFaceDigital.qml",        icon: "1", label: I18n.t("widgets.variants.digital") },
+                "analog":         { file: "faces/ClockFaceAnalog.qml",         icon: "2", label: I18n.t("widgets.variants.analog") },
+                "minimal":        { file: "faces/ClockFaceMinimal.qml",        icon: "3", label: I18n.t("widgets.variants.minimal") },
+                "material":          { file: "faces/ClockFaceMaterial.qml",          icon: "4", label: I18n.t("widgets.variants.material") },
+                "materialAnalog": { file: "faces/ClockFaceMaterialAnalog.qml", icon: "5", label: I18n.t("widgets.variants.materialAnalog") },
+                "lumen": { file: "faces/ClockFaceMaterialLumen.qml", icon: "6", label: I18n.t("widgets.variants.lumen") }
             }
         },
         "music": {

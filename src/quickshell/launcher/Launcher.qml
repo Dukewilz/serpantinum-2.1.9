@@ -43,6 +43,48 @@ PanelWindow {
     property int configRevision: 0
     property bool appsLoaded: false
     property real introItems: 0.0
+    property int currentTabIndex: 0
+
+    property string tabAppsTitle: (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_applications", "Applications") : "Applications"
+    property string tabFilesTitle: (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_files", "Files") : "Files"
+
+    function saveLastTab() {
+        let dir = (typeof Caching !== "undefined" && typeof Caching.getCacheDir === "function") ? Caching.getCacheDir("launcher") : "";
+        if (dir) {
+            Quickshell.execDetached(["bash", "-c", "mkdir -p '" + dir + "' && echo '" + currentTabIndex + "' > '" + dir + "/last_tab.txt'"]);
+        }
+    }
+
+    onCurrentTabIndexChanged: {
+        saveLastTab();
+        if (tabSwitch.currentIndex !== currentTabIndex) {
+            tabSwitch.currentIndex = currentTabIndex;
+        }
+        if (currentTabIndex === 0) {
+            executeFilter(searchInput.text);
+        } else {
+            executeFileSearch(searchInput.text);
+        }
+    }
+
+    FileView {
+        id: lastTabWatcher
+        path: (typeof Caching !== "undefined" && typeof Caching.getCacheDir === "function") ? (Caching.getCacheDir("launcher") + "/last_tab.txt") : ""
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: {
+            try {
+                let val = text().trim();
+                if (val !== "") {
+                    let idx = parseInt(val);
+                    if (!isNaN(idx) && (idx === 0 || idx === 1)) {
+                        launcherWindow.currentTabIndex = idx;
+                        tabSwitch.currentIndex = idx;
+                    }
+                }
+            } catch(e) {}
+        }
+    }
 
     function getItemProgress(idx) {
         if (introItems >= 1.0) return 1.0;
@@ -89,7 +131,11 @@ PanelWindow {
         }
         loadApps();
         appsLoaded = true;
-        executeFilter("");
+        if (currentTabIndex === 0) {
+            executeFilter("");
+        } else {
+            executeFileSearch("");
+        }
     }
 
     Connections {
@@ -103,9 +149,15 @@ PanelWindow {
     Connections {
         target: (typeof I18n !== "undefined") ? I18n : null
         function onLanguageChanged() {
+            launcherWindow.tabAppsTitle = (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_applications", "Applications") : "Applications";
+            launcherWindow.tabFilesTitle = (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_files", "Files") : "Files";
             if (launcherWindow.isVisible) {
                 launcherWindow.loadApps();
-                launcherWindow.executeFilter(searchInput.text);
+                if (launcherWindow.currentTabIndex === 0) {
+                    launcherWindow.executeFilter(searchInput.text);
+                } else {
+                    launcherWindow.executeFileSearch(searchInput.text);
+                }
             } else {
                 launcherWindow.appsLoaded = false;
             }
@@ -117,7 +169,9 @@ PanelWindow {
         function onApplicationsChanged() {
             if (launcherWindow.isVisible) {
                 launcherWindow.loadApps();
-                launcherWindow.executeFilter(searchInput.text);
+                if (launcherWindow.currentTabIndex === 0) {
+                    launcherWindow.executeFilter(searchInput.text);
+                }
             } else {
                 launcherWindow.appsLoaded = false;
             }
@@ -129,20 +183,21 @@ PanelWindow {
         function onValuesChanged() {
             if (launcherWindow.isVisible) {
                 launcherWindow.loadApps();
-                launcherWindow.executeFilter(searchInput.text);
+                if (launcherWindow.currentTabIndex === 0) {
+                    launcherWindow.executeFilter(searchInput.text);
+                }
             } else {
-                // Load in background so list is ready when launcher opens
-                launcherWindow.loadApps();
-                launcherWindow.appsLoaded = launcherWindow.allApps.length > 0;
+                launcherWindow.appsLoaded = false;
             }
         }
         function onCountChanged() {
             if (launcherWindow.isVisible) {
                 launcherWindow.loadApps();
-                launcherWindow.executeFilter(searchInput.text);
+                if (launcherWindow.currentTabIndex === 0) {
+                    launcherWindow.executeFilter(searchInput.text);
+                }
             } else {
-                launcherWindow.loadApps();
-                launcherWindow.appsLoaded = launcherWindow.allApps.length > 0;
+                launcherWindow.appsLoaded = false;
             }
         }
     }
@@ -152,7 +207,7 @@ PanelWindow {
         "width": 600,
         "itemCount": 6,
         "terminalCommand": "kitty -e",
-        "smartRanking": false
+        "smartRanking": true
     })
 
     property var rawLauncherSettings: {
@@ -170,12 +225,14 @@ PanelWindow {
     property real customWidth: (rawLauncherSettings && rawLauncherSettings.width !== undefined && !isNaN(rawLauncherSettings.width) && rawLauncherSettings.width > 0) ? rawLauncherSettings.width : 600
     property int customItemCount: (rawLauncherSettings && rawLauncherSettings.itemCount !== undefined && !isNaN(rawLauncherSettings.itemCount) && rawLauncherSettings.itemCount > 0) ? rawLauncherSettings.itemCount : 6
     property string terminalCommand: (rawLauncherSettings && rawLauncherSettings.terminalCommand !== undefined) ? rawLauncherSettings.terminalCommand : "kitty -e"
-    property bool smartRanking: (rawLauncherSettings && rawLauncherSettings.smartRanking !== undefined) ? rawLauncherSettings.smartRanking : false
+    property bool smartRanking: (rawLauncherSettings && rawLauncherSettings.smartRanking !== undefined) ? rawLauncherSettings.smartRanking : true
 
     onSmartRankingChanged: {
         if (launcherWindow.isVisible) {
             loadApps();
-            executeFilter(searchInput.text);
+            if (launcherWindow.currentTabIndex === 0) {
+                executeFilter(searchInput.text);
+            }
         } else {
             launcherWindow.appsLoaded = false;
         }
@@ -247,7 +304,7 @@ PanelWindow {
     }
 
     property bool isBarSolid: (barStyle === "solid" || barStyle === "fill") && Math.round(barOpacity * 100) >= 100
-    property bool barMatchesLauncher: (attachEdge === barPosition) && !isBarEffectivelyHidden
+    property bool barMatchesLauncher: isBarSolid && (attachEdge === barPosition) && !isBarEffectivelyHidden
 
     property string attachEdge: launcherPosition
     property bool isSideAttached: attachEdge === "left" || attachEdge === "right"
@@ -269,14 +326,15 @@ PanelWindow {
     property real outerCornerRadius: cornerRadius
 
     property real baseLauncherWidth: s(customWidth)
-    property real collapsedCenterHeight: s(64)
+    property real collapsedCenterHeight: s(110)
 
     property real targetLauncherHeight: {
         let count = Math.min(appModel.count, customItemCount);
+        let headerH = s(36) + s(28) + s(8) + s(28);
         if (count <= 0) {
-            return s(64);
+            return headerH;
         }
-        return s(70) + (count * s(48));
+        return headerH + s(8) + (count * s(48));
     }
 
     property real animatedLauncherHeight: targetLauncherHeight
@@ -314,12 +372,71 @@ PanelWindow {
                         if (!launcherWindow.isVisible || appModel.count === 0) {
                             launcherWindow.loadApps();
                             launcherWindow.appsLoaded = true;
-                            launcherWindow.executeFilter(searchInput.text);
+                            if (launcherWindow.currentTabIndex === 0) {
+                                launcherWindow.executeFilter(searchInput.text);
+                            }
                         }
                     }
                 } catch(e) {}
             }
         }
+    }
+
+    property string fileSearchScript: "import os, sys, json\nq = sys.argv[1] if len(sys.argv) > 1 else ''\nhome = os.path.expanduser('~')\nres = []\nif q.startswith('/') or q.startswith('~'):\n    p = os.path.expanduser(q)\n    d = p if (os.path.isdir(p) and (q.endswith('/') or q.endswith('\\\\'))) else (os.path.dirname(p) or home)\n    pref = '' if (os.path.isdir(p) and (q.endswith('/') or q.endswith('\\\\'))) else os.path.basename(p).lower()\n    if os.path.isdir(d):\n        try:\n            entries = sorted(os.listdir(d), key=lambda x: (not os.path.isdir(os.path.join(d, x)), x.lower()))\n            for item in entries:\n                if item.startswith('.') and not pref.startswith('.'):\n                    continue\n                if not pref or pref in item.lower():\n                    full = os.path.join(d, item)\n                    res.append({'name': item, 'path': full, 'isDir': os.path.isdir(full)})\n                    if len(res) >= 40: break\n        except Exception: pass\nelse:\n    s = q.lower().strip()\n    targets = [home, os.path.join(home, 'Desktop'), os.path.join(home, 'Documents'), os.path.join(home, 'Downloads'), os.path.join(home, 'Pictures'), os.path.join(home, 'Videos'), os.path.join(home, 'Music')]\n    seen = set()\n    for t in targets:\n        if not os.path.isdir(t): continue\n        try:\n            for root, dirs, files in os.walk(t):\n                rel = os.path.relpath(root, t)\n                if rel != '.' and rel.count(os.sep) >= 2:\n                    dirs.clear()\n                    continue\n                dirs[:] = [dr for dr in dirs if not dr.startswith('.') and dr not in ('node_modules', '.git', '.cache', 'target', 'build', '.local')]\n                if s:\n                    for dr in dirs:\n                        if s in dr.lower():\n                            full = os.path.join(root, dr)\n                            if full not in seen:\n                                seen.add(full)\n                                res.append({'name': dr, 'path': full, 'isDir': True})\n                                if len(res) >= 40: break\n                for fn in files:\n                    if fn.startswith('.'): continue\n                    if not s or s in fn.lower():\n                        full = os.path.join(root, fn)\n                        if full not in seen:\n                            seen.add(full)\n                            res.append({'name': fn, 'path': full, 'isDir': False})\n                            if len(res) >= 40: break\n                if len(res) >= 40: break\n        except Exception: pass\n        if len(res) >= 40: break\nprint(json.dumps(res[:40]))"
+
+    Process {
+        id: fileSearchProcess
+        running: false
+        command: []
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    if (this.text && this.text.trim().length > 0) {
+                        let parsed = JSON.parse(this.text);
+                        let items = [];
+                        for (let i = 0; i < parsed.length; i++) {
+                            let p = parsed[i];
+                            items.push({
+                                name: p.name,
+                                description: p.path,
+                                desktop_id: "",
+                                icon: "",
+                                fontIcon: launcherWindow.getFileFontIcon(p.name, p.isDir),
+                                score: 0,
+                                isCommand: false,
+                                command: "",
+                                isCalc: false,
+                                calcResult: "",
+                                isWidget: false,
+                                widgetTarget: "",
+                                isFile: true,
+                                filePath: p.path,
+                                isDir: p.isDir
+                            });
+                        }
+                        if (launcherWindow.currentTabIndex === 1) {
+                            launcherWindow.applyModelItems(items);
+                        }
+                    } else if (launcherWindow.currentTabIndex === 1) {
+                        launcherWindow.applyModelItems([]);
+                    }
+                } catch(e) {}
+            }
+        }
+    }
+
+    function getFileFontIcon(name, isDir) {
+        if (isDir) return "󰉋";
+        let ext = name.split(".").pop().toLowerCase();
+        if (["png", "jpg", "jpeg", "webp", "gif", "svg"].indexOf(ext) !== -1) return "󰋩";
+        if (["mp4", "mkv", "webm", "avi", "mov"].indexOf(ext) !== -1) return "󰕧";
+        if (["mp3", "wav", "flac", "ogg", "m4a"].indexOf(ext) !== -1) return "󰎆";
+        if (["zip", "tar", "gz", "xz", "7z", "rar", "bz2"].indexOf(ext) !== -1) return "󰛫";
+        if (["pdf"].indexOf(ext) !== -1) return "󰈦";
+        if (["js", "ts", "qml", "py", "sh", "rs", "c", "cpp", "h", "json", "html", "css", "nix"].indexOf(ext) !== -1) return "󰅩";
+        if (["txt", "md", "doc", "docx", "odt"].indexOf(ext) !== -1) return "󰈙";
+        return "󰈔";
     }
 
     Timer {
@@ -367,21 +484,35 @@ PanelWindow {
         }
     }
 
+    Timer {
+        id: fileDebounceTimer
+        interval: 80
+        repeat: false
+        onTriggered: {
+            executeFileSearch(launcherWindow.pendingQuery);
+        }
+    }
+
     onIsVisibleChanged: {
         if (isVisible) {
+            tabSwitch.currentIndex = launcherWindow.currentTabIndex;
             restartItemsIntro();
-            // Always reload if app list is empty — covers the race condition
-            // where DesktopEntries finishes scanning after Component.onCompleted.
-            if (!launcherWindow.appsLoaded || launcherWindow.allApps.length === 0) {
+            if (!launcherWindow.appsLoaded) {
                 launcherWindow.loadApps();
-                launcherWindow.appsLoaded = launcherWindow.allApps.length > 0;
+                launcherWindow.appsLoaded = true;
             }
             if (searchInput.text !== "") {
                 searchInput.clear();
                 filterDebounceTimer.stop();
-                executeFilter("");
+                fileDebounceTimer.stop();
             } else {
                 filterDebounceTimer.stop();
+                fileDebounceTimer.stop();
+            }
+            if (launcherWindow.currentTabIndex === 0) {
+                executeFilter("");
+            } else {
+                executeFileSearch("");
             }
             if (launcherWindow.smartRanking && !rankFetcher.running) {
                 rankFetcher.running = true;
@@ -396,10 +527,14 @@ PanelWindow {
             launcherWindow.appsLoaded = false;
             appList.resetScroll();
             filterDebounceTimer.stop();
+            fileDebounceTimer.stop();
             focusTimer.stop();
             focusRetryTimer.stop();
             focusFinalTimer.stop();
             keyboardNavTimer.stop();
+            if (fileSearchProcess.running) {
+                fileSearchProcess.running = false;
+            }
             if (launcherWindow.smartRanking) {
                 loadApps();
                 executeFilter("");
@@ -486,7 +621,10 @@ PanelWindow {
                     isCalc: false,
                     calcResult: "",
                     isWidget: false,
-                    widgetTarget: ""
+                    widgetTarget: "",
+                    isFile: false,
+                    filePath: "",
+                    isDir: false
                 });
             }
         }
@@ -513,7 +651,10 @@ PanelWindow {
                 isCalc: false,
                 calcResult: "",
                 isWidget: true,
-                widgetTarget: w.id
+                widgetTarget: w.id,
+                isFile: false,
+                filePath: "",
+                isDir: false
             });
         }
 
@@ -545,6 +686,21 @@ PanelWindow {
         filterDebounceTimer.restart();
     }
 
+    function filterFiles(query) {
+        launcherWindow.pendingQuery = query;
+        fileDebounceTimer.restart();
+    }
+
+    function executeFileSearch(query) {
+        launcherWindow.isKeyboardNav = false;
+        if (keyboardNavTimer.running) keyboardNavTimer.stop();
+        if (fileSearchProcess.running) {
+            fileSearchProcess.running = false;
+        }
+        fileSearchProcess.command = ["python3", "-c", launcherWindow.fileSearchScript, query ? query.trim() : ""];
+        fileSearchProcess.running = true;
+    }
+
     function isSubsequence(sub, str) {
         let i = 0;
         let j = 0;
@@ -555,6 +711,49 @@ PanelWindow {
             j++;
         }
         return i === sub.length;
+    }
+
+    function applyModelItems(filtered) {
+        let minCount = Math.min(appModel.count, filtered.length);
+        for (let i = 0; i < minCount; i++) {
+            let cur = appModel.get(i);
+            let target = filtered[i];
+            if (cur.name !== target.name
+                || cur.desktop_id !== target.desktop_id
+                || cur.description !== target.description
+                || cur.icon !== target.icon
+                || cur.fontIcon !== target.fontIcon
+                || cur.score !== target.score
+                || cur.command !== target.command
+                || cur.calcResult !== target.calcResult
+                || cur.isCommand !== target.isCommand
+                || cur.isCalc !== target.isCalc
+                || cur.isWidget !== target.isWidget
+                || cur.widgetTarget !== target.widgetTarget
+                || cur.isFile !== target.isFile
+                || cur.filePath !== target.filePath
+                || cur.isDir !== target.isDir) {
+                appModel.set(i, target);
+            }
+        }
+
+        if (appModel.count > filtered.length) {
+            for (let i = appModel.count - 1; i >= filtered.length; i--) {
+                appModel.remove(i);
+            }
+        } else if (appModel.count < filtered.length) {
+            for (let i = appModel.count; i < filtered.length; i++) {
+                appModel.append(filtered[i]);
+            }
+        }
+
+        appList.resetScroll();
+
+        if (appModel.count > 0) {
+            appList.currentIndex = 0;
+        } else {
+            appList.currentIndex = -1;
+        }
     }
 
     function executeFilter(query) {
@@ -580,7 +779,10 @@ PanelWindow {
                     isCalc: false,
                     calcResult: "",
                     isWidget: false,
-                    widgetTarget: ""
+                    widgetTarget: "",
+                    isFile: false,
+                    filePath: "",
+                    isDir: false
                 });
             } else {
                 filtered.push({
@@ -595,7 +797,10 @@ PanelWindow {
                     isCalc: false,
                     calcResult: "",
                     isWidget: false,
-                    widgetTarget: ""
+                    widgetTarget: "",
+                    isFile: false,
+                    filePath: "",
+                    isDir: false
                 });
             }
         }
@@ -614,7 +819,10 @@ PanelWindow {
                 isCalc: true,
                 calcResult: mathResult,
                 isWidget: false,
-                widgetTarget: ""
+                widgetTarget: "",
+                isFile: false,
+                filePath: "",
+                isDir: false
             });
         }
 
@@ -660,7 +868,10 @@ PanelWindow {
                     isCalc: false,
                     calcResult: "",
                     isWidget: app.isWidget || false,
-                    widgetTarget: app.widgetTarget || ""
+                    widgetTarget: app.widgetTarget || "",
+                    isFile: false,
+                    filePath: "",
+                    isDir: false
                 });
             }
         }
@@ -674,49 +885,37 @@ PanelWindow {
             });
         }
 
-        let minCount = Math.min(appModel.count, filtered.length);
-        for (let i = 0; i < minCount; i++) {
-            let cur = appModel.get(i);
-            let target = filtered[i];
-            if (cur.name !== target.name
-                || cur.desktop_id !== target.desktop_id
-                || cur.description !== target.description
-                || cur.icon !== target.icon
-                || cur.fontIcon !== target.fontIcon
-                || cur.score !== target.score
-                || cur.command !== target.command
-                || cur.calcResult !== target.calcResult
-                || cur.isCommand !== target.isCommand
-                || cur.isCalc !== target.isCalc
-                || cur.isWidget !== target.isWidget
-                || cur.widgetTarget !== target.widgetTarget) {
-                appModel.set(i, target);
-            }
-        }
-
-        if (appModel.count > filtered.length) {
-            for (let i = appModel.count - 1; i >= filtered.length; i--) {
-                appModel.remove(i);
-            }
-        } else if (appModel.count < filtered.length) {
-            for (let i = appModel.count; i < filtered.length; i++) {
-                appModel.append(filtered[i]);
-            }
-        }
-
-        appList.resetScroll();
-
-        if (appModel.count > 0) {
-            appList.currentIndex = 0;
-        } else {
-            appList.currentIndex = -1;
-        }
+        applyModelItems(filtered);
     }
 
     function activateIndex(index) {
         if (index < 0 || index >= appModel.count) return;
         let item = appModel.get(index);
         if (!item) return;
+
+        if (item.isFile) {
+            let script = "p=\"$1\"\n"
+                + "if [ -d \"$p\" ]; then\n"
+                + "  xdg-open \"$p\"\n"
+                + "  exit 0\n"
+                + "fi\n"
+                + "mime=$(xdg-mime query filetype \"$p\" 2>/dev/null)\n"
+                + "handler=\"\"\n"
+                + "if [ -n \"$mime\" ]; then\n"
+                + "  handler=$(xdg-mime query default \"$mime\" 2>/dev/null)\n"
+                + "fi\n"
+                + "if [ -n \"$handler\" ]; then\n"
+                + "  xdg-open \"$p\" 2>/dev/null && exit 0\n"
+                + "fi\n"
+                + "if command -v nautilus >/dev/null 2>&1; then\n"
+                + "  nautilus --select \"$p\" >/dev/null 2>&1 &\n"
+                + "else\n"
+                + "  xdg-open \"$(dirname \"$p\")\" >/dev/null 2>&1 &\n"
+                + "fi";
+            Quickshell.execDetached(["bash", "-c", script, "_", item.filePath]);
+            closeLauncher();
+            return;
+        }
 
         if (item.isCommand) {
             if (item.command && item.command.trim().length > 0) {
@@ -756,22 +955,10 @@ PanelWindow {
         if (entry) {
             entry.execute();
         }
-        if (launcherWindow.smartRanking && Caching.qsDir) {
+        if (Caching.qsDir) {
             Quickshell.execDetached(["python3", Caching.qsDir + "/launcher/app_rank.py", "--log-launch", "--name", appName]);
         }
         closeLauncher();
-    }
-
-    function desktopIconFor(desktopId, fallbackIcon) {
-        if (typeof DesktopEntries !== "undefined" && desktopId) {
-            try {
-                let entry = DesktopEntries.byId(desktopId);
-                if (!entry && String(desktopId).endsWith(".desktop"))
-                    entry = DesktopEntries.byId(String(desktopId).slice(0, -8));
-                if (entry && entry.icon) return entry.icon;
-            } catch (e) {}
-        }
-        return fallbackIcon || "";
     }
 
     Item {
@@ -824,8 +1011,9 @@ PanelWindow {
         property real animProgress: launcherWindow.isVisible ? 1.0 : 0.0
         Behavior on animProgress {
             NumberAnimation {
-                duration: launcherWindow.isVisible ? (launcherWindow.isCentered ? 320 : 280) : (launcherWindow.isCentered ? 200 : 180)
-                easing.type: launcherWindow.isVisible ? Easing.OutCubic : Easing.InCubic
+                duration: launcherWindow.isVisible ? (launcherWindow.isCentered ? 420 : 340) : (launcherWindow.isCentered ? 200 : 150)
+                easing.type: launcherWindow.isVisible ? Easing.OutBack : Easing.InQuad
+                easing.overshoot: launcherWindow.isVisible ? 1.28 : 1.0
             }
         }
 
@@ -869,11 +1057,12 @@ PanelWindow {
             return launcherWindow.animatedLauncherHeight;
         }
 
-        opacity: Math.max(0.0, Math.min(1.0, animProgress * 1.5))
+        opacity: launcherWindow.isCentered
+                 ? Math.max(0.0, Math.min(1.0, animProgress * 1.5))
+                 : ((launcherWindow.isVisible || animProgress > 0.001) ? 1.0 : 0.0)
 
         transformOrigin: Item.Center
 
-        // Corner hug top-left
         Shape {
             visible: launcherWindow.attachEdge === "top" && container.dynamicCornerRadius > 0.5
             x: -container.dynamicCornerRadius
@@ -898,7 +1087,6 @@ PanelWindow {
             }
         }
 
-        // Corner hug top-right
         Shape {
             visible: launcherWindow.attachEdge === "top" && container.dynamicCornerRadius > 0.5
             x: parent.width
@@ -1071,11 +1259,12 @@ PanelWindow {
             id: bgCard
             anchors.fill: parent
             radius: container.dynamicCornerRadius
-            color: ThemeBackend.uiBackgroundUseWallpaper ? Qt.alpha(ThemeBackend.base, 0.22) : Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+            color: ThemeBackend.uiBackgroundUseWallpaper ? Qt.alpha(ThemeBackend.base, 0.22) : Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             border.width: 0
             border.color: launcherWindow.isCentered ? Qt.alpha(ThemeBackend.surface2, 0.6) : "transparent"
             clip: true
 
+            // v24 custom wallpaper/ambient layer; native 2.1.9 launcher layout stays intact.
             AmbientBackdrop {
                 anchors.fill: parent
                 z: 0
@@ -1094,7 +1283,7 @@ PanelWindow {
                 y: 0
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -1103,7 +1292,7 @@ PanelWindow {
                 y: 0
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -1112,7 +1301,7 @@ PanelWindow {
                 y: parent.height - container.dynamicCornerRadius
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -1121,7 +1310,7 @@ PanelWindow {
                 y: parent.height - container.dynamicCornerRadius
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -1130,7 +1319,7 @@ PanelWindow {
                 y: 0
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -1139,7 +1328,7 @@ PanelWindow {
                 y: parent.height - container.dynamicCornerRadius
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -1148,7 +1337,7 @@ PanelWindow {
                 y: 0
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -1157,7 +1346,7 @@ PanelWindow {
                 y: parent.height - container.dynamicCornerRadius
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Item {
@@ -1187,14 +1376,39 @@ PanelWindow {
                     fontPixelSize: launcherWindow.s(12)
                     charSpacing: 1
 
-                    placeholderText: typeof I18n !== "undefined" ? I18n.t("applauncher.placeholder", "Start with > for a command...") : "Start with > for a command..."
+                    placeholderText: {
+                        if (launcherWindow.currentTabIndex === 1) {
+                            return typeof I18n !== "undefined" ? I18n.t("applauncher.placeholder_files", "Search files or enter path...") : "Search files or enter path...";
+                        }
+                        return typeof I18n !== "undefined" ? I18n.t("applauncher.placeholder", "Start with > for a command...") : "Start with > for a command...";
+                    }
                     showClearButton: true
 
                     onTextEdited: function(newText) {
-                        filterApps(newText);
+                        if (launcherWindow.currentTabIndex === 0) {
+                            filterApps(newText);
+                        } else {
+                            filterFiles(newText);
+                        }
                     }
-                    onCleared: filterApps("")
+                    onCleared: {
+                        if (launcherWindow.currentTabIndex === 0) {
+                            filterApps("");
+                        } else {
+                            filterFiles("");
+                        }
+                    }
 
+                    Keys.onTabPressed: function(event) {
+                        launcherWindow.currentTabIndex = (launcherWindow.currentTabIndex === 0 ? 1 : 0);
+                        tabSwitch.currentIndex = launcherWindow.currentTabIndex;
+                        event.accepted = true;
+                    }
+                    Keys.onBacktabPressed: function(event) {
+                        launcherWindow.currentTabIndex = (launcherWindow.currentTabIndex === 0 ? 1 : 0);
+                        tabSwitch.currentIndex = launcherWindow.currentTabIndex;
+                        event.accepted = true;
+                    }
                     Keys.onDownPressed: function(event) {
                         launcherWindow.isKeyboardNav = true;
                         keyboardNavTimer.restart();
@@ -1221,13 +1435,40 @@ PanelWindow {
                     }
                 }
 
+                Switch {
+                    id: tabSwitch
+                    z: 10
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    y: contentContainer.isSearchAtBottom
+                       ? (searchInput.y - height - launcherWindow.s(8))
+                       : (searchInput.y + searchInput.height + launcherWindow.s(8))
+                    height: launcherWindow.s(28)
+                    cornerRadius: ThemeBackend.borderRadius
+                    fontPixelSize: launcherWindow.s(11)
+                    baseColor: ThemeBackend.surface0
+                    accentColor: ThemeBackend.mauve
+                    textColor: ThemeBackend.text
+                    activeTextColor: ThemeBackend.crust
+                    options: [launcherWindow.tabAppsTitle, launcherWindow.tabFilesTitle]
+                    currentIndex: launcherWindow.currentTabIndex
+                    onValueChanged: function(index, value) {
+                        launcherWindow.currentTabIndex = index;
+                    }
+                    onToggled: function(index) {
+                        launcherWindow.currentTabIndex = index;
+                    }
+                }
+
                 Item {
                     id: listContainer
                     z: 1
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    y: contentContainer.isSearchAtBottom ? 0 : (searchInput.height + launcherWindow.s(10))
-                    height: Math.max(0, parent.height - searchInput.height - launcherWindow.s(10))
+                    y: contentContainer.isSearchAtBottom ? 0 : (tabSwitch.y + tabSwitch.height + launcherWindow.s(8))
+                    height: contentContainer.isSearchAtBottom
+                            ? Math.max(0, tabSwitch.y - launcherWindow.s(8))
+                            : Math.max(0, parent.height - y)
                     clip: true
 
                     opacity: launcherWindow.isCentered
@@ -1341,8 +1582,8 @@ PanelWindow {
                             Behavior on y {
                                 enabled: launcherWindow.isKeyboardNav
                                 NumberAnimation {
-                                    duration: 320
-                                    easing.type: Easing.OutQuint
+                                    duration: 260
+                                    easing.type: Easing.OutCubic
                                 }
                             }
                         }
@@ -1366,7 +1607,7 @@ PanelWindow {
                                 anchors.fill: parent
 
                                 scale: ma.pressed ? 0.98 : 1.0
-                                Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                                Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack; easing.overshoot: 1.2 } }
 
                                 Rectangle {
                                     anchors.fill: parent
@@ -1384,7 +1625,7 @@ PanelWindow {
                                     spacing: launcherWindow.s(10)
 
                                     Behavior on anchors.leftMargin {
-                                        NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+                                        NumberAnimation { duration: 220; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
                                     }
 
                                     Item {
@@ -1417,7 +1658,7 @@ PanelWindow {
                                             anchors.fill: parent
                                             anchors.margins: parent.boxPadding
                                             radius: Math.max(0, parent.boxRadius - parent.boxPadding)
-                                            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                                            color: "transparent"
                                             clip: true
 
                                             Image {
@@ -1430,7 +1671,7 @@ PanelWindow {
 
                                                 source: {
                                                     if (model.fontIcon && model.fontIcon !== "") return "";
-                                                    let ic = launcherWindow.desktopIconFor(model.desktop_id || "", model.icon || "");
+                                                    let ic = model.icon || "";
                                                     if (!ic) return "";
                                                     if (ic.startsWith("file://") || ic.startsWith("image://") || ic.startsWith("http://") || ic.startsWith("https://")) return ic;
                                                     if (ic.startsWith("/")) return "file://" + ic;
@@ -1462,7 +1703,6 @@ PanelWindow {
                                             Text {
                                                 id: delegateFontIcon
                                                 anchors.centerIn: parent
-                                                anchors.verticalCenterOffset: -Math.round(launcherWindow.s(16) * 0.07)
                                                 visible: !delegateIcon.visible
                                                 text: {
                                                     if (model.fontIcon && model.fontIcon !== "") return model.fontIcon;
@@ -1470,9 +1710,8 @@ PanelWindow {
                                                     if (model.isCommand) return "󰆍";
                                                     return "󰵆";
                                                 }
-                                                font.family: "Iosevka Nerd Font"
+                                                font.family: ThemeBackend.fontFamily
                                                 font.pixelSize: launcherWindow.s(16)
-                                                renderType: Text.NativeRendering
                                                 color: delegateRoot.isSelected ? ThemeBackend.mauve : ThemeBackend.subtext0
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignHCenter

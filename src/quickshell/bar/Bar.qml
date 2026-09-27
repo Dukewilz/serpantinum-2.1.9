@@ -134,7 +134,7 @@ Variants {
                 let dummy = configRevision;
                 return (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.blur !== undefined) ? (Config.rawSettings.bar.blur / 100.0) : 0.0;
             }
-            property real barOpacity: barContentOpacity
+            property real barOpacity: barSurfaceOpacity
 
             HoverHandler {
                 id: barHover

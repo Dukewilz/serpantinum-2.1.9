@@ -40,19 +40,15 @@ Item {
         anchors.centerIn: parent
         spacing: 10
 
-        Text {
+        CenteredIcon {
             id: iconLabel
             visible: root.buttonIcon !== ""
             text: root.buttonIcon
-            font.family: "Iosevka Nerd Font"
-            font.pixelSize: root.iconFontSize
-                Layout.minimumWidth: root.iconFontSize
-                Layout.preferredWidth: root.iconFontSize
-                Layout.minimumHeight: root.iconFontSize
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            color: root.textColor
+            pixelSize: root.iconFontSize
+            Layout.preferredWidth: root.iconFontSize + 4
+            Layout.preferredHeight: root.iconFontSize + 4
             Layout.alignment: Qt.AlignVCenter
+            color: root.textColor
         }
 
         Text {

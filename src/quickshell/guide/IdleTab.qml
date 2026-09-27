@@ -360,10 +360,11 @@ Item {
                     spacing: rootObj.s(12)
 
                     IconButton {
+                        visible: !actionCard.isCustomAct
                         enabled: false
                         size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
+                        Layout.preferredWidth: visible ? rootObj.s(32) : 0
+                        Layout.preferredHeight: visible ? rootObj.s(32) : 0
                         Layout.alignment: Qt.AlignVCenter
                         cornerRadius: ThemeBackend.borderRadius
                         buttonIcon: actionCard.actIcon
@@ -408,7 +409,7 @@ Item {
 
                     Input {
                         visible: actionCard.isCustomAct
-                        Layout.preferredWidth: rootObj.s(140)
+                        Layout.preferredWidth: rootObj.s(190)
                         Layout.alignment: Qt.AlignVCenter
                         implicitHeight: rootObj.s(32)
                         text: (actionCard.actData && actionCard.actData.name) ? actionCard.actData.name : ""
@@ -485,21 +486,6 @@ Item {
                             }
                         }
 
-                        IconButton {
-                            Layout.alignment: Qt.AlignVCenter
-                            implicitWidth: rootObj.s(28)
-                            implicitHeight: rootObj.s(28)
-                            cornerRadius: rootObj.s(8)
-                            iconOffsetX: -1
-                            buttonIcon: "󰒓"
-                            iconFontSize: rootObj.s(14)
-                            accentColor: actionCard.isExpanded ? Qt.alpha(ThemeBackend.mauve, 0.25) : ThemeBackend.surface0
-                            textColor: actionCard.isExpanded ? ThemeBackend.mauve : (isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2)
-                            onClicked: {
-                                idleTabRoot.toggleActionExpanded(actionCard.actId);
-                            }
-                        }
-
                         Toggle {
                             Layout.alignment: Qt.AlignVCenter
                             checked: actionCard.actEnabled
@@ -520,6 +506,19 @@ Item {
                             iconFontSize: rootObj.s(14)
                             onClicked: {
                                 idleTabRoot.deleteCustomAction(actionCard.actId);
+                            }
+                        }
+
+                        FlipIcon {
+                            Layout.alignment: Qt.AlignVCenter
+                            size: rootObj.s(28)
+                            cornerRadius: rootObj.s(8)
+                            accentColor: ThemeBackend.surface0
+                            iconColor: isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2
+                            autoToggle: false
+                            flipped: actionCard.isExpanded
+                            onClicked: {
+                                idleTabRoot.toggleActionExpanded(actionCard.actId);
                             }
                         }
                     }
@@ -739,11 +738,11 @@ Item {
                                         implicitHeight: rootObj.s(30)
                                         text: actionCard.actWarningCmd
                                         placeholderText: I18n.t("guide.idle.warning_command.placeholder", "Warning command")
-                                        baseColor: ThemeBackend.mantle
+                                        baseColor: ThemeBackend.surface0
                                         accentColor: ThemeBackend.mauve
                                         textColor: ThemeBackend.text
                                         subTextColor: ThemeBackend.subtext0
-                                        borderColor: Qt.alpha(ThemeBackend.surface1, 0.8)
+                                        borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
                                         cornerRadius: ThemeBackend.borderRadius
                                         fontPixelSize: rootObj.s(11)
                                         onAccepted: function(t) {
@@ -846,11 +845,11 @@ Item {
                                     implicitHeight: rootObj.s(30)
                                     text: actionCard.actBeforeCmd
                                     placeholderText: I18n.t("guide.idle.before_command.placeholder", "Before action command")
-                                    baseColor: ThemeBackend.mantle
+                                    baseColor: ThemeBackend.surface0
                                     accentColor: ThemeBackend.mauve
                                     textColor: ThemeBackend.text
                                     subTextColor: ThemeBackend.subtext0
-                                    borderColor: Qt.alpha(ThemeBackend.surface1, 0.8)
+                                    borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
                                     cornerRadius: ThemeBackend.borderRadius
                                     fontPixelSize: rootObj.s(11)
                                     onAccepted: function(t) {
@@ -920,11 +919,11 @@ Item {
                                     implicitHeight: rootObj.s(30)
                                     text: actionCard.actResumeCmd
                                     placeholderText: idleTabRoot.getDefaultResumeCommand(actionCard.actId)
-                                    baseColor: ThemeBackend.mantle
+                                    baseColor: ThemeBackend.surface0
                                     accentColor: ThemeBackend.mauve
                                     textColor: ThemeBackend.text
                                     subTextColor: ThemeBackend.subtext0
-                                    borderColor: Qt.alpha(ThemeBackend.surface1, 0.8)
+                                    borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
                                     cornerRadius: ThemeBackend.borderRadius
                                     fontPixelSize: rootObj.s(11)
                                     onAccepted: function(t) {

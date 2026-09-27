@@ -99,6 +99,13 @@ Notification {
 
     iconArea: [
         Text {
+        id: v24Icon8
+        TextMetrics { id: v24Ink8; text: v24Icon8.text; font: v24Icon8.font }
+        transform: Translate {
+            x: (v24Icon8.implicitWidth - v24Ink8.tightBoundingRect.width) / 2 - v24Ink8.tightBoundingRect.x
+            y: (v24Icon8.implicitHeight - v24Ink8.tightBoundingRect.height) / 2 - v24Ink8.tightBoundingRect.y - v24Icon8.baselineOffset
+        }
+
             anchors.centerIn: parent
             text: "󰄀"
             font.family: "Iosevka Nerd Font"

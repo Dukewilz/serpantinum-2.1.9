@@ -667,7 +667,10 @@
   },
   "applauncher": {
     "search": "Tìm kiếm",
-    "placeholder": "Bắt đầu bằng dấu > để nhập lệnh..."
+    "placeholder": "Bắt đầu bằng dấu > để nhập lệnh...",
+    "tab_applications": "Ứng dụng",
+    "tab_files": "Tệp",
+    "placeholder_files": "Tìm kiếm tệp hoặc nhập đường dẫn..."
   },
   "calendar": {
     "loading": "Đang tải...",
@@ -1033,7 +1036,10 @@
       "rounded": "Bo tròn",
       "bars": "Thanh",
       "continuous": "Liên tục",
-      "default": "Mặc định"
+      "default": "Mặc định",
+      "material": "Material",
+      "materialAnalog": "Material kim",
+      "lumen": "Lumen"
     },
     "presets": {
       "minimal": {

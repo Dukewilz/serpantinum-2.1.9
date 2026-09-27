@@ -30,6 +30,15 @@ Popup {
         "yellow", "peach", "maroon", "red", "mauve", "pink", "flamingo", "rosewater"
     ]
 
+    function tr(key, fallback) {
+        let value = I18n.t(key);
+        return !value || value === key ? fallback : value;
+    }
+    function setColor(key, value) {
+        let colors = Object.assign({}, currentColors);
+        colors[key] = value;
+        currentColors = colors;
+    }
     signal saveRequested(var themeObj)
 
     function openForNew() {
@@ -112,7 +121,7 @@ Popup {
             Layout.fillWidth: true
 
             Text {
-                text: themeEditorPopup.editingThemeName === "" ? I18n.t("guide.theme.editor.create_title", "Create Custom Theme") : I18n.t("guide.theme.editor.edit_title", "Edit Custom Theme")
+                text: themeEditorPopup.editingThemeName === "" ? themeEditorPopup.tr("guide.theme.editor.create_title", "Create Custom Theme") : themeEditorPopup.tr("guide.theme.editor.edit_title", "Edit Custom Theme")
                 color: ThemeBackend.text
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: rootObj ? rootObj.s(16) : 16
@@ -139,7 +148,7 @@ Popup {
                 id: themeNameInput
                 Layout.fillWidth: true
                 Layout.preferredHeight: rootObj ? rootObj.s(36) : 36
-                placeholderText: I18n.t("guide.theme.editor.name_placeholder", "Theme Name...")
+                placeholderText: themeEditorPopup.tr("guide.theme.editor.name_placeholder", "Theme Name...")
                 baseColor: ThemeBackend.surface0
                 accentColor: ThemeBackend.mauve
                 textColor: ThemeBackend.text
@@ -200,6 +209,11 @@ Popup {
                             color: themeEditorPopup.currentColors[modelData] || "#000000"
                             border.width: 1
                             border.color: Qt.alpha(ThemeBackend.surface2, 0.6)
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: visualPicker.choose(modelData, parent.color)
+                            }
                         }
 
                         Text {
@@ -223,9 +237,7 @@ Popup {
                             cornerRadius: rootObj ? rootObj.s(6) : 6
                             fontPixelSize: rootObj ? rootObj.s(11) : 11
                             onTextEdited: newText => {
-                                let c = themeEditorPopup.currentColors;
-                                c[modelData] = newText;
-                                themeEditorPopup.currentColors = c;
+                                if (/^#[0-9a-fA-F]{6}$/.test(newText)) themeEditorPopup.setColor(modelData, newText);
                             }
                         }
                     }
@@ -233,4 +245,45 @@ Popup {
             }
         }
     }
+    onClosed: visualPicker.close()
+    Popup {
+        id: visualPicker
+        parent: themeEditorPopup.contentItem
+        anchors.centerIn: parent
+        width: Math.min(parent.width, 360)
+        padding: 16
+        modal: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        property string colorKey: ""
+        property real hue: 0
+        property real saturation: 0
+        property real brightness: 0
+        readonly property color preview: Qt.hsva(hue, saturation, brightness, 1)
+        function choose(key, value) {
+            colorKey = key;
+            hue = Math.max(0, value.hsvHue);
+            saturation = value.hsvSaturation;
+            brightness = value.hsvValue;
+            open();
+        }
+        background: Rectangle { radius: ThemeBackend.borderRadius; color: ThemeBackend.base; border.color: ThemeBackend.surface2 }
+        contentItem: ColumnLayout {
+            spacing: 10
+            Text { text: "Choose color · " + visualPicker.colorKey; color: ThemeBackend.text; font.family: ThemeBackend.fontFamily; font.pixelSize: 14 }
+            Rectangle { Layout.fillWidth: true; implicitHeight: 58; radius: 10; color: visualPicker.preview }
+            Text { text: "Hue"; color: ThemeBackend.text }
+            Slider { Layout.fillWidth: true; from: 0; to: 1; value: visualPicker.hue; onMoved: visualPicker.hue = value }
+            Text { text: "Saturation"; color: ThemeBackend.text }
+            Slider { Layout.fillWidth: true; from: 0; to: 1; value: visualPicker.saturation; onMoved: visualPicker.saturation = value }
+            Text { text: "Brightness"; color: ThemeBackend.text }
+            Slider { Layout.fillWidth: true; from: 0; to: 1; value: visualPicker.brightness; onMoved: visualPicker.brightness = value }
+            RowLayout {
+                Layout.fillWidth: true
+                Button { text: "Cancel"; onClicked: visualPicker.close() }
+                Item { Layout.fillWidth: true }
+                Button { text: "Use color"; onClicked: { themeEditorPopup.setColor(visualPicker.colorKey, visualPicker.preview.toString()); visualPicker.close(); } }
+            }
+        }
+    }
+
 }

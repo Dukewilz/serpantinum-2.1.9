@@ -805,7 +805,7 @@ PanelWindow {
             id: bgCard
             anchors.fill: parent
             radius: clipboardWindow.cornerRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             border.width: 0
             border.color: "transparent"
             clip: true
@@ -828,7 +828,7 @@ PanelWindow {
                 y: 0
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -837,7 +837,7 @@ PanelWindow {
                 y: 0
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -846,7 +846,7 @@ PanelWindow {
                 y: parent.height - container.dynamicCornerRadius
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -855,7 +855,7 @@ PanelWindow {
                 y: parent.height - container.dynamicCornerRadius
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -864,7 +864,7 @@ PanelWindow {
                 y: 0
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -873,7 +873,7 @@ PanelWindow {
                 y: parent.height - container.dynamicCornerRadius
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -882,7 +882,7 @@ PanelWindow {
                 y: 0
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Rectangle {
@@ -891,7 +891,7 @@ PanelWindow {
                 y: parent.height - container.dynamicCornerRadius
                 width: container.dynamicCornerRadius
                 height: container.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+                color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             }
 
             Item {
@@ -1533,6 +1533,12 @@ PanelWindow {
                                     }
 
                                     Text {
+        TextMetrics { id: v24Ink3; text: delegateFontIcon.text; font: delegateFontIcon.font }
+        transform: Translate {
+            x: (delegateFontIcon.implicitWidth - v24Ink3.tightBoundingRect.width) / 2 - v24Ink3.tightBoundingRect.x
+            y: (delegateFontIcon.implicitHeight - v24Ink3.tightBoundingRect.height) / 2 - v24Ink3.tightBoundingRect.y - delegateFontIcon.baselineOffset
+        }
+
                                         id: delegateFontIcon
                                         anchors.centerIn: parent
                                         font.family: "Iosevka Nerd Font"

@@ -45,7 +45,7 @@ Rectangle {
     border.width: 0
     clip: true
 
-    opacity: (moduleActive && isFocused) ? ((barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0) : 0.0
+    opacity: (moduleActive && isFocused) ? ((barWindow && (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) !== undefined) ? (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) : 1.0) : 0.0
     visible: opacity > 0
     Behavior on opacity { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
 

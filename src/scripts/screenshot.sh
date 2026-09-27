@@ -324,7 +324,7 @@ if [ "$FULL_MODE" = true ] || [ -n "$GEOMETRY" ]; then
     fi
 
     if [ "$EDIT_MODE" = true ]; then
-        GSK_RENDERER=gl satty --filename "$TMP_SCREENSHOT" --output-filename "$FILENAME" --init-tool brush --copy-command "wl-copy --type image/png"
+        GSK_RENDERER=gl satty --filename "$TMP_SCREENSHOT" --output-filename "$FILENAME" --init-tool brush --copy-command "bash -c 'tee >(command -v cliphist &>/dev/null && cliphist store) | wl-copy --type image/png'"
     else
         cp "$TMP_SCREENSHOT" "$FILENAME"
     fi
@@ -332,6 +332,9 @@ if [ "$FULL_MODE" = true ] || [ -n "$GEOMETRY" ]; then
 
     if [ -s "$FILENAME" ]; then
         wl-copy --type image/png < "$FILENAME"
+        if command -v cliphist &>/dev/null; then
+            cliphist store < "$FILENAME"
+        fi
         (
             notif_app="$(t "screenshot.notifications.screenshot_app_name")"
             notif_action="$(t "screenshot.notifications.open_folder")"

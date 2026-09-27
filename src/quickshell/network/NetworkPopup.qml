@@ -1421,7 +1421,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             border.color: ThemeBackend.surface0
             border.width: 1
             clip: true
@@ -1433,7 +1433,7 @@ Item {
                 blur: (1.0 - window.easeOut(window.animWin(window.introState, 0.0, 0.40))) * 0.35
             }
 
-            AmbientBackdrop {
+            PopupSurface {
                 anchors.fill: parent
                 z: 0
                 accentColor: window.currentConn ? window.activeColor : ThemeBackend.mauve
@@ -1449,7 +1449,7 @@ Item {
                 width: parent.width * 0.8; height: width; radius: width / 2
                 x: (parent.width / 2 - width / 2) + Math.cos(window.globalOrbitAngle * 2) * window.s(120)
                 y: (parent.height / 2 - height / 2) + Math.sin(window.globalOrbitAngle * 2) * window.s(80)
-                opacity: (window.currentPower ? (window.isDisconnectHovered ? 0.05 : 0.03) : 0.01) * window.easeOut(window.animWin(window.introState, 0.02, 0.22))
+                opacity: ((window.currentPower ? (window.isDisconnectHovered ? 0.05 : 0.03) : 0.01) * window.easeOut(window.animWin(window.introState, 0.02, 0.22))) * ThemeBackend.uiAmbientStrength
                 color: window.isDisconnectHovered && window.currentConn
                     ? ThemeBackend.red
                     : (window.currentConn ? window.activeColor : ThemeBackend.surface2)
@@ -1462,7 +1462,7 @@ Item {
                 width: parent.width * 0.9; height: width; radius: width / 2
                 x: (parent.width / 2 - width / 2) + Math.sin(window.globalOrbitAngle * 1.5) * window.s(-120)
                 y: (parent.height / 2 - height / 2) + Math.cos(window.globalOrbitAngle * 1.5) * window.s(-80)
-                opacity: (window.currentPower ? (window.isDisconnectHovered ? 0.04 : 0.02) : 0.005) * window.easeOut(window.animWin(window.introState, 0.04, 0.26))
+                opacity: ((window.currentPower ? (window.isDisconnectHovered ? 0.04 : 0.02) : 0.005) * window.easeOut(window.animWin(window.introState, 0.04, 0.26))) * ThemeBackend.uiAmbientStrength
                 color: window.isDisconnectHovered && window.currentConn
                     ? Qt.darker(ThemeBackend.red, 1.25)
                     : (window.currentConn ? window.activeGradientSecondary : ThemeBackend.surface1)

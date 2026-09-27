@@ -421,7 +421,6 @@ Item {
     }
 
     Item {
-        id: outerIntroItem
         anchors.fill: parent
         scale: 0.95 + (0.05 * introMain)
         opacity: introMain
@@ -429,28 +428,21 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
-            color: ThemeBackend.uiBackgroundUseWallpaper ? Qt.alpha(window.base, 0.22) : Qt.alpha(window.base, ThemeBackend.uiBackgroundOpacity)
+            color: Qt.alpha(window.base, ThemeBackend.uiPopupBaseOpacity)
             border.color: window.surface0
             border.width: 1
             clip: true
-
-            AmbientBackdrop {
+            PopupSurface {
                 anchors.fill: parent
-                z: 0
-                cornerRadius: parent.radius
-                accentColor: window.activeWeatherHex
-                secondaryColor: window.timeColor
-                tertiaryColor: window.timeAccent
-                strength: 0.92 * window.introAmbient
                 active: window.visible
-                animate: window.visible
+                cornerRadius: ThemeBackend.borderRadius
             }
 
             Rectangle {
                 width: parent.width * 0.5; height: width; radius: width / 2
                 x: parent.width * 0.75 - width / 2
                 y: parent.height * 0.3 - height / 2
-                opacity: 0.012 * window.introAmbient
+                opacity: 0.048 * window.introAmbient * ThemeBackend.uiAmbientStrength
                 color: window.activeWeatherHex
                 Behavior on color { ColorAnimation { duration: 1000 } }
 
@@ -475,7 +467,7 @@ Item {
                 width: parent.width * 0.6; height: width; radius: width / 2
                 x: parent.width * 0.25 - width / 2
                 y: parent.height * 0.7 - height / 2
-                opacity: 0.01 * window.introAmbient
+                opacity: 0.04 * window.introAmbient * ThemeBackend.uiAmbientStrength
                 color: window.timeColor
                 Behavior on color { ColorAnimation { duration: 1000 } }
 
@@ -500,7 +492,7 @@ Item {
                 width: parent.width * 0.45; height: width; radius: width / 2
                 x: parent.width * 0.5 - width / 2
                 y: parent.height * 0.5 - height / 2
-                opacity: 0.007 * window.introAmbient
+                opacity: 0.028 * window.introAmbient * ThemeBackend.uiAmbientStrength
                 color: window.timeAccent
                 Behavior on color { ColorAnimation { duration: 1000 } }
 
@@ -565,10 +557,211 @@ Item {
             }
 
             Item {
-                id: centralHubPlaceholder
-                visible: false
-                width: 0
-                height: 0
+                id: centralHub
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: window.centerOffset
+                width: window.s(1)
+                height: window.s(1)
+                z: 5
+
+                opacity: introClock
+                scale: 0.85 + (0.15 * introClock)
+
+                transform: [
+                    Translate { y: window.s(25) * (1.0 - introClock) },
+                    Translate {
+                        SequentialAnimation on y {
+                            loops: Animation.Infinite
+                            running: window.visible
+                            NumberAnimation { to: -window.s(6); duration: 4500; easing.type: Easing.InOutSine }
+                            NumberAnimation { to: 0; duration: 4500; easing.type: Easing.InOutSine }
+                        }
+                    },
+                    Rotation {
+                        axis { x: 1; y: 0; z: 0 }
+                        SequentialAnimation on angle {
+                            loops: Animation.Infinite; running: window.visible
+                            NumberAnimation { to: 1.5; duration: 4800; easing.type: Easing.InOutSine }
+                            NumberAnimation { to: -1.5; duration: 4800; easing.type: Easing.InOutSine }
+                        }
+                    },
+                    Rotation {
+                        axis { x: 0; y: 1; z: 0 }
+                        SequentialAnimation on angle {
+                            loops: Animation.Infinite; running: window.visible
+                            NumberAnimation { to: 1.2; duration: 5500; easing.type: Easing.InOutSine }
+                            NumberAnimation { to: -1.2; duration: 5500; easing.type: Easing.InOutSine }
+                        }
+                    },
+                    Rotation {
+                        axis { x: 0; y: 0; z: 1 }
+                        SequentialAnimation on angle {
+                            loops: Animation.Infinite; running: window.visible
+                            NumberAnimation { to: 0.8; duration: 6200; easing.type: Easing.InOutSine }
+                            NumberAnimation { to: -0.8; duration: 6200; easing.type: Easing.InOutSine }
+                        }
+                    }
+                ]
+
+                Canvas {
+                    id: orbitCanvas
+                    z: -10
+                    anchors.centerIn: parent
+                    width: window.s(680)
+                    height: window.s(320)
+                    opacity: 0.35
+
+                    SequentialAnimation on scale {
+                        loops: Animation.Infinite
+                        running: window.visible
+                        NumberAnimation { to: 1.012; duration: 4000; easing.type: Easing.InOutSine }
+                        NumberAnimation { to: 1.0; duration: 4000; easing.type: Easing.InOutSine }
+                    }
+
+                    onWidthChanged: requestPaint()
+                    onHeightChanged: requestPaint()
+
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.clearRect(0, 0, width, height);
+                        ctx.beginPath();
+                        var currentRx = window.s(268);
+                        var currentRy = window.s(124);
+                        for (var i = 0; i <= Math.PI * 2; i += 0.05) {
+                            var xx = width / 2 + Math.cos(i) * currentRx;
+                            var yy = height / 2 + Math.sin(i) * currentRy;
+                            if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+                        }
+                        ctx.strokeStyle = Qt.alpha(window.textAccent, 0.45);
+                        ctx.lineWidth = Math.max(1, window.s(2));
+                        ctx.lineCap = "round";
+                        ctx.setLineDash([window.s(4), window.s(12)]);
+                        ctx.stroke();
+                    }
+                    Behavior on opacity { NumberAnimation { duration: 1500 } }
+                }
+
+                ColumnLayout {
+                    anchors.centerIn: parent
+                    spacing: 0
+                    z: 0
+                    scale: 0.98 + (0.02 * window.secondPulse)
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: DateTime.time
+                        font.family: ThemeBackend.fontFamily
+                        font.weight: Font.Black
+                        font.pixelSize: {
+                            let baseSize = window.s(84);
+                            let len = (DateTime.time || "").length;
+                            if (len <= 5) return baseSize;
+                            let scaleFactor = Math.min(1.0, Math.pow(5 / len, 0.7));
+                            return Math.round(Math.max(window.s(36), baseSize * scaleFactor));
+                        }
+                        color: window.text
+                        style: Text.Outline
+                        styleColor: Qt.alpha(window.crust, 0.4)
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: DateTime.fullDate
+                        font.family: ThemeBackend.fontFamily
+                        font.weight: Font.Bold
+                        font.pixelSize: window.s(16)
+                        color: window.subtext0
+                        opacity: 0.9
+                    }
+                }
+
+                Item {
+                    anchors.fill: parent
+                    opacity: window.weatherContentOpacity
+                    scale: window.transitionScale
+                    transform: Translate { x: window.weatherContentOffset * 1.5 }
+
+                    Repeater {
+                        id: hourRepeater
+                        model: window.weatherData && window.weatherData.forecast[window.weatherView] && window.weatherData.forecast[window.weatherView].hourly ? window.weatherData.forecast[window.weatherView].hourly.slice(0, 8) : []
+
+                        delegate: Item {
+                            property int mCount: hourRepeater.count
+                            property bool isToday: window.weatherView === 0
+                            property bool isHighlighted: isToday && index === window.activeHourIndex
+
+                            property real rx: window.s(268) * orbitCanvas.scale
+                            property real ry: window.s(124) * orbitCanvas.scale
+
+                            property int relIdx: isToday ? (index - window.activeHourIndex) : index
+                            property real targetAngleDeg: isToday ? (65 + (relIdx * 30)) : (index * (360 / Math.max(1, mCount)))
+                            property real orbitOffset: isToday ? 0 : window.globalOrbitOffset
+                            property real osc: isToday ? (Math.sin(window.globalOscPhase + index) * 2.5) : 0
+                            property real rad: (targetAngleDeg + orbitOffset + osc + window.transitionSpin) * (Math.PI / 180)
+
+                            property real depthFactor: (Math.sin(rad) + 1.0) / 2.0
+
+                            x: Math.cos(rad) * rx - width / 2
+                            y: Math.sin(rad) * ry - height / 2
+                            z: isHighlighted ? (Math.sin(rad) * window.s(100) + 10) : (Math.sin(rad) * window.s(100))
+
+                            property real baseScale: isHighlighted ? (0.80 + 0.55 * depthFactor) : (0.68 + 0.42 * depthFactor)
+                            property real hoverScale: hrMa.containsMouse && !isHighlighted ? 1.04 : 1.0
+                            Behavior on hoverScale { NumberAnimation { duration: 150 } }
+
+                            scale: baseScale * hoverScale
+
+                            opacity: isHighlighted ? (0.75 + 0.25 * depthFactor) : (0.55 + 0.45 * depthFactor)
+
+                            width: window.s(52)
+                            height: window.s(86)
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: Math.min(window.s(26), ThemeBackend.borderRadius * 1.75)
+                                color: isHighlighted ? window.textAccent : (hrMa.containsMouse ? Qt.lighter(window.surface0, 1.12) : window.surface0)
+                                border.color: isHighlighted ? Qt.lighter(window.textAccent, 1.1) : (hrMa.containsMouse ? Qt.alpha(window.surface2, 0.9) : Qt.alpha(window.surface1, 0.6))
+                                border.width: 1
+
+                                Behavior on color { ColorAnimation { duration: 180 } }
+                                Behavior on border.color { ColorAnimation { duration: 180 } }
+
+                                ColumnLayout {
+                                    anchors.centerIn: parent
+                                    spacing: window.s(3)
+
+                                    Text {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: modelData ? modelData.time : ""
+                                        font.family: ThemeBackend.fontFamily
+                                        font.weight: Font.Bold
+                                        font.pixelSize: window.s(11.5)
+                                        color: isHighlighted ? window.base : (hrMa.containsMouse ? window.text : window.overlay1)
+                                        Behavior on color { ColorAnimation { duration: 180 } }
+                                    }
+
+                                    Text {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: modelData ? (modelData.icon || (window.weatherData && window.weatherData.forecast[window.weatherView] ? window.weatherData.forecast[window.weatherView].icon : "")) : ""
+                                        font.family: ThemeBackend.fontFamily
+                                        font.pixelSize: window.s(16.5)
+                                        color: isHighlighted ? window.base : (modelData ? (modelData.hex || window.text) : window.text)
+                                    }
+
+                                    Text {
+                                        Layout.alignment: Qt.AlignHCenter
+                                        text: modelData ? (modelData.temp + "°") : ""
+                                        font.family: ThemeBackend.fontFamily
+                                        font.weight: Font.Black
+                                        font.pixelSize: window.s(12.5)
+                                        color: isHighlighted ? window.base : window.text
+                                    }
+                                }
+                            }
+                            MouseArea { id: hrMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor }
+                        }
+                    }
+                }
             }
 
             Rectangle {
@@ -844,215 +1037,6 @@ Item {
                                 textColor: isHoveredOrHighlighted ? window.textAccent : window.overlay0
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        // centralHub moved outside clipped Rectangle to prevent orbit items from being clipped
-        Item {
-            id: centralHub
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: window.centerOffset
-            width: window.s(1)
-            height: window.s(1)
-            z: 6
-
-            opacity: introClock
-            scale: 0.85 + (0.15 * introClock)
-
-            transform: [
-                Translate { y: window.s(25) * (1.0 - introClock) },
-                Translate {
-                    SequentialAnimation on y {
-                        loops: Animation.Infinite
-                        running: window.visible
-                        NumberAnimation { to: -window.s(6); duration: 4500; easing.type: Easing.InOutSine }
-                        NumberAnimation { to: 0; duration: 4500; easing.type: Easing.InOutSine }
-                    }
-                },
-                Rotation {
-                    axis { x: 1; y: 0; z: 0 }
-                    SequentialAnimation on angle {
-                        loops: Animation.Infinite; running: window.visible
-                        NumberAnimation { to: 1.5; duration: 4800; easing.type: Easing.InOutSine }
-                        NumberAnimation { to: -1.5; duration: 4800; easing.type: Easing.InOutSine }
-                    }
-                },
-                Rotation {
-                    axis { x: 0; y: 1; z: 0 }
-                    SequentialAnimation on angle {
-                        loops: Animation.Infinite; running: window.visible
-                        NumberAnimation { to: 1.2; duration: 5500; easing.type: Easing.InOutSine }
-                        NumberAnimation { to: -1.2; duration: 5500; easing.type: Easing.InOutSine }
-                    }
-                },
-                Rotation {
-                    axis { x: 0; y: 0; z: 1 }
-                    SequentialAnimation on angle {
-                        loops: Animation.Infinite; running: window.visible
-                        NumberAnimation { to: 0.8; duration: 6200; easing.type: Easing.InOutSine }
-                        NumberAnimation { to: -0.8; duration: 6200; easing.type: Easing.InOutSine }
-                    }
-                }
-            ]
-
-            Canvas {
-                id: orbitCanvas
-                z: -10
-                anchors.centerIn: parent
-                width: window.s(680)
-                height: window.s(320)
-                opacity: 0.35
-
-                SequentialAnimation on scale {
-                    loops: Animation.Infinite
-                    running: window.visible
-                    NumberAnimation { to: 1.012; duration: 4000; easing.type: Easing.InOutSine }
-                    NumberAnimation { to: 1.0; duration: 4000; easing.type: Easing.InOutSine }
-                }
-
-                onWidthChanged: requestPaint()
-                onHeightChanged: requestPaint()
-
-                onPaint: {
-                    var ctx = getContext("2d");
-                    ctx.clearRect(0, 0, width, height);
-                    ctx.beginPath();
-                    var currentRx = window.s(268);
-                    var currentRy = window.s(124);
-                    for (var i = 0; i <= Math.PI * 2; i += 0.05) {
-                        var xx = width / 2 + Math.cos(i) * currentRx;
-                        var yy = height / 2 + Math.sin(i) * currentRy;
-                        if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
-                    }
-                    ctx.strokeStyle = Qt.alpha(window.textAccent, 0.45);
-                    ctx.lineWidth = Math.max(1, window.s(2));
-                    ctx.lineCap = "round";
-                    ctx.setLineDash([window.s(4), window.s(12)]);
-                    ctx.stroke();
-                }
-                Behavior on opacity { NumberAnimation { duration: 1500 } }
-            }
-
-            ColumnLayout {
-                anchors.centerIn: parent
-                spacing: 0
-                z: 0
-                scale: 0.98 + (0.02 * window.secondPulse)
-
-                Text {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: DateTime.time
-                    font.family: ThemeBackend.fontFamily
-                    font.weight: Font.Black
-                    font.pixelSize: {
-                        let baseSize = window.s(84);
-                        let len = (DateTime.time || "").length;
-                        if (len <= 5) return baseSize;
-                        let scaleFactor = Math.min(1.0, Math.pow(5 / len, 0.7));
-                        return Math.round(Math.max(window.s(36), baseSize * scaleFactor));
-                    }
-                    color: window.text
-                    style: Text.Outline
-                    styleColor: Qt.alpha(window.crust, 0.4)
-                }
-
-                Text {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: DateTime.fullDate
-                    font.family: ThemeBackend.fontFamily
-                    font.weight: Font.Bold
-                    font.pixelSize: window.s(16)
-                    color: window.subtext0
-                    opacity: 0.9
-                }
-            }
-
-            Item {
-                anchors.fill: parent
-                opacity: window.weatherContentOpacity
-                scale: window.transitionScale
-                transform: Translate { x: window.weatherContentOffset * 1.5 }
-
-                Repeater {
-                    id: hourRepeater
-                    model: window.weatherData && window.weatherData.forecast[window.weatherView] && window.weatherData.forecast[window.weatherView].hourly ? window.weatherData.forecast[window.weatherView].hourly.slice(0, 8) : []
-
-                    delegate: Item {
-                        property int mCount: hourRepeater.count
-                        property bool isToday: window.weatherView === 0
-                        property bool isHighlighted: isToday && index === window.activeHourIndex
-
-                        property real rx: window.s(268) * orbitCanvas.scale
-                        property real ry: window.s(124) * orbitCanvas.scale
-
-                        property int relIdx: isToday ? (index - window.activeHourIndex) : index
-                        property real targetAngleDeg: isToday ? (65 + (relIdx * 30)) : (index * (360 / Math.max(1, mCount)))
-                        property real orbitOffset: isToday ? 0 : window.globalOrbitOffset
-                        property real osc: isToday ? (Math.sin(window.globalOscPhase + index) * 2.5) : 0
-                        property real rad: (targetAngleDeg + orbitOffset + osc + window.transitionSpin) * (Math.PI / 180)
-
-                        property real depthFactor: (Math.sin(rad) + 1.0) / 2.0
-
-                        x: Math.cos(rad) * rx - width / 2
-                        y: Math.sin(rad) * ry - height / 2
-                        z: isHighlighted ? (Math.sin(rad) * window.s(100) + 10) : (Math.sin(rad) * window.s(100))
-
-                        property real baseScale: isHighlighted ? (0.80 + 0.55 * depthFactor) : (0.68 + 0.42 * depthFactor)
-                        property real hoverScale: hrMa.containsMouse && !isHighlighted ? 1.04 : 1.0
-                        Behavior on hoverScale { NumberAnimation { duration: 150 } }
-
-                        scale: baseScale * hoverScale
-
-                        opacity: isHighlighted ? (0.75 + 0.25 * depthFactor) : (0.55 + 0.45 * depthFactor)
-
-                        width: window.s(52)
-                        height: window.s(86)
-
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: Math.min(window.s(26), ThemeBackend.borderRadius * 1.75)
-                            color: isHighlighted ? window.textAccent : (hrMa.containsMouse ? Qt.lighter(window.surface0, 1.12) : window.surface0)
-                            border.color: isHighlighted ? Qt.lighter(window.textAccent, 1.1) : (hrMa.containsMouse ? Qt.alpha(window.surface2, 0.9) : Qt.alpha(window.surface1, 0.6))
-                            border.width: 1
-
-                            Behavior on color { ColorAnimation { duration: 180 } }
-                            Behavior on border.color { ColorAnimation { duration: 180 } }
-
-                            ColumnLayout {
-                                anchors.centerIn: parent
-                                spacing: window.s(3)
-
-                                Text {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    text: modelData ? modelData.time : ""
-                                    font.family: ThemeBackend.fontFamily
-                                    font.weight: Font.Bold
-                                    font.pixelSize: window.s(11.5)
-                                    color: isHighlighted ? window.base : (hrMa.containsMouse ? window.text : window.overlay1)
-                                    Behavior on color { ColorAnimation { duration: 180 } }
-                                }
-
-                                Text {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    text: modelData ? (modelData.icon || (window.weatherData && window.weatherData.forecast[window.weatherView] ? window.weatherData.forecast[window.weatherView].icon : "")) : ""
-                                    font.family: ThemeBackend.fontFamily
-                                    font.pixelSize: window.s(16.5)
-                                    color: isHighlighted ? window.base : (modelData ? (modelData.hex || window.text) : window.text)
-                                }
-
-                                Text {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    text: modelData ? (modelData.temp + "°") : ""
-                                    font.family: ThemeBackend.fontFamily
-                                    font.weight: Font.Black
-                                    font.pixelSize: window.s(12.5)
-                                    color: isHighlighted ? window.base : window.text
-                                }
-                            }
-                        }
-                        MouseArea { id: hrMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor }
                     }
                 }
             }

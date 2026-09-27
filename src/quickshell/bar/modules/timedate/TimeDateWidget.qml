@@ -118,7 +118,7 @@ Rectangle {
     border.width: 0
     clip: true
     visible: (width > 0 || opacity > 0) && (!barWindow || !barWindow.positionChanging)
-    opacity: (showLayout && moduleActive && (!barWindow || !barWindow.positionChanging)) ? ((barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0) : 0.0
+    opacity: (showLayout && moduleActive && (!barWindow || !barWindow.positionChanging)) ? ((barWindow && (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) !== undefined) ? (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) : 1.0) : 0.0
 
     Rectangle {
         id: bgRect

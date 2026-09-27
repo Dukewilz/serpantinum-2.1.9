@@ -679,7 +679,7 @@ Scope {
 
                     property real globalWavePhase: 0.0
                     NumberAnimation on globalWavePhase {
-                        from: 0; to: Math.PI * 2; duration: 1800; loops: Animation.Infinite; running: rootLock.locked && screenRoot.wingsReveal > 0.98
+                        from: 0; to: Math.PI * 2; duration: 1800; loops: Animation.Infinite; running: screenRoot.wingsReveal > 0.98
                     }
 
                     property real rawCpu: isNaN(SysData.cpu) ? 0.0 : SysData.cpu / 100.0
@@ -772,7 +772,7 @@ Scope {
                     Timer {
                         id: idleTimer
                         interval: 15000
-                        running: rootLock.locked && screenRoot.inputActive && passwordInput.text.length === 0
+                        running: screenRoot.inputActive && passwordInput.text.length === 0
                         repeat: false
                         onTriggered: {
                             screenRoot.inputActive = false;
@@ -931,10 +931,8 @@ Scope {
                         readonly property var wipeAmps: [1.5, 1.3, 1.1, 0.9, 0.6]
                         readonly property var wipeOffsets: [0.0, 0.5, 1.0, 1.5, 2.0]
 
-                        // The v24 ring/orb intro below replaces the newer full-screen
-                        // wipe while the existing panel state machine stays intact.
-                        opacity: 0.0
-                        visible: false
+                        opacity: screenRoot.isPlayingIntro ? (screenRoot.panelReveal < 0.8 ? 1.0 : Math.max(0.0, (1.0 - screenRoot.panelReveal) / 0.2)) : 0.0
+                        visible: opacity > 0.001
 
                         Connections {
                             target: screenRoot
@@ -1004,80 +1002,33 @@ Scope {
                     }
 
                     Item {
-                        id: legacyIntroOverlay
-                        anchors.fill: parent
-                        z: 11
-                        opacity: 1.0
-                        visible: screenRoot.isPlayingIntro || opacity > 0.001
-
-                        Repeater {
-                            model: [
-                                { "size": 250, "color": ThemeBackend.text, "width": 2, "delay": 0 },
-                                { "size": 315, "color": ThemeBackend.sapphire, "width": 1, "delay": 55 },
-                                { "size": 380, "color": ThemeBackend.mauve, "width": 1, "delay": 105 }
-                            ]
-                            delegate: Rectangle {
-                                id: legacyRing
-                                required property var modelData
-                                width: screenRoot.s(modelData.size)
-                                height: width
-                                radius: width / 2
-                                anchors.centerIn: parent
-                                color: "transparent"
-                                border.color: modelData.color
-                                border.width: Math.max(1, screenRoot.s(modelData.width))
-                                scale: 0.64
-                                opacity: 0.0
-
-                                SequentialAnimation {
-                                    running: rootLock.locked && screenRoot.isPlayingIntro
-                                    PauseAnimation { duration: legacyRing.modelData.delay }
-                                    ParallelAnimation {
-                                        NumberAnimation { target: legacyRing; property: "scale"; from: 0.64; to: 1.34; duration: 430; easing.type: Easing.OutCubic }
-                                        SequentialAnimation {
-                                            NumberAnimation { target: legacyRing; property: "opacity"; from: 0.0; to: 0.58; duration: 80; easing.type: Easing.OutCubic }
-                                            NumberAnimation { target: legacyRing; property: "opacity"; to: 0.0; duration: 350; easing.type: Easing.InCubic }
-                                        }
-                                    }
-                                }
-                            }
+                        id: materialLockEmblem
+                        anchors.centerIn: parent
+                        width: screenRoot.s(104); height: width
+                        z: 30
+                        visible: screenRoot.isPlayingIntro
+                        opacity: Math.min(1, screenRoot.panelReveal * 5) * Math.max(0, Math.min(1, (1 - screenRoot.panelReveal) * 5))
+                        scale: 0.65 + 0.35 * Math.min(1, screenRoot.panelReveal * 2.5)
+                        rotation: -12 * Math.pow(1 - screenRoot.panelReveal, 3)
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: width * (0.3 + 0.2 * screenRoot.panelReveal)
+                            color: ThemeBackend.mauve
+                            border.width: screenRoot.s(1)
+                            border.color: Qt.alpha(ThemeBackend.text, 0.2)
                         }
-
-                        Item {
-                            id: legacyLockOrb
-                            width: screenRoot.s(170)
-                            height: width
+                        Rectangle {
                             anchors.centerIn: parent
-                            scale: 0.0
-                            opacity: 0.0
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: width / 2
-                                color: Qt.alpha(ThemeBackend.surface0, 0.92)
-                                border.color: Qt.alpha(ThemeBackend.text, 0.88)
-                                border.width: Math.max(1, screenRoot.s(2))
-                            }
-
-                            Text {
-                                id: legacyUnlockedIcon
-                                anchors.centerIn: parent
-                                text: "󰌿"
-                                font.family: "Iosevka Nerd Font"
-                                font.pixelSize: screenRoot.s(64)
-                                color: ThemeBackend.text
-                            }
-
-                            Text {
-                                id: legacyLockedIcon
-                                anchors.centerIn: parent
-                                text: "󰌾"
-                                font.family: "Iosevka Nerd Font"
-                                font.pixelSize: screenRoot.s(64)
-                                color: ThemeBackend.text
-                                opacity: 0.0
-                                scale: 1.6
-                            }
+                            width: parent.width * (1 + screenRoot.panelReveal * 0.6); height: width
+                            radius: width / 2; color: "transparent"
+                            border.width: screenRoot.s(2)
+                            border.color: Qt.alpha(ThemeBackend.mauve, 0.3 * (1 - screenRoot.panelReveal))
+                        }
+                        Text {
+                            anchors.centerIn: parent; text: "󰌾"
+                            font.family: "Iosevka Nerd Font"; font.pixelSize: screenRoot.s(44)
+                            color: ThemeBackend.crust
+                            transform: Translate { y: -screenRoot.s(8) * Math.pow(1 - screenRoot.panelReveal, 2) }
                         }
                     }
 
@@ -1085,26 +1036,6 @@ Scope {
                         id: introSequence
 
                         ParallelAnimation {
-                            NumberAnimation { target: legacyLockOrb; property: "scale"; from: 0.0; to: 1.0; duration: 300; easing.type: Easing.OutBack; easing.overshoot: 1.12 }
-                            NumberAnimation { target: legacyLockOrb; property: "opacity"; from: 0.0; to: 1.0; duration: 190; easing.type: Easing.OutCubic }
-                            SequentialAnimation {
-                                PauseAnimation { duration: 300 }
-                                ParallelAnimation {
-                                    NumberAnimation { target: legacyUnlockedIcon; property: "scale"; from: 1.0; to: 0.5; duration: 100; easing.type: Easing.InCubic }
-                                    NumberAnimation { target: legacyUnlockedIcon; property: "opacity"; from: 1.0; to: 0.0; duration: 70 }
-                                    NumberAnimation { target: legacyLockedIcon; property: "scale"; from: 1.6; to: 1.0; duration: 210; easing.type: Easing.OutBack }
-                                    NumberAnimation { target: legacyLockedIcon; property: "opacity"; from: 0.0; to: 1.0; duration: 110 }
-                                    SequentialAnimation {
-                                        NumberAnimation { target: legacyLockOrb; property: "anchors.verticalCenterOffset"; from: 0; to: screenRoot.s(4); duration: 45; easing.type: Easing.OutQuad }
-                                        NumberAnimation { target: legacyLockOrb; property: "anchors.verticalCenterOffset"; to: 0; duration: 130; easing.type: Easing.OutBack }
-                                    }
-                                }
-                            }
-                        }
-
-                        ParallelAnimation {
-                            NumberAnimation { target: legacyLockOrb; property: "scale"; to: 1.72; duration: 260; easing.type: Easing.InCubic }
-                            NumberAnimation { target: legacyIntroOverlay; property: "opacity"; to: 0.0; duration: 260; easing.type: Easing.InCubic }
                             NumberAnimation {
                                 target: screenRoot
                                 property: "panelReveal"
@@ -1184,8 +1115,8 @@ Scope {
                                     Text {
                                         id: clockHours
                                         font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: screenRoot.s(104)
-                                        font.weight: ThemeBackend.fontWeight
+                                        font.pixelSize: screenRoot.s(120)
+                                        font.weight: Font.Normal
                                         color: "#ffffff"
                                         style: Text.Raised
                                         styleColor: Qt.rgba(0, 0, 0, 0.25)
@@ -1195,8 +1126,8 @@ Scope {
                                         id: clockColon
                                         text: ":"
                                         font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: screenRoot.s(104)
-                                        font.weight: ThemeBackend.fontWeight
+                                        font.pixelSize: screenRoot.s(80)
+                                        font.weight: Font.Light
                                         Layout.alignment: Qt.AlignVCenter
                                         opacity: colonPulse.running ? colonOpacity : 0.6
                                         color: "#ffffff"
@@ -1206,7 +1137,7 @@ Scope {
                                         property real colonOpacity: 0.6
                                         SequentialAnimation on colonOpacity {
                                             id: colonPulse
-                                            running: rootLock.locked && !screenRoot.isPlayingIntro && !screenRoot.isUnlocking
+                                            running: !screenRoot.isPlayingIntro && !screenRoot.isUnlocking
                                             loops: Animation.Infinite
                                             NumberAnimation { to: 1.0; duration: 500; easing.type: Easing.OutCubic }
                                             NumberAnimation { to: 0.35; duration: 500; easing.type: Easing.InCubic }
@@ -1216,8 +1147,8 @@ Scope {
                                     Text {
                                         id: clockMinutes
                                         font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: screenRoot.s(104)
-                                        font.weight: ThemeBackend.fontWeight
+                                        font.pixelSize: screenRoot.s(120)
+                                        font.weight: Font.Normal
                                         color: "#ffffff"
                                         style: Text.Raised
                                         styleColor: Qt.rgba(0, 0, 0, 0.25)
@@ -1242,8 +1173,8 @@ Scope {
                                     id: dateText
                                     Layout.alignment: Qt.AlignHCenter
                                     font.family: ThemeBackend.fontFamily
-                                    font.pixelSize: screenRoot.s(16)
-                                    font.weight: ThemeBackend.fontWeight
+                                    font.pixelSize: screenRoot.s(14)
+                                    font.weight: Font.Bold
                                     font.letterSpacing: 1.4
                                     color: "#ffffff"
                                     opacity: 0.85
@@ -1251,7 +1182,7 @@ Scope {
 
                                 Timer {
                                     id: clockTimer
-                                    interval: 1000; running: rootLock.locked; repeat: true; triggeredOnStart: true
+                                    interval: 1000; running: true; repeat: true; triggeredOnStart: true
                                     onTriggered: {
                                         let d = new Date();
                                         let fmt = (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.time && Config.rawSettings.bar.time.format !== undefined) ? Config.rawSettings.bar.time.format : "HH:mm:ss";
@@ -1339,6 +1270,13 @@ Scope {
                                             backgroundColor: (screenRoot.faceIconPath === "" && SystemInfo.avatarPath === "") ? ThemeBackend.surface1 : "transparent"
 
                                             Text {
+        id: v24Icon0
+        TextMetrics { id: v24Ink0; text: v24Icon0.text; font: v24Icon0.font }
+        transform: Translate {
+            x: (v24Icon0.implicitWidth - v24Ink0.tightBoundingRect.width) / 2 - v24Ink0.tightBoundingRect.x
+            y: (v24Icon0.implicitHeight - v24Ink0.tightBoundingRect.height) / 2 - v24Ink0.tightBoundingRect.y - v24Icon0.baselineOffset
+        }
+
                                                 anchors.centerIn: parent
                                                 text: ""
                                                 font.family: "Iosevka Nerd Font"
@@ -1658,7 +1596,7 @@ Scope {
                                     width: screenRoot.s(36)
                                     height: width
                                     accentColor: ThemeBackend.mauve
-                                    running: rootLock.locked && (Weather.isLoading || !Weather.isReady)
+                                    running: Weather.isLoading || !Weather.isReady
                                     visible: Weather.isLoading || !Weather.isReady
                                 }
 
@@ -2203,7 +2141,7 @@ Scope {
 
                                                 SequentialAnimation {
                                                     loops: Animation.Infinite
-                                                    running: rootLock.locked && lockMediaTitleText.implicitWidth > lockMediaTitleClip.width
+                                                    running: lockMediaTitleText.implicitWidth > lockMediaTitleClip.width
 
                                                     PauseAnimation { duration: 3000 }
                                                     NumberAnimation {

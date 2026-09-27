@@ -540,12 +540,11 @@ Item {
                 }
             }
 
-            Text {
+            CenteredIcon {
                 text: root.isOpen ? "󰅃" : "󰅀"
-                font.family: "Iosevka Nerd Font"
-                font.pixelSize: root.iconSize
+                pixelSize: root.iconSize
                 color: root.textColor
-                verticalAlignment: Text.AlignVCenter
+                Layout.alignment: Qt.AlignVCenter
                 Behavior on rotation { NumberAnimation { duration: 200; easing.type: Easing.OutQuint } }
             }
         }

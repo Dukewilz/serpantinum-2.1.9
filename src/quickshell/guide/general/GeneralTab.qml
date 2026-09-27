@@ -71,8 +71,8 @@ Item {
         return path;
     }
 
-    property var languageCodes: ["en", "ru", "de", "es", "it", "hy", "vi", "ko", "pt", "az"]
-    property var languageNames: ["English", "Русский", "Deutsch", "Español", "Italiano", "Հայերեն", "Tiếng Việt", "한국어", "Português", "Azərbaycanca"]
+    property var languageCodes: ["en", "ua", "ru", "de", "es", "it", "hy", "vi", "ko", "pt", "az"]
+    property var languageNames: ["English","Українська", "Русский", "Deutsch", "Español", "Italiano", "Հայերեն", "Tiếng Việt", "한국어", "Português", "Azərbaycanca"]
 
     property var weatherUnitCodes: ["metric", "imperial", "standard"]
     property var weatherUnitNames: ["Celsius", "Fahrenheit", "Kelvin"]
@@ -156,7 +156,7 @@ Item {
                 id: profileBanner
                 Layout.fillWidth: true
                 implicitHeight: rootObj.s(156)
-                radius: generalTabRoot.cardRadius
+                radius: ThemeBackend.borderRadius
                 color: Qt.tint(ThemeBackend.surface0, Qt.alpha(ThemeBackend.blue, 0.08))
                 border.color: Qt.alpha(ThemeBackend.text, 0.10)
                 border.width: 1
@@ -233,7 +233,7 @@ Item {
 
                             ClickButton {
                                 Layout.preferredHeight: rootObj.s(32)
-                                buttonText: I18n.t("guide.general.avatar.select") || "Change picture"
+                                buttonText: "Change picture"
                                 buttonIcon: "󰉋"
                                 accentColor: ThemeBackend.mauve
                                 textColor: ThemeBackend.crust
@@ -259,14 +259,11 @@ Item {
 
             Rectangle {
                 visible: false
-                Layout.preferredHeight: 0
                 Layout.fillWidth: true
-                implicitHeight: 0
-                radius: generalTabRoot.cardRadius
+                implicitHeight: rowAvatarLayout.implicitHeight + rootObj.s(24)
+                radius: ThemeBackend.borderRadius
                 color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.color: Qt.alpha(ThemeBackend.surface1, 0.4)
-                border.width: 1
-                Layout.bottomMargin: 0
+                border.width: 0
 
                 RowLayout {
                     id: rowAvatarLayout

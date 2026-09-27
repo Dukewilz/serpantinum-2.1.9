@@ -12,7 +12,10 @@ Item {
     // Config singleton remains the only persistence path.
     property int fontWeight: Font.DemiBold
     property int borderRadius: 8
+    property bool uiGlossy: false
+    readonly property real uiPopupBaseOpacity: uiGlossy ? 0.0 : uiBackgroundOpacity
     property real uiBackgroundOpacity: 0.96
+    property real uiContentOpacity: 1.0
     property real uiBackgroundBlur: 0.68
     property bool uiBackgroundUseWallpaper: false
     property string uiBackgroundSourceMode: "theme"
@@ -222,12 +225,15 @@ Item {
 
         let uiBg = themeConfig.uiBackground || {};
         let opacityValue = uiBg.opacity !== undefined ? uiBg.opacity : 96;
+        let contentOpacityValue = uiBg.contentOpacity !== undefined ? uiBg.contentOpacity : 100;
         let blurValue = uiBg.blur !== undefined ? uiBg.blur : 68;
         let ambientValue = uiBg.ambientStrength !== undefined ? uiBg.ambientStrength : 100;
         let sourceMode = uiBg.sourceMode !== undefined ? String(uiBg.sourceMode) : (uiBg.useWallpaper === true ? "current" : "theme");
         if (["theme", "current", "custom"].indexOf(sourceMode) < 0) sourceMode = "theme";
         let customPath = uiBg.customPath !== undefined ? String(uiBg.customPath).trim() : "";
-        root.uiBackgroundOpacity = Math.max(0.35, Math.min(1.0, opacityValue / 100.0));
+        root.uiGlossy = uiBg.glossy === true;
+        root.uiBackgroundOpacity = Math.max(root.uiGlossy ? 0.18 : 0.35, Math.min(1.0, opacityValue / 100.0));
+        root.uiContentOpacity = Math.max(0.0, Math.min(1.0, contentOpacityValue / 100.0));
         root.uiBackgroundBlur = Math.max(0.0, Math.min(1.0, blurValue / 100.0));
         root.uiBackgroundSourceMode = sourceMode;
         root.uiBackgroundCustomPath = customPath;
@@ -237,6 +243,37 @@ Item {
 
     function updateAppearance() {
         root.applyAppearanceConfig(Config.getSetting("theme", {}));
+    }
+
+    property string pendingAppearanceMode: ""
+    function syncDesktopAppearance() {
+        if (!Config.dataReady) return;
+        let theme = Config.getSetting("theme", {});
+        let mode = theme && (theme.mode === "dark" || theme.mode === "light") ? theme.mode : "auto";
+        if (appearanceProcess.running) {
+            root.pendingAppearanceMode = mode;
+            return;
+        }
+        appearanceProcess.command = ["python3", Caching.serpantinumDir + "/scripts/v24_appearance_sync.py", mode];
+        appearanceProcess.running = true;
+    }
+
+    Process {
+        id: appearanceProcess
+        running: false
+        onExited: {
+            if (root.pendingAppearanceMode !== "") {
+                root.pendingAppearanceMode = "";
+                root.syncDesktopAppearance();
+            }
+        }
+    }
+
+    Timer {
+        interval: 10000
+        repeat: true
+        running: true
+        onTriggered: root.syncDesktopAppearance()
     }
 
     IpcHandler {
@@ -259,6 +296,7 @@ Item {
         function onSettingsLoaded() {
             root.updateColors();
             root.updateAppearance();
+            root.syncDesktopAppearance();
         }
     }
 
@@ -269,6 +307,7 @@ Item {
             if (success) {
                 themeWatcher.reload();
                 matugenColorsWatcher.reload();
+                root.syncDesktopAppearance();
             }
         }
     }
@@ -406,6 +445,7 @@ Item {
         if (Config.dataReady) {
             root._readInProgress = true;
             root.updateColors();
+            root.syncDesktopAppearance();
         }
     }
 }

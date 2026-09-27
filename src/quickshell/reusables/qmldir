@@ -23,3 +23,4 @@ AmbientBackdrop 1.0 AmbientBackdrop.qml
 TimeSelector 1.0 TimeSelector.qml
 Dropdown 1.0 Dropdown.qml
 CenteredIcon 1.0 CenteredIcon.qml
+PopupSurface 1.0 PopupSurface.qml

@@ -661,7 +661,10 @@
   },
   "applauncher": {
     "search": "Axtar",
-    "placeholder": "Əmr üçün > ilə başlayın..."
+    "placeholder": "Əmr üçün > ilə başlayın...",
+    "tab_applications": "Tətbiqlər",
+    "tab_files": "Fayllar",
+    "placeholder_files": "Faylları axtarın və ya yol daxil edin..."
   },
   "calendar": {
     "loading": "Yüklənir...",
@@ -1027,7 +1030,10 @@
       "rounded": "Yuvarlaqlaşdırılmış",
       "bars": "Zolaqlar",
       "continuous": "Fasiləsiz",
-      "default": "Standart"
+      "default": "Standart",
+      "material": "Material",
+      "materialAnalog": "Material analoq",
+      "lumen": "Lümen"
     },
     "presets": {
       "minimal": {

@@ -231,6 +231,13 @@ Item {
                     }
 
                     Text {
+        id: v24Icon7
+        TextMetrics { id: v24Ink7; text: v24Icon7.text; font: v24Icon7.font }
+        transform: Translate {
+            x: (v24Icon7.implicitWidth - v24Ink7.tightBoundingRect.width) / 2 - v24Ink7.tightBoundingRect.x
+            y: (v24Icon7.implicitHeight - v24Ink7.tightBoundingRect.height) / 2 - v24Ink7.tightBoundingRect.y - v24Icon7.baselineOffset
+        }
+
                         anchors.centerIn: parent
                         visible: !root.showEmptyGraphic
                         text: "󰂚"
@@ -496,7 +503,7 @@ Item {
                                     anchors.topMargin: root.s(4)
                                     height: groupHeaderCard.height
                                     radius: root.cardRadius
-                                    color: Qt.darker(ThemeBackend.surface1, 1.08)
+                                    color: Qt.alpha(Qt.darker(ThemeBackend.surface1, 1.08), ThemeBackend.uiContentOpacity)
                                     z: -1
                                     opacity: Math.max(0.0, 1.0 - groupWrapper.groupExpandProgress * 2.0)
                                 }
@@ -516,7 +523,7 @@ Item {
                                     id: groupHeaderCard
                                     anchors.fill: parent
                                     radius: root.cardRadius
-                                    property color baseColor: (typeof unreadCount !== "undefined" && unreadCount > 0) ? Qt.lighter(ThemeBackend.surface1, 1.05) : ThemeBackend.surface1
+                                    property color baseColor: Qt.alpha((typeof unreadCount !== "undefined" && unreadCount > 0) ? Qt.lighter(ThemeBackend.surface1, 1.05) : ThemeBackend.surface1, ThemeBackend.uiContentOpacity)
                                     color: (groupHeaderMa.pressed && !groupHeaderMa.draggingH && !groupHeaderMa.draggingV) ? Qt.darker(baseColor, 1.1) : (groupHeaderMa.containsMouse && !groupHeaderMa.draggingH && !groupHeaderMa.draggingV ? Qt.lighter(baseColor, 1.05) : baseColor)
                                     scale: (groupHeaderMa.pressed && !groupHeaderMa.draggingH && !groupHeaderMa.draggingV) ? 0.98 : 1.0
                                     Behavior on color { enabled: !groupHeaderMa.draggingH && !groupHeaderMa.draggingV; ColorAnimation { duration: 150 } }
@@ -648,6 +655,13 @@ Item {
                                                 clip: true
 
                                                 Text {
+        id: v24Icon6
+        TextMetrics { id: v24Ink6; text: v24Icon6.text; font: v24Icon6.font }
+        transform: Translate {
+            x: (v24Icon6.implicitWidth - v24Ink6.tightBoundingRect.width) / 2 - v24Ink6.tightBoundingRect.x
+            y: (v24Icon6.implicitHeight - v24Ink6.tightBoundingRect.height) / 2 - v24Ink6.tightBoundingRect.y - v24Icon6.baselineOffset
+        }
+
                                                     anchors.centerIn: parent
                                                     visible: groupWrapper.customType === "screenshot"
                                                     text: "󰄀"
@@ -657,6 +671,13 @@ Item {
                                                 }
 
                                                 Text {
+        id: v24Icon5
+        TextMetrics { id: v24Ink5; text: v24Icon5.text; font: v24Icon5.font }
+        transform: Translate {
+            x: (v24Icon5.implicitWidth - v24Ink5.tightBoundingRect.width) / 2 - v24Ink5.tightBoundingRect.x
+            y: (v24Icon5.implicitHeight - v24Ink5.tightBoundingRect.height) / 2 - v24Ink5.tightBoundingRect.y - v24Icon5.baselineOffset
+        }
+
                                                     anchors.centerIn: parent
                                                     visible: groupWrapper.customType === "weather"
                                                     text: "󰖕"
@@ -701,6 +722,13 @@ Item {
                                                 }
 
                                                 Text {
+        id: v24Icon4
+        TextMetrics { id: v24Ink4; text: v24Icon4.text; font: v24Icon4.font }
+        transform: Translate {
+            x: (v24Icon4.implicitWidth - v24Ink4.tightBoundingRect.width) / 2 - v24Ink4.tightBoundingRect.x
+            y: (v24Icon4.implicitHeight - v24Ink4.tightBoundingRect.height) / 2 - v24Ink4.tightBoundingRect.y - v24Icon4.baselineOffset
+        }
+
                                                     anchors.centerIn: parent
                                                     anchors.horizontalCenterOffset: 1
                                                     anchors.verticalCenterOffset: -1

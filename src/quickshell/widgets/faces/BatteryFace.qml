@@ -89,6 +89,9 @@ Item {
             renderTarget: Canvas.Image
             renderStrategy: Canvas.Immediate
 
+            property real containerRadius: bgContainer.radius
+            onContainerRadiusChanged: requestPaint()
+
             Connections {
                 target: root
                 function onFillLevelChanged() { waveCanvas.requestPaint() }
@@ -96,15 +99,44 @@ Item {
                 function onBatColorFlatChanged() { waveCanvas.requestPaint() }
             }
 
+            Connections {
+                target: bgContainer
+                function onRadiusChanged() { waveCanvas.requestPaint() }
+                function onWidthChanged() { waveCanvas.requestPaint() }
+                function onHeightChanged() { waveCanvas.requestPaint() }
+            }
+
             onPaint: {
                 var ctx = getContext("2d");
                 ctx.clearRect(0, 0, width, height);
                 if (root.fillLevel <= 0.001) return;
 
-                var r = ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Math.min(width, height) / 2) : Scaler.s(14);
+                var r = Math.max(0, Math.min(bgContainer.radius, Math.min(width, height) / 2));
                 var currentW = width * root.fillLevel;
 
                 ctx.save();
+
+                ctx.beginPath();
+                if (r > 0) {
+                    if (typeof ctx.roundedRect === "function") {
+                        ctx.roundedRect(0, 0, width, height, r, r);
+                    } else {
+                        ctx.moveTo(r, 0);
+                        ctx.lineTo(width - r, 0);
+                        ctx.arcTo(width, 0, width, r, r);
+                        ctx.lineTo(width, height - r);
+                        ctx.arcTo(width, height, width - r, height, r);
+                        ctx.lineTo(r, height);
+                        ctx.arcTo(0, height, 0, height - r, r);
+                        ctx.lineTo(0, r);
+                        ctx.arcTo(0, 0, r, 0, r);
+                        ctx.closePath();
+                    }
+                } else {
+                    ctx.rect(0, 0, width, height);
+                }
+                ctx.clip();
+
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 if (root.fillLevel < 0.99 && root.waveAmp > 0) {
@@ -121,19 +153,7 @@ Item {
                     ctx.lineTo(currentW, height);
                     ctx.lineTo(0, height);
                 }
-                ctx.closePath();
-                ctx.clip();
-
-                ctx.beginPath();
-                ctx.moveTo(r, 0);
-                ctx.lineTo(width - r, 0);
-                ctx.arcTo(width, 0, width, r, r);
-                ctx.lineTo(width, height - r);
-                ctx.arcTo(width, height, width - r, height, r);
-                ctx.lineTo(r, height);
-                ctx.arcTo(0, height, 0, height - r, r);
-                ctx.lineTo(0, r);
-                ctx.arcTo(0, 0, r, 0, r);
+                ctx.lineTo(0, 0);
                 ctx.closePath();
 
                 ctx.fillStyle = root.batColorFlat.toString();

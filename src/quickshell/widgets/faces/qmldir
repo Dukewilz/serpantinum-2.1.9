@@ -1,3 +1,5 @@
+ClockFaceMaterial 1.0 ClockFaceMaterial.qml
+ClockFaceMaterialAnalog 1.0 ClcokFaceMaterialAnalog.qml
 UsageFace 1.0 UsageFace.qml
 BatteryFace 1.0 BatteryFace.qml
 ClockFaceAnalog 1.0 ClockFaceAnalog.qml

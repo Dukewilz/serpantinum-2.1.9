@@ -397,7 +397,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.clampedBorderRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             border.color: ThemeBackend.surface0
             clip: true
 

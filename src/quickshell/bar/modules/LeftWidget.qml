@@ -41,7 +41,7 @@ Rectangle {
     width: targetWidth
     Behavior on width { NumberAnimation { duration: 450; easing.type: Easing.OutQuint } }
 
-    opacity: (showLayout && moduleActive) ? ((barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0) : 0.0
+    opacity: (showLayout && moduleActive) ? ((barWindow && (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) !== undefined) ? (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) : 1.0) : 0.0
     visible: opacity > 0
     enabled: moduleActive
 

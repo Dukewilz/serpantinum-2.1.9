@@ -32,6 +32,13 @@ Notification {
             }
 
             Text {
+        id: v24Icon9
+        TextMetrics { id: v24Ink9; text: v24Icon9.text; font: v24Icon9.font }
+        transform: Translate {
+            x: (v24Icon9.implicitWidth - v24Ink9.tightBoundingRect.width) / 2 - v24Ink9.tightBoundingRect.x
+            y: (v24Icon9.implicitHeight - v24Ink9.tightBoundingRect.height) / 2 - v24Ink9.tightBoundingRect.y - v24Icon9.baselineOffset
+        }
+
 		anchors.centerIn: parent
 		anchors.horizontalCenterOffset: 1
 		anchors.verticalCenterOffset: -1

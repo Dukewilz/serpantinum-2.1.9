@@ -154,12 +154,12 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             border.color: ThemeBackend.surface0
             border.width: 1
             clip: true
 
-            AmbientBackdrop {
+            PopupSurface {
                 anchors.fill: parent
                 z: 0
                 accentColor: window.tabColor
@@ -175,7 +175,7 @@ Item {
                 width: parent.width * 0.8; height: width; radius: width / 2
                 x: (parent.width / 2 - width / 2) + Math.cos(window.globalOrbitAngle * 2) * window.s(120)
                 y: (parent.height / 2 - height / 2) + Math.sin(window.globalOrbitAngle * 2) * window.s(80)
-                opacity: 0.06
+                opacity: (0.06) * ThemeBackend.uiAmbientStrength
                 color: window.tabColor
                 Behavior on color { ColorAnimation { duration: 800 } }
             }
@@ -183,7 +183,7 @@ Item {
                 width: parent.width * 0.9; height: width; radius: width / 2
                 x: (parent.width / 2 - width / 2) + Math.sin(window.globalOrbitAngle * 1.5) * window.s(-120)
                 y: (parent.height / 2 - height / 2) + Math.cos(window.globalOrbitAngle * 1.5) * window.s(-80)
-                opacity: 0.04
+                opacity: (0.04) * ThemeBackend.uiAmbientStrength
                 color: Qt.lighter(window.tabColor, 1.3)
                 Behavior on color { ColorAnimation { duration: 800 } }
             }

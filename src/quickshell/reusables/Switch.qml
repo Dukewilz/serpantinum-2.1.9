@@ -5,10 +5,14 @@ import "../"
 
 Item {
     id: root
-    implicitWidth: 120
+    implicitWidth: Math.max(120, (root.maxNeededWidth > 0 ? root.maxNeededWidth : 28) * (root.options ? root.options.length : 1))
     implicitHeight: 32
 
     property var options: ["x", "y"]
+    property var optionIcons: []
+    property int iconPixelSize: fontPixelSize
+    property int iconSpacing: 8
+    FontLoader { id: switchIconFont; source: "../../assets/fonts/IosevkaNerdFont-Regular.ttf" }
     property int currentIndex: 0
 
     property color accentColor: "#89b4fa"
@@ -20,6 +24,7 @@ Item {
     property int smallRadius: 2
     property int fontPixelSize: 11
     property int minFontPixelSize: 7
+    property bool enabled: true
     property string switchSound: "reusables/switch/sfx.wav"
 
     signal valueChanged(int index, string value)
@@ -28,6 +33,83 @@ Item {
 
     property real flashOpacity: 0.0
     property real popScale: 1.0
+
+    property real maxNeededWidth: 0
+    property real totalNeededWidth: 0
+    property var allocatedWidths: []
+
+    function recalculateLayout() {
+        var count = root.options ? root.options.length : 0;
+        if (count === 0) {
+            root.allocatedWidths = [];
+            return;
+        }
+
+        var needs = [];
+        var totalNeeded = 0;
+        var maxNeeded = 0;
+
+        for (var i = 0; i < count; i++) {
+            var it = tabsRepeater.itemAt(i);
+            var req = it ? it.fitWidth : 28;
+            needs.push(req);
+            totalNeeded += req;
+            if (req > maxNeeded) {
+                maxNeeded = req;
+            }
+        }
+
+        root.maxNeededWidth = maxNeeded;
+        root.totalNeededWidth = totalNeeded;
+
+        var availableW = root.width;
+        if (availableW <= 0) {
+            availableW = Math.max(120, maxNeeded * count);
+        }
+
+        var equalW = availableW / count;
+        var widths = [];
+
+        if (maxNeeded <= equalW) {
+            for (var i = 0; i < count; i++) {
+                widths.push(equalW);
+            }
+        } else if (availableW >= totalNeeded) {
+            var totalDeficit = 0;
+            var totalSurplus = 0;
+
+            for (var i = 0; i < count; i++) {
+                if (needs[i] > equalW) {
+                    totalDeficit += (needs[i] - equalW);
+                } else {
+                    totalSurplus += (equalW - needs[i]);
+                }
+            }
+
+            var f = totalSurplus > 0 ? (totalDeficit / totalSurplus) : 0;
+            if (f > 1.0) f = 1.0;
+
+            for (var i = 0; i < count; i++) {
+                if (needs[i] > equalW) {
+                    widths.push(needs[i]);
+                } else {
+                    widths.push(equalW - f * (equalW - needs[i]));
+                }
+            }
+        } else {
+            for (var i = 0; i < count; i++) {
+                widths.push(totalNeeded > 0 ? (availableW * (needs[i] / totalNeeded)) : equalW);
+            }
+        }
+
+        root.allocatedWidths = widths;
+    }
+
+    onWidthChanged: recalculateLayout()
+    onOptionsChanged: recalculateLayout()
+    onOptionIconsChanged: recalculateLayout()
+    onFontPixelSizeChanged: recalculateLayout()
+    onIconPixelSizeChanged: recalculateLayout()
 
     Rectangle {
         id: bgShape
@@ -56,9 +138,12 @@ Item {
                 prevIdx = curIdx;
             }
 
-            property real itemWidth: bgShape.width / Math.max(1, root.options.length)
-            property real targetLeft: root.currentIndex * itemWidth
-            property real targetRight: (root.currentIndex + 1) * itemWidth
+            readonly property Item currentItem: (tabsRepeater && root.options && root.currentIndex >= 0 && root.currentIndex < tabsRepeater.count)
+                ? tabsRepeater.itemAt(root.currentIndex)
+                : null
+
+            property real targetLeft: currentItem ? currentItem.x : 0
+            property real targetRight: currentItem ? (currentItem.x + currentItem.width) : 0
 
             property real actualLeft: targetLeft
             property real actualRight: targetRight
@@ -87,22 +172,48 @@ Item {
             Behavior on color { ColorAnimation { duration: 180 } }
         }
 
-        RowLayout {
-            id: tabsLayout
+        Row {
+            id: tabsRow
             anchors.fill: parent
             spacing: 0
             z: 1
 
             Repeater {
+                id: tabsRepeater
                 model: root.options
+                onCountChanged: root.recalculateLayout()
 
                 Item {
                     id: optionItem
                     required property string modelData
                     required property int index
 
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    readonly property string optionIcon: root.optionIcons && root.optionIcons.length > index ? root.optionIcons[index] : ""
+                    readonly property real fitWidth: Math.max(28, Math.ceil(optMetrics.width) + (optionIcon ? Math.ceil(iconMetrics.width) + (modelData ? root.iconSpacing : 0) : 0) + 14)
+
+                    width: (root.allocatedWidths && root.allocatedWidths.length > optionItem.index)
+                        ? root.allocatedWidths[optionItem.index]
+                        : (root.options && root.options.length > 0 ? (parent.width / root.options.length) : 0)
+                    height: parent.height
+
+                    Component.onCompleted: root.recalculateLayout()
+
+                    TextMetrics {
+                        id: optMetrics
+                        font.family: ThemeBackend.fontFamily
+                        font.weight: Font.Normal
+                        font.pixelSize: root.fontPixelSize
+                        text: optionItem.modelData
+                        onWidthChanged: root.recalculateLayout()
+                    }
+
+                    TextMetrics {
+                        id: iconMetrics
+                        font.family: switchIconFont.status === FontLoader.Ready ? switchIconFont.name : "Iosevka Nerd Font"
+                        font.pixelSize: root.iconPixelSize
+                        text: optionItem.optionIcon
+                        onWidthChanged: root.recalculateLayout()
+                    }
 
                     Rectangle {
                         anchors.fill: parent
@@ -114,39 +225,50 @@ Item {
                         Behavior on color { ColorAnimation { duration: 200 } }
                     }
 
-                    // codePointAt keeps supplementary-plane Nerd glyphs intact.
-                    readonly property int firstCodePoint: modelData.length ? modelData.codePointAt(0) : 0
-                    readonly property bool hasIcon: (firstCodePoint >= 0xE000 && firstCodePoint <= 0xF8FF)
-                        || (firstCodePoint >= 0xF0000 && firstCodePoint <= 0xFFFFD)
-                        || (firstCodePoint >= 0x100000 && firstCodePoint <= 0x10FFFD)
-                    readonly property int iconUnits: firstCodePoint > 0xFFFF ? 2 : 1
-                    readonly property string iconPart: hasIcon ? modelData.slice(0, iconUnits) : ""
-                    readonly property string textPart: hasIcon ? modelData.slice(iconUnits).trim() : modelData
-                    RowLayout {
+                    Text {
+                        visible: optionItem.optionIcon === ""
                         anchors.fill: parent
-                        anchors.margins: 4
-                        spacing: 6
-                        Item { Layout.fillWidth: true }
+                        anchors.leftMargin: 4
+                        anchors.rightMargin: 4
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        text: optionItem.modelData
+                        font.family: ThemeBackend.fontFamily
+                        font.weight: Font.Normal
+                        font.pixelSize: root.fontPixelSize
+                        fontSizeMode: Text.Fit
+                        minimumPixelSize: root.minFontPixelSize
+                        color: root.currentIndex === optionItem.index ? root.activeTextColor : root.textColor
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                    }
+
+                    RowLayout {
+                        visible: optionItem.optionIcon !== ""
+                        anchors.centerIn: parent
+                        width: Math.max(0, Math.min(parent.width - 12, iconMetrics.width + (optionItem.modelData ? root.iconSpacing + optMetrics.width : 0)))
+                        height: parent.height
+                        spacing: optionItem.modelData ? root.iconSpacing : 0
+
                         CenteredIcon {
-                            visible: optionItem.hasIcon
-                            text: optionItem.iconPart
-                            pixelSize: root.fontPixelSize
-                            Layout.preferredWidth: Math.max(root.fontPixelSize + 6, 18)
-                            Layout.preferredHeight: parent.height
+                            Layout.preferredWidth: iconMetrics.width
+                            Layout.preferredHeight: root.iconPixelSize + 4
+                            Layout.alignment: Qt.AlignVCenter
+                            text: optionItem.optionIcon
+                            pixelSize: root.iconPixelSize
                             color: root.currentIndex === optionItem.index ? root.activeTextColor : root.textColor
                         }
                         Text {
-                            visible: optionItem.textPart !== ""
-                            text: optionItem.textPart
+                            visible: optionItem.modelData !== ""
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignVCenter
+                            text: optionItem.modelData
+                            elide: Text.ElideRight
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: root.fontPixelSize
                             fontSizeMode: Text.Fit
                             minimumPixelSize: root.minFontPixelSize
-                            Layout.maximumWidth: Math.max(0, optionItem.width - 8 - (optionItem.hasIcon ? Math.max(root.fontPixelSize + 6, 18) + 6 : 0))
-                            elide: Text.ElideRight
                             color: root.currentIndex === optionItem.index ? root.activeTextColor : root.textColor
                         }
-                        Item { Layout.fillWidth: true }
                     }
 
                     MouseArea {

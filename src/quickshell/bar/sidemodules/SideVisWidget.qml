@@ -19,7 +19,11 @@ Rectangle {
     property bool isCompact: isGrouped || (isSolid && distinctPills)
     property real targetY: 0
     property bool showLayout: !barWindow || barWindow.isStartupReady
-    property int barCount: 12
+    readonly property var cavaSettings: (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.cava)
+        ? Config.rawSettings.bar.cava : ({"bars": 10, "barWidth": 3, "spacing": 3})
+    property int barCount: Math.max(4, Math.min(24, cavaSettings.bars !== undefined ? cavaSettings.bars : 10))
+    property real configuredBarWidth: Math.max(2, Math.min(6, cavaSettings.barWidth !== undefined ? cavaSettings.barWidth : 3))
+    property real configuredSpacing: Math.max(1, Math.min(6, cavaSettings.spacing !== undefined ? cavaSettings.spacing : 3))
     property bool isVisVisible: moduleActive && showLayout
     property bool isSubscribed: false
     readonly property bool shouldSubscribe: isVisVisible
@@ -79,7 +83,7 @@ Rectangle {
     color: isGrouped ? "transparent" : (isSolid ? (distinctPills ? Qt.darker(ThemeBackend.surface0, 1.15) : "transparent") : ThemeBackend.base)
     clip: true
 
-    opacity: (moduleActive && showLayout) ? ((barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0) : 0.0
+    opacity: (moduleActive && showLayout) ? ((barWindow && (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) !== undefined) ? (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) : 1.0) : 0.0
     visible: opacity > 0
     Behavior on opacity { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
 
@@ -113,12 +117,12 @@ Rectangle {
     Column {
         id: innerCol
         anchors.centerIn: parent
-        spacing: barWindow ? barWindow.s(sideVisRoot.isCompact ? 3 : 4) : (sideVisRoot.isCompact ? 3 : 4)
+        spacing: barWindow ? barWindow.s(sideVisRoot.configuredSpacing) : sideVisRoot.configuredSpacing
 
         Repeater {
             model: sideVisRoot.barCount
             delegate: Rectangle {
-                height: barWindow ? barWindow.s(sideVisRoot.isCompact ? 3 : 4) : (sideVisRoot.isCompact ? 3 : 4)
+                height: barWindow ? barWindow.s(sideVisRoot.configuredBarWidth) : sideVisRoot.configuredBarWidth
                 property real level: (sideVisRoot.barLevels && index < sideVisRoot.barLevels.length) ? sideVisRoot.barLevels[index] : 0.0
                 property real minW: barWindow ? barWindow.s(sideVisRoot.isCompact ? 3 : 4) : (sideVisRoot.isCompact ? 3 : 4)
                 property real maxW: sideVisRoot.width * 0.65

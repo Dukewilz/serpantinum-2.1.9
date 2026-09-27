@@ -223,19 +223,8 @@ Item {
     readonly property real innerPillRadius: barWindow ? barWindow.s(Math.max(4, Math.min(20, innerPillSettings.innerRadius !== undefined ? innerPillSettings.innerRadius : 10))) : 10
 
     function innerPillColor() {
-        let style = innerPillSettings.style || "adaptive";
-        let target = ThemeBackend.surface1;
-        let amount = contentWrapper.innerPillElevation;
-        if (style === "caelestia") {
-            target = ThemeBackend.blue;
-            amount = Math.min(0.14, amount + 0.025);
-        } else if (style === "end4") {
-            target = ThemeBackend.mauve;
-            amount = Math.min(0.13, amount + 0.015);
-        } else if (style === "ilyamiro") {
-            target = ThemeBackend.surface2;
-        }
-        return Qt.tint(ThemeBackend.base, Qt.alpha(target, amount));
+        return Qt.tint(ThemeBackend.base, Qt.alpha(ThemeBackend.mauve,
+            Math.min(0.13, contentWrapper.innerPillElevation + 0.015)));
     }
 
     property bool trayInLeft: flatLeftArr.indexOf("tray") !== -1
