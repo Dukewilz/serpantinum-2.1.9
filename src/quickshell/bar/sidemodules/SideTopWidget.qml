@@ -27,12 +27,12 @@ Rectangle {
     width: targetWidth
     height: targetHeight
 
-    radius: Math.round(targetWidth / 2)
+    radius: ThemeBackend.borderRadius
     border.width: 0
     color: isGrouped ? "transparent" : (isSolid ? (distinctPills ? Qt.darker(ThemeBackend.surface0, 1.15) : "transparent") : ThemeBackend.base)
     clip: true
 
-    opacity: (showLayout && moduleActive) ? ((barWindow && (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) !== undefined) ? (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) : 1.0) : 0.0
+    opacity: (showLayout && moduleActive) ? ((barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0) : 0.0
     visible: opacity > 0
     enabled: moduleActive
 
@@ -41,12 +41,12 @@ Rectangle {
     IconButton {
         id: helpBtn
         anchors.centerIn: parent
-        width: barWindow ? barWindow.s(sideTopRoot.isCompact ? 32 : 34) : (sideTopRoot.isCompact ? 32 : 34)
-        height: barWindow ? barWindow.s(sideTopRoot.isCompact ? 32 : 34) : (sideTopRoot.isCompact ? 32 : 34)
-        cornerRadius: Math.round((barWindow ? barWindow.s(sideTopRoot.isCompact ? 32 : 34) : (sideTopRoot.isCompact ? 32 : 34)) / 2)
+        width: barWindow ? barWindow.s(sideTopRoot.isCompact ? 28 : 30) : (sideTopRoot.isCompact ? 28 : 30)
+        height: barWindow ? barWindow.s(sideTopRoot.isCompact ? 28 : 30) : (sideTopRoot.isCompact ? 28 : 30)
+        cornerRadius: Math.max(0, ThemeBackend.borderRadius - (barWindow ? barWindow.s(2) : 2))
         buttonIcon: "󰒓"
-        iconOffsetX: 0
-        iconFontSize: barWindow ? barWindow.s(sideTopRoot.isCompact ? 17 : 18) : (sideTopRoot.isCompact ? 17 : 18)
+        iconOffsetX: -2
+        iconFontSize: barWindow ? barWindow.s(sideTopRoot.isCompact ? 14 : 15) : (sideTopRoot.isCompact ? 14 : 15)
         accentColor: sideTopRoot.isCompact ? Qt.lighter(ThemeBackend.surface0, 1.18) : ThemeBackend.surface0
         textColor: isHoveredOrHighlighted ? ThemeBackend.text : (sideTopRoot.isCompact ? ThemeBackend.subtext0 : ThemeBackend.overlay2)
         onClicked: Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle guide"])

@@ -324,7 +324,11 @@
       },
       "workspaces": {
         "title": "Scegli il numero di spazi di lavoro da visualizzare",
-        "desc": "Numero di spazi di lavoro da visualizzare"
+        "desc": "Numero di spazi di lavoro da visualizzare",
+        "hide_empty": {
+          "title": "Nascondi spazi di lavoro vuoti",
+          "desc": "Mostra solo gli spazi di lavoro occupati e quello attivo"
+        }
       },
       "opacity": {
         "title": "Opacità barra",
@@ -406,7 +410,9 @@
       "places": {
         "home": "Home",
         "downloads": "Download",
-        "pictures": "Immagini"
+        "pictures": "Immagini",
+        "music": "Musica",
+        "documents": "Documenti"
       }
     },
     "font_picker": {
@@ -636,6 +642,16 @@
         "title": "Nascondi automaticamente intelligente",
         "desc": "Nascondi il dock solo quando ci sono finestre aperte, mantienilo visibile sul desktop"
       }
+    },
+    "lyrics_picker": {
+      "title": "Seleziona file dei testi",
+      "no_lyrics_selected": "Nessun file di testo selezionato"
+    },
+    "settings": "Impostazioni",
+    "search": {
+      "placeholder": "Cerca impostazioni...",
+      "prompt": "Digita per cercare impostazioni...",
+      "no_results": "Nessuna impostazione trovata"
     }
   },
   "sysnotif": {
@@ -738,7 +754,11 @@
       "jazz": "Jazz",
       "classic": "Classica",
       "custom": "Personalizzato"
-    }
+    },
+    "searching_lyrics": "Ricerca testo...",
+    "no_lyrics": "Nessun testo trovato",
+    "select_local_file": "Seleziona un file locale",
+    "lyrics": "Testo"
   },
   "network": {
     "tabs": {
@@ -1022,7 +1042,8 @@
       "visualizer": "Visualizzatore",
       "user": "Utente",
       "usage": "Utilizzo",
-      "battery": "Batteria"
+      "battery": "Batteria",
+      "github": "Github"
     },
     "variants": {
       "digital": "Digitale",
@@ -1038,7 +1059,9 @@
       "default": "Predefinito",
       "material": "Material",
       "materialAnalog": "Material analogico",
-      "lumen": "Lumen"
+      "lumen": "Lumen",
+      "lyrics": "Testo",
+      "simpleLyrics": "Testo semplice"
     },
     "presets": {
       "minimal": {
@@ -1053,6 +1076,26 @@
         "name": "Cruscotto",
         "desc": "Monitor di sistema completo con orologio digitale, utilizzo hardware e stato della batteria."
       }
+    },
+    "github": {
+      "set_user": "Imposta utente",
+      "error": "Errore",
+      "commit": "commit",
+      "commits": "commit",
+      "no_day_selected": "Nessun giorno selezionato",
+      "fetching": "Recupero dei contributi GitHub...",
+      "fetch_error": "Impossibile recuperare l'utente @{user}",
+      "enter_username": "Inserisci un nome utente GitHub",
+      "no_contributions": "Nessun contributo trovato"
+    },
+    "settings": {
+      "lyricsLines": "Righe",
+      "lyricsAlignment": "Allineamento"
+    },
+    "align": {
+      "left": "Sinistra",
+      "center": "Centro",
+      "right": "Destra"
     }
   },
   "cli": {

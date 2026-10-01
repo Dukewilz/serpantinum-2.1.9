@@ -12,6 +12,9 @@ Item {
     signal rotationChanged(string monitor, string widgetId, real rotation)
     signal variantChanged(string monitor, string widgetId, string variant)
     signal imagePathChanged(string monitor, string widgetId, string imagePath)
+    signal propertyChanged(string monitor, string widgetId, string propName, var val)
+    signal widgetPropertyChanged(string monitor, string widgetId, string propName, var val)
+    signal customPropertyChanged(string monitor, string widgetId, string propName, var val)
     signal widgetAdded(string monitor, string widgetId, string type, real x, real y, real w, real h, real opacity, string imagePath, real rotation, string variant)
     signal widgetRemoved(string monitor, string widgetId)
     signal widgetsByTypeRemoved(string monitor, string type)
@@ -63,6 +66,30 @@ Item {
         root.imagePathChanged(monitor, widgetId, imagePath);
     }
 
+    function setProperty(monitor: string, widgetId: string, propName: string, val: var): void {
+        let m = monitor;
+        let id = widgetId;
+        let prop = propName;
+        let v = val;
+        if (v === undefined && prop !== undefined) {
+            v = prop;
+            prop = id;
+            id = m;
+            m = "";
+        }
+        root.propertyChanged(m, id, prop, v);
+        root.widgetPropertyChanged(m, id, prop, v);
+        root.customPropertyChanged(m, id, prop, v);
+    }
+
+    function setWidgetProperty(monitor: string, widgetId: string, propName: string, val: var): void {
+        root.setProperty(monitor, widgetId, propName, val);
+    }
+
+    function setCustomProperty(monitor: string, widgetId: string, propName: string, val: var): void {
+        root.setProperty(monitor, widgetId, propName, val);
+    }
+
     function addWidget(monitor: string, widgetId: string, type: string, x: real, y: real, w: real, h: real, opacity: real, imagePath: string, rotation: real, variant: string): void {
         root.widgetAdded(monitor, widgetId, type, x, y, w, h, opacity, imagePath, rotation, variant || "");
     }
@@ -108,6 +135,16 @@ Item {
         let y = pos.y;
 
         root.widgetAdded(monitor, id, type, x, y, w, h, op, img, rot, variant);
+
+        if (config && typeof config === "object") {
+            let standardKeys = WidgetRegistry.standardKeys;
+            for (let k in config) {
+                if (!standardKeys.includes(k)) {
+                    root.setProperty(monitor, id, k, config[k]);
+                }
+            }
+        }
+
         return id;
     }
 

@@ -29,6 +29,11 @@ Variants {
                 if (isSidebarVisible) SysData.prewarm();
             }
 
+            // Frosted surface follows the same theme tint as other v24 popups.
+            readonly property color v24FloatingSurface: ThemeBackend.uiGlossy
+                ? Qt.alpha(Qt.tint(ThemeBackend.base, Qt.alpha(ThemeBackend.surface0, 0.30)), Math.max(0.48, Math.min(0.82, ThemeBackend.uiBackgroundOpacity * 0.84)))
+                : Qt.rgba(ThemeBackend.base.r, ThemeBackend.base.g, ThemeBackend.base.b, 0.95)
+
             property int configRevision: 0
 
             property string barPosition: (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.position !== undefined) ? Config.rawSettings.bar.position : "top"
@@ -1077,7 +1082,7 @@ Variants {
                         height: floatingWidget.outerCornerRadius
                         preferredRendererType: Shape.CurveRenderer
                         ShapePath {
-                            fillColor: Qt.rgba(ThemeBackend.base.r, ThemeBackend.base.g, ThemeBackend.base.b, 0.95)
+                            fillColor: floatingWidget.v24FloatingSurface
                             strokeColor: "transparent"
                             startX: 0
                             startY: 0
@@ -1101,7 +1106,7 @@ Variants {
                         height: floatingWidget.outerCornerRadius
                         preferredRendererType: Shape.CurveRenderer
                         ShapePath {
-                            fillColor: Qt.rgba(ThemeBackend.base.r, ThemeBackend.base.g, ThemeBackend.base.b, 0.95)
+                            fillColor: floatingWidget.v24FloatingSurface
                             strokeColor: "transparent"
                             startX: 0
                             startY: floatingWidget.outerCornerRadius
@@ -1128,7 +1133,7 @@ Variants {
                         bottomLeftRadius: 0
                         topRightRadius: floatingWidget.containerRadius
                         bottomRightRadius: floatingWidget.containerRadius
-                        color: Qt.rgba(ThemeBackend.base.r, ThemeBackend.base.g, ThemeBackend.base.b, 0.95)
+                        color: floatingWidget.v24FloatingSurface
                         border.width: 0
 
                         MouseArea {

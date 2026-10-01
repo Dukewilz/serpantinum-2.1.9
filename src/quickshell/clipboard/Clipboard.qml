@@ -155,6 +155,7 @@ PanelWindow {
             onRead: (data) => {
                 if (clipboardWindow.isVisible) {
                     clipWatchDebounce.restart();
+                    clipWatchFollowup.restart();
                 } else {
                     clipboardWindow.isDirty = true;
                 }
@@ -168,6 +169,17 @@ PanelWindow {
         repeat: false
         onTriggered: {
             clipboardWindow.refreshClips();
+        }
+    }
+
+    Timer {
+        id: clipWatchFollowup
+        interval: 500
+        repeat: false
+        onTriggered: {
+            if (clipboardWindow.isVisible) {
+                clipboardWindow.refreshClips();
+            }
         }
     }
 
@@ -546,12 +558,11 @@ PanelWindow {
         if (isVisible) {
             searchInput.clear();
             filterDebounceTimer.stop();
-            if (clipboardWindow.isDirty || clipboardWindow.allFetchedClips.length === 0) {
-                clipboardWindow.isDirty = false;
-                refreshClips();
-            } else {
+            if (clipboardWindow.allFetchedClips.length > 0) {
                 executeClipFilter("");
             }
+            clipboardWindow.isDirty = false;
+            refreshClips();
             clipboardWindow.grabInputFocus();
             focusTimer.restart();
             focusRetryTimer.restart();
@@ -1305,7 +1316,8 @@ PanelWindow {
                                 width: clipDelegateCard.width
                                 height: clipDelegateCard.height
                                 radius: clipDelegateCard.radius
-                                visible: false
+                                visible: true
+                                opacity: 0
                                 layer.enabled: clipDelegateCard.isImage
                             }
 
@@ -1523,7 +1535,7 @@ PanelWindow {
                                         id: clipThumbImg
                                         anchors.fill: parent
                                         anchors.margins: clipboardWindow.s(2)
-                                        source: (!clipDelegateCard.isImage && model.type === "image" && model.content) ? (model.content.startsWith("file://") ? model.content : "file://" + model.content) : ""
+                                        source: (model.type === "image" && model.content) ? (model.content.startsWith("file://") ? model.content : "file://" + model.content) : ""
                                         fillMode: Image.PreserveAspectCrop
                                         asynchronous: true
                                         cache: true

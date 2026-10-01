@@ -40,6 +40,12 @@ Item {
         return 8;
     }
 
+    property bool hideEmptyWorkspaces: {
+        let bs = Config.getSetting("bar", {});
+        if (bs && bs.hideEmptyWorkspaces !== undefined) return Boolean(bs.hideEmptyWorkspaces);
+        return false;
+    }
+
     property string timeStyle: {
         let bs = Config.getSetting("bar", {});
         if (bs && bs.timeStyle) return bs.timeStyle;
@@ -158,6 +164,12 @@ Item {
             barModulesRoot.workspaceCount = 8;
         }
 
+        if (bs && bs.hideEmptyWorkspaces !== undefined) {
+            barModulesRoot.hideEmptyWorkspaces = Boolean(bs.hideEmptyWorkspaces);
+        } else {
+            barModulesRoot.hideEmptyWorkspaces = false;
+        }
+
         if (bs && bs.timeStyle) {
             barModulesRoot.timeStyle = bs.timeStyle;
         } else {
@@ -192,6 +204,14 @@ Item {
         let current = Config.getSetting("bar", {});
         current.workspaceCount = count;
         if (current.sideWorkspaceCount !== undefined) delete current.sideWorkspaceCount;
+        Config.setSetting("bar", current);
+    }
+
+    function setHideEmptyWorkspaces(val) {
+        barModulesRoot.hideEmptyWorkspaces = val;
+        let current = Config.getSetting("bar", {});
+        current.hideEmptyWorkspaces = val;
+        if (current.sideHideEmptyWorkspaces !== undefined) delete current.sideHideEmptyWorkspaces;
         Config.setSetting("bar", current);
     }
 
@@ -299,72 +319,61 @@ Item {
                         }
                     }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: rowWorkspacesCountLayout.implicitHeight + rootObj.s(24)
-                        radius: ThemeBackend.borderRadius
-                        color: Qt.alpha(ThemeBackend.surface1, 0.35)
-                        border.width: 0
+                    SettingsRow {
+                        rootObj: barModulesRoot.rootObj
+                        baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                        icon: "󰮯"
+                        title: I18n.t("guide.bar.workspaces.title")
+                        description: I18n.t("guide.bar.workspaces.desc")
 
-                        RowLayout {
-                            id: rowWorkspacesCountLayout
-                            anchors.left: parent.left
-                            anchors.leftMargin: rootObj.s(14)
-                            anchors.right: parent.right
-                            anchors.rightMargin: rootObj.s(14)
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: rootObj.s(12)
-
-                            IconButton {
-                                enabled: false
-                                size: rootObj.s(32)
-                                Layout.preferredWidth: rootObj.s(32)
-                                Layout.preferredHeight: rootObj.s(32)
-                                Layout.alignment: Qt.AlignVCenter
-                                cornerRadius: ThemeBackend.borderRadius
-                                buttonIcon: "󰮯"
-                                iconFontSize: rootObj.s(16)
-                                accentColor: ThemeBackend.surface0
-                                textColor: "#ffffff"
-                            }
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                Layout.alignment: Qt.AlignVCenter
-                                spacing: rootObj.s(2)
-                                Text { Layout.fillWidth: true; text: I18n.t("guide.bar.workspaces.title"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                                Text { Layout.fillWidth: true; text: I18n.t("guide.bar.workspaces.desc"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                            }
-
-                            NumberSelector {
-                                id: workspaceCountSelector
-                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                implicitWidth: rootObj.s(140)
-                                implicitHeight: rootObj.s(32)
-                                from: 2
-                                to: 10
-                                stepSize: 1
-                                decimals: 0
-                                value: barModulesRoot.workspaceCount
-                                baseColor: ThemeBackend.surface0
-                                accentColor: ThemeBackend.mauve
-                                buttonColor: ThemeBackend.surface1
-                                buttonTextColor: ThemeBackend.text
-                                textColor: ThemeBackend.text
-                                subTextColor: ThemeBackend.subtext0
-                                borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                                cornerRadius: ThemeBackend.borderRadius
-                                fontFamily: ThemeBackend.fontFamily
-                                fontPixelSize: rootObj.s(12)
-                                onValueChanged: {
-                                    let rounded = Math.round(workspaceCountSelector.value);
-                                    if (barModulesRoot.workspaceCount !== rounded) {
-                                        barModulesRoot.setWorkspaceCount(rounded);
-                                    }
+                        NumberSelector {
+                            id: workspaceCountSelector
+                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                            implicitWidth: rootObj.s(140)
+                            implicitHeight: rootObj.s(32)
+                            from: 2
+                            to: 10
+                            stepSize: 1
+                            decimals: 0
+                            value: barModulesRoot.workspaceCount
+                            baseColor: ThemeBackend.surface0
+                            accentColor: ThemeBackend.mauve
+                            buttonColor: ThemeBackend.surface1
+                            buttonTextColor: ThemeBackend.text
+                            textColor: ThemeBackend.text
+                            subTextColor: ThemeBackend.subtext0
+                            borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                            cornerRadius: ThemeBackend.borderRadius
+                            fontFamily: ThemeBackend.fontFamily
+                            fontPixelSize: rootObj.s(12)
+                            onValueChanged: {
+                                let rounded = Math.round(workspaceCountSelector.value);
+                                if (barModulesRoot.workspaceCount !== rounded) {
+                                    barModulesRoot.setWorkspaceCount(rounded);
                                 }
-                                onTriggered: {
-                                    barModulesRoot.setWorkspaceCount(Math.round(workspaceCountSelector.value));
-                                }
+                            }
+                            onTriggered: {
+                                barModulesRoot.setWorkspaceCount(Math.round(workspaceCountSelector.value));
+                            }
+                        }
+                    }
+
+                    SettingsRow {
+                        rootObj: barModulesRoot.rootObj
+                        baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                        icon: "󰈈"
+                        title: I18n.t("guide.bar.workspaces.hide_empty.title", "Hide empty workspaces")
+                        description: I18n.t("guide.bar.workspaces.hide_empty.desc", "Show only occupied workspaces and the active one")
+
+                        Toggle {
+                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                            checked: barModulesRoot.hideEmptyWorkspaces
+                            accentColor: ThemeBackend.mauve
+                            baseColor: ThemeBackend.surface1
+                            handleColor: ThemeBackend.crust
+                            handleOffColor: ThemeBackend.text
+                            onToggled: function(c) {
+                                barModulesRoot.setHideEmptyWorkspaces(c);
                             }
                         }
                     }
@@ -624,138 +633,51 @@ Item {
                         }
                     }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: rowDateLayout.implicitHeight + rootObj.s(24)
-                        radius: ThemeBackend.borderRadius
-                        color: Qt.alpha(ThemeBackend.surface1, 0.35)
-                        border.width: 0
+                    SettingsRow {
+                        rootObj: barModulesRoot.rootObj
+                        baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                        icon: "󰃭"
+                        title: I18n.t("guide.bar.timedate.show_date.title", "Show Date")
+                        description: I18n.t("guide.bar.timedate.show_date.desc", "Display the date text alongside the clock")
 
-                        RowLayout {
-                            id: rowDateLayout
-                            anchors.left: parent.left
-                            anchors.leftMargin: rootObj.s(14)
-                            anchors.right: parent.right
-                            anchors.rightMargin: rootObj.s(14)
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: rootObj.s(12)
-
-                            IconButton {
-                                enabled: false
-                                size: rootObj.s(32)
-                                Layout.preferredWidth: rootObj.s(32)
-                                Layout.preferredHeight: rootObj.s(32)
-                                Layout.alignment: Qt.AlignVCenter
-                                cornerRadius: ThemeBackend.borderRadius
-                                buttonIcon: "󰃭"
-                                iconFontSize: rootObj.s(16)
-                                accentColor: ThemeBackend.surface0
-                                textColor: "#ffffff"
-                            }
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                Layout.alignment: Qt.AlignVCenter
-                                spacing: rootObj.s(2)
-                                Text { Layout.fillWidth: true; text: I18n.t("guide.bar.timedate.show_date.title", "Show Date"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                                Text { Layout.fillWidth: true; text: I18n.t("guide.bar.timedate.show_date.desc", "Display the date text alongside the clock"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                            }
-
-                            Rectangle {
-                                id: dateToggleSwitch
-                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                implicitWidth: rootObj.s(46)
-                                implicitHeight: rootObj.s(26)
-                                radius: height / 2
-                                color: barModulesRoot.timeShowDate ? ThemeBackend.blue : ThemeBackend.surface0
-                                border.color: barModulesRoot.timeShowDate ? ThemeBackend.blue : Qt.alpha(ThemeBackend.surface2, 0.6)
-                                border.width: 1
-
-                                Behavior on color { ColorAnimation { duration: 200 } }
-                                Behavior on border.color { ColorAnimation { duration: 200 } }
-
-                                Rectangle {
-                                    width: parent.height - rootObj.s(6)
-                                    height: width
-                                    radius: width / 2
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    x: barModulesRoot.timeShowDate ? (parent.width - width - rootObj.s(3)) : rootObj.s(3)
-                                    color: barModulesRoot.timeShowDate ? ThemeBackend.crust : ThemeBackend.text
-
-                                    Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutQuint } }
-                                    Behavior on color { ColorAnimation { duration: 200 } }
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        if (typeof Sounds !== "undefined") {
-                                            Sounds.playSfx("reusables/clickbutton/click.wav");
-                                        }
-                                        barModulesRoot.setTimeShowDate(!barModulesRoot.timeShowDate);
-                                    }
-                                }
+                        Toggle {
+                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                            checked: barModulesRoot.timeShowDate
+                            accentColor: ThemeBackend.mauve
+                            baseColor: ThemeBackend.surface1
+                            handleColor: ThemeBackend.crust
+                            handleOffColor: ThemeBackend.text
+                            onToggled: function(c) {
+                                barModulesRoot.setTimeShowDate(c);
                             }
                         }
                     }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: rowTimeFormatLayout.implicitHeight + rootObj.s(24)
-                        radius: ThemeBackend.borderRadius
-                        color: Qt.alpha(ThemeBackend.surface1, 0.35)
-                        border.width: 0
+                    SettingsRow {
+                        rootObj: barModulesRoot.rootObj
+                        baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                        icon: "󰅐"
+                        title: I18n.t("guide.bar.time.title", "Time Format")
+                        description: I18n.t("guide.bar.time.desc", "Format pattern (e.g. HH:mm:ss)")
 
-                        RowLayout {
-                            id: rowTimeFormatLayout
-                            anchors.left: parent.left
-                            anchors.leftMargin: rootObj.s(14)
-                            anchors.right: parent.right
-                            anchors.rightMargin: rootObj.s(14)
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: rootObj.s(12)
-
-                            IconButton {
-                                enabled: false
-                                size: rootObj.s(32)
-                                Layout.preferredWidth: rootObj.s(32)
-                                Layout.preferredHeight: rootObj.s(32)
-                                Layout.alignment: Qt.AlignVCenter
-                                cornerRadius: ThemeBackend.borderRadius
-                                buttonIcon: "󰅐"
-                                iconFontSize: rootObj.s(16)
-                                accentColor: ThemeBackend.surface0
-                                textColor: "#ffffff"
+                        Input {
+                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                            implicitWidth: rootObj.s(140)
+                            implicitHeight: rootObj.s(32)
+                            text: barModulesRoot.timeFormat
+                            placeholderText: "HH:mm:ss"
+                            baseColor: ThemeBackend.surface0
+                            accentColor: ThemeBackend.mauve
+                            textColor: ThemeBackend.text
+                            subTextColor: ThemeBackend.subtext0
+                            borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                            cornerRadius: ThemeBackend.borderRadius
+                            fontPixelSize: rootObj.s(11)
+                            onTextEdited: function(newText) {
+                                barModulesRoot.setTimeFormat(newText);
                             }
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                Layout.alignment: Qt.AlignVCenter
-                                spacing: rootObj.s(2)
-                                Text { Layout.fillWidth: true; text: I18n.t("guide.bar.time.title", "Time Format"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                                Text { Layout.fillWidth: true; text: I18n.t("guide.bar.time.desc", "Format pattern (e.g. HH:mm:ss)"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                            }
-
-                            Input {
-                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                implicitWidth: rootObj.s(140)
-                                implicitHeight: rootObj.s(32)
-                                text: barModulesRoot.timeFormat
-                                placeholderText: "HH:mm:ss"
-                                baseColor: ThemeBackend.surface0
-                                accentColor: ThemeBackend.mauve
-                                textColor: ThemeBackend.text
-                                subTextColor: ThemeBackend.subtext0
-                                borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                                cornerRadius: ThemeBackend.borderRadius
-                                fontPixelSize: rootObj.s(11)
-                                onTextEdited: function(newText) {
-                                    barModulesRoot.setTimeFormat(newText);
-                                }
-                                onAccepted: function(finalText) {
-                                    barModulesRoot.setTimeFormat(finalText);
-                                }
+                            onAccepted: function(finalText) {
+                                barModulesRoot.setTimeFormat(finalText);
                             }
                         }
                     }

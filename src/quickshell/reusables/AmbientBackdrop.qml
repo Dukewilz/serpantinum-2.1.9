@@ -26,7 +26,11 @@ Item {
     readonly property bool lowTonalSeparation: Math.abs(baseLuma - surfaceLuma) < 0.055
     readonly property real paletteBoost: extremePalette ? 1.82 : (lowTonalSeparation ? 1.48 : 1.0)
     readonly property real effectiveStrength: Math.max(0.0, strength * ThemeBackend.uiAmbientStrength)
-    readonly property bool wallpaperActive: active && allowWallpaper && (ThemeBackend.uiGlossy || (ThemeBackend.uiBackgroundUseWallpaper && ThemeBackend.uiBackgroundImageSource !== ""))
+    // Frosted tint follows the upstream palette, never a wallpaper fallback.
+    readonly property color frostedColor: Qt.tint(ThemeBackend.base, Qt.alpha(ThemeBackend.surface0, 0.30))
+    // Opacity affects only the background; foreground text/icons stay untouched.
+    readonly property real frostedOpacity: Math.max(0.48, Math.min(0.82, ThemeBackend.uiBackgroundOpacity * 0.84))
+    readonly property bool wallpaperActive: active && allowWallpaper && ThemeBackend.uiBackgroundUseWallpaper && ThemeBackend.uiBackgroundImageSource !== ""
 
     Rectangle {
         id: roundedMask
@@ -56,7 +60,7 @@ Item {
             asynchronous: true
             sourceComponent: Component {
                 Image {
-                    source: ThemeBackend.uiBackgroundImageSource !== "" ? ThemeBackend.uiBackgroundImageSource : ("file://" + ThemeBackend.wallpaperSnapshotPath + "?v=" + ThemeBackend.wallpaperRevision)
+                    source: ThemeBackend.uiBackgroundImageSource
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     cache: true
@@ -80,8 +84,9 @@ Item {
         // In wallpaper modes the wallpaper image renders behind this overlay.
         Rectangle {
             anchors.fill: parent
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiGlossy ? Math.max(0.18, ThemeBackend.uiBackgroundOpacity * 0.65) : ThemeBackend.uiBackgroundOpacity)
+            color: Qt.alpha(ThemeBackend.uiGlossy ? ambient.frostedColor : ThemeBackend.base, ThemeBackend.uiGlossy ? ambient.frostedOpacity : ThemeBackend.uiBackgroundOpacity)
             visible: ambient.active
+            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutCubic } }
         }
 
         Rectangle {
@@ -89,13 +94,12 @@ Item {
             visible: ambient.active && ThemeBackend.uiGlossy
             radius: ambient.cornerRadius
             gradient: Gradient {
-                GradientStop { position: 0; color: Qt.alpha(ThemeBackend.text, 0.22) }
-                GradientStop { position: 0.35; color: Qt.alpha(ThemeBackend.mauve, 0.035) }
+                GradientStop { position: 0; color: Qt.alpha(ThemeBackend.text, 0.07) }
+                GradientStop { position: 0.35; color: Qt.alpha(ThemeBackend.surface0, 0.035) }
                 GradientStop { position: 0.7; color: "transparent" }
-                GradientStop { position: 1; color: Qt.alpha(ThemeBackend.text, 0.08) }
+                GradientStop { position: 1; color: Qt.alpha(ThemeBackend.text, 0.025) }
             }
-            border.width: 1
-            border.color: Qt.alpha(ThemeBackend.text, 0.18)
+            border.width: 0 // Gloss is a surface highlight, not an outline.
         }
 
         property real phase: 0

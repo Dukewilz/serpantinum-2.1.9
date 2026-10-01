@@ -6,7 +6,7 @@ import Quickshell
 import Quickshell.Io
 import "../../"
 import "../../reusables"
-import "../../reusables" as Reusables
+import "../../reusables/guide"
 
 Item {
     id: themeTabRoot
@@ -24,17 +24,7 @@ Item {
 
     property var defaultThemeSettings: {
         "fontFamily": ThemeBackend.fontFamily,
-        "fontWeight": Font.DemiBold,
         "borderRadius": ThemeBackend.borderRadius,
-        "uiBackground": {
-            "opacity": 96,
-            "contentOpacity": 100,
-            "blur": 68,
-            "useWallpaper": false,
-            "sourceMode": "theme",
-            "customPath": "",
-            "ambientStrength": 100
-        },
         "activePreset": "Matugen",
         "matugen": true,
         "colors": {}
@@ -42,20 +32,7 @@ Item {
 
     property var themeSettings: Config.getSetting("theme", defaultThemeSettings)
     property string currentFontFamily: themeSettings.fontFamily !== undefined ? themeSettings.fontFamily : ThemeBackend.fontFamily
-    property int currentFontWeight: themeSettings.fontWeight !== undefined ? themeSettings.fontWeight : Font.DemiBold
     property int currentBorderRadius: themeSettings.borderRadius !== undefined ? themeSettings.borderRadius : ThemeBackend.borderRadius
-    property bool currentGlossy: themeSettings.uiBackground ? themeSettings.uiBackground.glossy === true : false
-    property int currentUiOpacity: themeSettings.uiBackground && themeSettings.uiBackground.opacity !== undefined ? themeSettings.uiBackground.opacity : 96
-    property int currentContentOpacity: themeSettings.uiBackground && themeSettings.uiBackground.contentOpacity !== undefined ? themeSettings.uiBackground.contentOpacity : 100
-    property int currentUiBlur: themeSettings.uiBackground && themeSettings.uiBackground.blur !== undefined ? themeSettings.uiBackground.blur : 68
-    property bool currentUiUseWallpaper: themeSettings.uiBackground ? themeSettings.uiBackground.useWallpaper === true : false
-    property string currentUiSourceMode: {
-        let bg = themeSettings.uiBackground || {};
-        if (bg.sourceMode !== undefined) return String(bg.sourceMode);
-        return bg.useWallpaper === true ? "current" : "theme";
-    }
-    property string currentUiCustomPath: themeSettings.uiBackground && themeSettings.uiBackground.customPath !== undefined ? String(themeSettings.uiBackground.customPath) : ""
-    property int currentAmbientStrength: themeSettings.uiBackground && themeSettings.uiBackground.ambientStrength !== undefined ? themeSettings.uiBackground.ambientStrength : 100
     property string currentPreset: themeSettings.activePreset !== undefined ? themeSettings.activePreset : "Matugen"
     property bool useMatugen: themeSettings.matugen !== undefined ? themeSettings.matugen : true
 
@@ -165,7 +142,7 @@ Item {
         return lp.endsWith(".mp4") || lp.endsWith(".mkv") || lp.endsWith(".mov") || lp.endsWith(".webm") || lp.indexOf("000_") !== -1;
     }
 
-    property real tileWidth: (typeof themesSectionCol !== "undefined" && themesSectionCol && themesSectionCol.width > 0) ? Math.max(0, (themesSectionCol.width - rootObj.s(20)) / 3) : Math.max(0, (themeTabRoot.width - rootObj.s(72)) / 3)
+    property real tileWidth: (typeof themesGrid !== "undefined" && themesGrid && themesGrid.width > 0) ? Math.max(0, (themesGrid.width - rootObj.s(20)) / 3) : ((typeof themesSectionCol !== "undefined" && themesSectionCol && themesSectionCol.width > 0) ? Math.max(0, (themesSectionCol.width - rootObj.s(44)) / 3) : Math.max(0, (themeTabRoot.width - rootObj.s(72)) / 3))
 
     Timer {
         id: borderRadiusDebounceTimer
@@ -174,13 +151,6 @@ Item {
         onTriggered: {
             themeTabRoot.updateBorderRadiusSetting();
         }
-    }
-
-    Timer {
-        id: appearanceDebounceTimer
-        interval: 180
-        repeat: false
-        onTriggered: themeTabRoot.updateAppearanceSettings()
     }
 
     Timer {
@@ -374,7 +344,6 @@ Item {
         } else {
             if (fontDropdown.isOpen) fontDropdown.closePopup();
             if (wpDirDropdown.isOpen) wpDirDropdown.closePopup();
-            backgroundSourceDropdown.closePopup();
             themeEditorPopup.close();
         }
     }
@@ -499,17 +468,7 @@ Item {
         function onSettingsLoaded() {
             let ts = Config.getSetting("theme", themeTabRoot.defaultThemeSettings);
             themeTabRoot.currentFontFamily = ts.fontFamily !== undefined ? ts.fontFamily : ThemeBackend.fontFamily;
-            themeTabRoot.currentFontWeight = ts.fontWeight !== undefined ? ts.fontWeight : Font.DemiBold;
             themeTabRoot.currentBorderRadius = ts.borderRadius !== undefined ? ts.borderRadius : ThemeBackend.borderRadius;
-            let uiBg = ts.uiBackground || {};
-            themeTabRoot.currentGlossy = uiBg.glossy === true;
-            themeTabRoot.currentUiOpacity = uiBg.opacity !== undefined ? uiBg.opacity : 96;
-            themeTabRoot.currentContentOpacity = uiBg.contentOpacity !== undefined ? uiBg.contentOpacity : 100;
-            themeTabRoot.currentUiBlur = uiBg.blur !== undefined ? uiBg.blur : 68;
-            themeTabRoot.currentUiUseWallpaper = uiBg.useWallpaper === true;
-            themeTabRoot.currentUiSourceMode = uiBg.sourceMode !== undefined ? String(uiBg.sourceMode) : (uiBg.useWallpaper === true ? "current" : "theme");
-            themeTabRoot.currentUiCustomPath = uiBg.customPath !== undefined ? String(uiBg.customPath) : "";
-            themeTabRoot.currentAmbientStrength = uiBg.ambientStrength !== undefined ? uiBg.ambientStrength : 100;
             themeTabRoot.currentPreset = ts.activePreset !== undefined ? ts.activePreset : "Matugen";
             themeTabRoot.useMatugen = ts.matugen !== undefined ? ts.matugen : true;
             themeTabRoot.themeSettings = ts;
@@ -522,38 +481,17 @@ Item {
     }
 
     function updateWallpaperDirSetting() {
-        if (!Config.dataReady) return;
         Config.setSetting("wallpaperDir", themeTabRoot.currentWallpaperDir);
     }
 
     function updateFontSetting() {
-        if (!Config.dataReady) return;
-        let current = JSON.parse(JSON.stringify(Config.getSetting("theme", themeTabRoot.defaultThemeSettings)));
+        let current = Config.getSetting("theme", themeTabRoot.defaultThemeSettings);
         current.fontFamily = themeTabRoot.currentFontFamily;
         Config.setSetting("theme", current);
     }
 
-    function updateAppearanceSettings() {
-        if (!Config.dataReady) return;
-        let current = JSON.parse(JSON.stringify(Config.getSetting("theme", themeTabRoot.defaultThemeSettings)));
-        current.fontWeight = themeTabRoot.currentFontWeight;
-        current.uiBackground = {
-            "glossy": themeTabRoot.currentGlossy,
-            "opacity": themeTabRoot.currentUiOpacity,
-            "contentOpacity": themeTabRoot.currentContentOpacity,
-            "blur": themeTabRoot.currentUiBlur,
-            "useWallpaper": themeTabRoot.currentUiSourceMode !== "theme",
-            "sourceMode": themeTabRoot.currentUiSourceMode,
-            "customPath": themeTabRoot.currentUiCustomPath,
-            "ambientStrength": themeTabRoot.currentAmbientStrength
-        };
-        Config.setSetting("theme", current);
-        ThemeBackend.updateAppearance();
-    }
-
     function updateBorderRadiusSetting() {
-        if (!Config.dataReady) return;
-        let current = JSON.parse(JSON.stringify(Config.getSetting("theme", themeTabRoot.defaultThemeSettings)));
+        let current = Config.getSetting("theme", themeTabRoot.defaultThemeSettings);
         current.borderRadius = themeTabRoot.currentBorderRadius;
         Config.setSetting("theme", current);
         if (typeof ThemeBackend !== "undefined") {
@@ -563,13 +501,12 @@ Item {
 
     function applyPreset(modelData) {
         if (!modelData) return;
-        if (!Config.dataReady) return;
 
         let isMatugen = modelData.isMatugen === true;
         themeTabRoot.currentPreset = modelData.name;
         themeTabRoot.useMatugen = isMatugen;
 
-        let current = JSON.parse(JSON.stringify(Config.getSetting("theme", themeTabRoot.defaultThemeSettings)));
+        let current = Config.getSetting("theme", themeTabRoot.defaultThemeSettings);
         current.activePreset = modelData.name;
         current.matugen = isMatugen;
         if (!isMatugen) {
@@ -939,71 +876,7 @@ Item {
         }
     }
 
-    ImagePicker {
-        id: uiBackgroundPicker
-        rootObj: themeTabRoot.rootObj
-        onImageSelected: function(filePath, fileName) {
-            themeTabRoot.currentUiCustomPath = filePath;
-            themeTabRoot.currentUiSourceMode = "custom";
-            themeTabRoot.currentUiUseWallpaper = true;
-            themeTabRoot.updateAppearanceSettings();
-        }
-    }
-
-    // Every row shares the same icon, text and control columns.
-    component BackgroundRow: Item {
-        id: backgroundRow
-        property string title: ""
-        property string detail: ""
-        property string icon: ""
-        default property alias controls: controlsRow.data
-        Layout.fillWidth: true
-        implicitHeight: rootObj.s(48)
-        data: RowLayout {
-            anchors.fill: parent
-            spacing: rootObj.s(12)
-            IconButton {
-                enabled: false
-                Layout.preferredWidth: rootObj.s(32)
-                Layout.preferredHeight: rootObj.s(32)
-                size: rootObj.s(32)
-                buttonIcon: backgroundRow.icon
-                iconFontSize: rootObj.s(14)
-                cornerRadius: ThemeBackend.borderRadius
-                accentColor: ThemeBackend.surface0
-                textColor: ThemeBackend.text
-            }
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.minimumWidth: 0
-                spacing: rootObj.s(2)
-                Text { Layout.fillWidth: true; text: backgroundRow.title; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text; elide: Text.ElideRight }
-                Text { Layout.fillWidth: true; text: backgroundRow.detail; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0; elide: Text.ElideMiddle }
-            }
-            RowLayout {
-                id: controlsRow
-                readonly property real columnWidth: Math.min(rootObj.s(220), backgroundRow.width * 0.38)
-                Layout.minimumWidth: columnWidth
-                Layout.preferredWidth: columnWidth
-                Layout.maximumWidth: columnWidth
-                Layout.alignment: Qt.AlignVCenter
-                spacing: rootObj.s(6)
-            }
-        }
-    }
-
-    Connections {
-        target: themeTabRoot.rootObj
-        function onVisibleChanged() {
-            if (!themeTabRoot.rootObj.visible) backgroundSourceDropdown.closePopup();
-        }
-        function onIntroBaseChanged() {
-            if (themeTabRoot.rootObj.introBase < 0.99) backgroundSourceDropdown.closePopup();
-        }
-    }
-
     Flickable {
-        onMovementStarted: backgroundSourceDropdown.closePopup()
         anchors.fill: parent
         anchors.topMargin: rootObj.s(4)
         anchors.leftMargin: rootObj.s(8)
@@ -1027,6 +900,147 @@ Item {
                 Layout.preferredHeight: rootObj.s(220)
                 Layout.topMargin: rootObj.s(6)
                 Layout.bottomMargin: rootObj.s(4)
+
+                property real highlightFlash: 0.0
+                property int handledHighlightToken: -1
+
+                function resolveTabInfo() {
+                    let p = wpPreviewContainer.parent;
+                    let targetTabIdx = -1;
+                    let targetSubTabIdx = -1;
+                    while (p) {
+                        if (targetSubTabIdx === -1 && p.subTabIndex !== undefined) targetSubTabIdx = p.subTabIndex;
+                        if (targetTabIdx === -1 && p.tabIndex !== undefined) targetTabIdx = p.tabIndex;
+                        p = p.parent;
+                    }
+                    let r = themeTabRoot.rootObj;
+                    let tab = "";
+                    let subtab = "";
+                    if (r && r.tabsModel && targetTabIdx >= 0 && targetTabIdx < r.tabsModel.length) {
+                        let tModel = r.tabsModel[targetTabIdx];
+                        tab = tModel.key || tModel.id || "";
+                        if (tModel.subtabs && targetSubTabIdx >= 0 && targetSubTabIdx < tModel.subtabs.length) {
+                            subtab = tModel.subtabs[targetSubTabIdx].key || tModel.subtabs[targetSubTabIdx].id || "";
+                        }
+                    }
+                    return { tab: tab, subtab: subtab };
+                }
+
+                function registerWithSearch() {
+                    let r = themeTabRoot.rootObj;
+                    if (!r || typeof r.registerSearchItem !== "function") return;
+                    let info = resolveTabInfo();
+                    r.registerSearchItem({
+                        id: "wallpaper",
+                        title: I18n.t("guide.theme.wallpaper.select") || "Wallpaper",
+                        desc: I18n.t("guide.theme.wallpaper.desc") || "Select and preview current wallpaper",
+                        description: I18n.t("guide.theme.wallpaper.desc") || "Select and preview current wallpaper",
+                        tab: info.tab,
+                        subtab: info.subtab,
+                        icon: "󰸉",
+                        keywords: "wallpaper background image video select screen current desktop",
+                        target: wpPreviewContainer,
+                        unavailable: false
+                    });
+                }
+
+                function unregisterFromSearch() {
+                    let r = themeTabRoot.rootObj;
+                    if (!r || typeof r.unregisterSearchItem !== "function") return;
+                    r.unregisterSearchItem("wallpaper");
+                }
+
+                function ensureVisibleInFlickable() {
+                    let p = wpPreviewContainer.parent;
+                    let flick = null;
+                    while (p) {
+                        if (p.contentY !== undefined && p.contentHeight !== undefined) {
+                            flick = p;
+                            break;
+                        }
+                        p = p.parent;
+                    }
+                    if (flick) {
+                        let targetPos = wpPreviewContainer.mapToItem(flick.contentItem, 0, 0);
+                        if (targetPos) {
+                            let viewTop = flick.contentY;
+                            let viewBottom = flick.contentY + flick.height;
+                            if (targetPos.y < viewTop || targetPos.y + wpPreviewContainer.height > viewBottom) {
+                                flick.contentY = Math.max(0, Math.min(targetPos.y - flick.height / 2 + wpPreviewContainer.height / 2, flick.contentHeight - flick.height));
+                            }
+                        }
+                    }
+                }
+
+                function triggerHighlightAnimation() {
+                    highlightAnimation.restart();
+                    wpPreviewContainer.ensureVisibleInFlickable();
+                    ensureVisibleTimer.restart();
+                }
+
+                function checkHighlight() {
+                    let r = themeTabRoot.rootObj;
+                    if (!r) return;
+                    if (r.highlightToken === wpPreviewContainer.handledHighlightToken) return;
+                    if (r.highlightedSettingId && (r.highlightedSettingId === "wallpaper" || r.highlightedSettingId === "wallpaper_preview")) {
+                        wpPreviewContainer.handledHighlightToken = r.highlightToken;
+                        r.highlightedSettingId = "";
+                        highlightDelayTimer.restart();
+                    }
+                }
+
+                Connections {
+                    target: themeTabRoot.rootObj
+                    ignoreUnknownSignals: true
+                    function onHighlightTokenChanged() {
+                        wpPreviewContainer.checkHighlight();
+                    }
+                }
+
+                onVisibleChanged: {
+                    searchRegTimer.restart();
+                    if (visible) {
+                        wpPreviewContainer.checkHighlight();
+                    }
+                }
+
+                Timer {
+                    id: searchRegTimer
+                    interval: 10
+                    repeat: false
+                    onTriggered: wpPreviewContainer.registerWithSearch()
+                }
+
+                Timer {
+                    id: ensureVisibleTimer
+                    interval: 320
+                    repeat: false
+                    onTriggered: wpPreviewContainer.ensureVisibleInFlickable()
+                }
+
+                Timer {
+                    id: highlightDelayTimer
+                    interval: 80
+                    repeat: false
+                    onTriggered: wpPreviewContainer.triggerHighlightAnimation()
+                }
+
+                SequentialAnimation {
+                    id: highlightAnimation
+                    PropertyAction { target: wpPreviewContainer; property: "highlightFlash"; value: 0.0 }
+                    NumberAnimation { target: wpPreviewContainer; property: "highlightFlash"; from: 0.0; to: 1.0; duration: 400; easing.type: Easing.OutCubic }
+                    PauseAnimation { duration: 1500 }
+                    NumberAnimation { target: wpPreviewContainer; property: "highlightFlash"; from: 1.0; to: 0.0; duration: 900; easing.type: Easing.InOutSine }
+                }
+
+                Component.onCompleted: {
+                    searchRegTimer.restart();
+                    checkHighlight();
+                }
+
+                Component.onDestruction: {
+                    unregisterFromSearch();
+                }
 
                 Rectangle {
                     id: wpCardMask
@@ -1081,6 +1095,17 @@ Item {
                     source: wpCardContent
                     maskEnabled: true
                     maskSource: wpCardMask
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: ThemeBackend.borderRadius
+                    color: ThemeBackend.mauve
+                    opacity: wpPreviewContainer.highlightFlash * 0.2
+                    visible: opacity > 0.001
+                    border.color: ThemeBackend.mauve
+                    border.width: wpPreviewContainer.highlightFlash > 0.01 ? 2 : 0
+                    Behavior on opacity { NumberAnimation { duration: 180 } }
                 }
 
                 IconButton {
@@ -1172,534 +1197,253 @@ Item {
                 }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: rowWpDirLayout.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
+            SettingsRow {
+                rootObj: themeTabRoot.rootObj
+                settingId: "wallpaper_dir"
+                icon: "󰸉"
+                title: I18n.t("guide.theme.wallpaper.title") || "Wallpaper Directory"
+                description: I18n.t("guide.theme.wallpaper.desc") || "Directory to search for wallpapers"
+                searchKeywords: "wallpaper directory folder path pictures wallpapers"
 
-                RowLayout {
-                    id: rowWpDirLayout
-                    anchors.left: parent.left
-                    anchors.leftMargin: rootObj.s(14)
-                    anchors.right: parent.right
-                    anchors.rightMargin: rootObj.s(14)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: rootObj.s(12)
-
-                    IconButton {
-                        enabled: false
-                        size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
-                        Layout.alignment: Qt.AlignVCenter
-                        cornerRadius: ThemeBackend.borderRadius
-                        buttonIcon: "󰸉"
-                        iconFontSize: rootObj.s(16)
-                        accentColor: ThemeBackend.surface0
-                        textColor: "#ffffff"
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: rootObj.s(2)
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: I18n.t("guide.theme.wallpaper.title") || "Wallpaper Directory"
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(13)
-                            color: ThemeBackend.text
-                        }
-                        Text {
-                            Layout.fillWidth: true
-                            text: I18n.t("guide.theme.wallpaper.desc") || "Directory to search for wallpapers"
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(11)
-                            color: ThemeBackend.subtext0
+                IconButton {
+                    Layout.preferredWidth: rootObj.s(32)
+                    Layout.preferredHeight: rootObj.s(32)
+                    Layout.alignment: Qt.AlignVCenter
+                    cornerRadius: rootObj.s(6)
+                    buttonIcon: "󰉋"
+                    iconOffsetX: -2
+                    iconFontSize: rootObj.s(14)
+                    accentColor: ThemeBackend.surface0
+                    textColor: isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2
+                    onClicked: {
+                        if (themeTabRoot.currentWallpaperDir && themeTabRoot.currentWallpaperDir !== "") {
+                            let escapeBash = function(str) { return String(str).replace(/(["\\$`])/g, '\\$1'); };
+                            Quickshell.execDetached(["bash", "-c", "mkdir -p \"" + escapeBash(themeTabRoot.currentWallpaperDir) + "\" && xdg-open \"" + escapeBash(themeTabRoot.currentWallpaperDir) + "\""]);
                         }
                     }
+                }
 
-                    RowLayout {
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                        spacing: rootObj.s(8)
+                Dropdown {
+                    id: wpDirDropdown
+                    Layout.preferredWidth: rootObj.s(260)
+                    Layout.preferredHeight: rootObj.s(32)
+                    Layout.alignment: Qt.AlignVCenter
+                    options: themeTabRoot.availableWallpaperDirs
+                    isPathSelector: true
+                    fuzzySearch: true
+                    currentIndex: options.indexOf(themeTabRoot.currentWallpaperDir) >= 0 ? options.indexOf(themeTabRoot.currentWallpaperDir) : 0
+                    placeholderText: I18n.t("guide.theme.wallpaper.select_dir") || "Select directory..."
+                    fontFamily: ThemeBackend.fontFamily
+                    accentColor: ThemeBackend.mauve
+                    baseColor: ThemeBackend.surface0
+                    hoverColor: ThemeBackend.surface1
+                    dropdownColor: ThemeBackend.surface0
+                    borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                    textColor: ThemeBackend.text
+                    activeTextColor: ThemeBackend.crust
+                    cornerRadius: ThemeBackend.borderRadius
+                    fontPixelSize: rootObj.s(11)
+                    onValueChanged: function(index, value) {
+                        themeTabRoot.currentWallpaperDir = value;
+                        themeTabRoot.updateWallpaperDirSetting();
+                    }
+                    onSelected: function(index, value) {
+                        themeTabRoot.currentWallpaperDir = value;
+                        themeTabRoot.updateWallpaperDirSetting();
+                    }
+                    onClicked: {
+                        wallpaperDirScanner.running = false;
+                        wallpaperDirScanner.running = true;
+                    }
+                }
+            }
 
-                        IconButton {
-                            Layout.preferredWidth: rootObj.s(32)
-                            Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            cornerRadius: rootObj.s(6)
-                            buttonIcon: "󰉋"
-                            iconOffsetX: -2
-                            iconFontSize: rootObj.s(14)
-                            accentColor: ThemeBackend.surface0
-                            textColor: isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2
-                            onClicked: {
-                                if (themeTabRoot.currentWallpaperDir && themeTabRoot.currentWallpaperDir !== "") {
-                                    let escapeBash = function(str) { return String(str).replace(/(["\\$`])/g, '\\$1'); };
-                                    Quickshell.execDetached(["bash", "-c", "mkdir -p \"" + escapeBash(themeTabRoot.currentWallpaperDir) + "\" && xdg-open \"" + escapeBash(themeTabRoot.currentWallpaperDir) + "\""]);
-                                }
-                            }
+            SettingsRow {
+                rootObj: themeTabRoot.rootObj
+                settingId: "font"
+                icon: "󰛖"
+                title: I18n.t("guide.theme.font.title")
+                description: I18n.t("guide.theme.font.desc")
+                searchKeywords: "font typeface family typography text"
+
+                IconButton {
+                    Layout.preferredWidth: rootObj.s(32)
+                    Layout.preferredHeight: rootObj.s(32)
+                    Layout.alignment: Qt.AlignVCenter
+                    cornerRadius: rootObj.s(6)
+                    buttonIcon: "󰉋"
+                    iconOffsetX: -2
+                    iconFontSize: rootObj.s(14)
+                    accentColor: ThemeBackend.surface0
+                    textColor: isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2
+                    onClicked: {
+                        let userFontsPath = Caching.stateDir ? (Caching.stateDir + "/fonts") : (Caching.home + "/.local/state/serpantinum/fonts");
+                        let escapeBash = function(str) { return String(str).replace(/(["\\$`])/g, '\\$1'); };
+                        Quickshell.execDetached(["bash", "-c", "mkdir -p \"" + escapeBash(userFontsPath) + "\" && xdg-open \"" + escapeBash(userFontsPath) + "\""]);
+                    }
+                }
+
+                IconButton {
+                    Layout.preferredWidth: rootObj.s(32)
+                    Layout.preferredHeight: rootObj.s(32)
+                    Layout.alignment: Qt.AlignVCenter
+                    cornerRadius: rootObj.s(6)
+                    buttonIcon: "󰐕"
+                    iconFontSize: rootObj.s(14)
+                    accentColor: ThemeBackend.surface0
+                    textColor: isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2
+                    onClicked: fontPickerPopup.openPicker()
+                }
+
+                Dropdown {
+                    id: fontDropdown
+                    Layout.preferredWidth: rootObj.s(220)
+                    Layout.preferredHeight: rootObj.s(32)
+                    Layout.alignment: Qt.AlignVCenter
+                    options: themeTabRoot.availableFonts
+                    currentIndex: options.indexOf(themeTabRoot.currentFontFamily) >= 0 ? options.indexOf(themeTabRoot.currentFontFamily) : 0
+                    placeholderText: I18n.t("guide.theme.font.select")
+                    fontFamily: ThemeBackend.fontFamily
+                    useOptionAsFontFamily: true
+                    accentColor: ThemeBackend.mauve
+                    baseColor: ThemeBackend.surface0
+                    hoverColor: ThemeBackend.surface1
+                    dropdownColor: ThemeBackend.surface0
+                    borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                    textColor: ThemeBackend.text
+                    activeTextColor: ThemeBackend.crust
+                    cornerRadius: ThemeBackend.borderRadius
+                    fontPixelSize: rootObj.s(11)
+                    onValueChanged: function(index, value) {
+                        themeTabRoot.currentFontFamily = value;
+                        themeTabRoot.updateFontSetting();
+                    }
+                    onClicked: {
+                        themeTabRoot.loadAvailableFonts();
+                    }
+                }
+            }
+
+            SettingsRow {
+                rootObj: themeTabRoot.rootObj
+                settingId: "border_radius"
+                icon: "󰞁"
+                title: I18n.t("guide.theme.radius.title")
+                description: I18n.t("guide.theme.radius.desc")
+                searchKeywords: "border radius corner round curvature rounding px"
+
+                NumberSelector {
+                    id: radiusSelector
+                    implicitWidth: rootObj.s(150)
+                    implicitHeight: rootObj.s(32)
+                    from: 0
+                    to: 64
+                    stepSize: 1
+                    decimals: 0
+                    suffix: "px"
+                    value: themeTabRoot.currentBorderRadius
+                    baseColor: ThemeBackend.surface0
+                    accentColor: ThemeBackend.mauve
+                    buttonColor: ThemeBackend.surface1
+                    buttonTextColor: ThemeBackend.text
+                    textColor: ThemeBackend.text
+                    subTextColor: ThemeBackend.subtext0
+                    borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                    cornerRadius: ThemeBackend.borderRadius
+                    fontFamily: ThemeBackend.fontFamily
+                    fontPixelSize: rootObj.s(11)
+                    onValueChanged: function(val) {
+                        let num = (typeof val === "number" && !isNaN(val)) ? val : value;
+                        let rounded = Math.round(num);
+                        let snapped = themeTabRoot.getSnappedRadius(rounded);
+                        if (!isNaN(snapped) && snapped >= 0 && snapped <= 64 && themeTabRoot.currentBorderRadius !== snapped) {
+                            themeTabRoot.currentBorderRadius = snapped;
+                            borderRadiusDebounceTimer.restart();
                         }
-
-                        Dropdown {
-                            id: wpDirDropdown
-                            onOpened: backgroundSourceDropdown.closePopup()
-                            Layout.preferredWidth: rootObj.s(260)
-                            Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            options: themeTabRoot.availableWallpaperDirs
-                            isPathSelector: true
-                            fuzzySearch: true
-                            currentIndex: options.indexOf(themeTabRoot.currentWallpaperDir) >= 0 ? options.indexOf(themeTabRoot.currentWallpaperDir) : 0
-                            placeholderText: I18n.t("guide.theme.wallpaper.select_dir") || "Select directory..."
-                            fontFamily: ThemeBackend.fontFamily
-                            accentColor: ThemeBackend.mauve
-                            baseColor: ThemeBackend.surface0
-                            hoverColor: ThemeBackend.surface1
-                            dropdownColor: ThemeBackend.surface0
-                            borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                            textColor: ThemeBackend.text
-                            activeTextColor: ThemeBackend.crust
-                            cornerRadius: ThemeBackend.borderRadius
-                            fontPixelSize: rootObj.s(11)
-                            onValueChanged: function(index, value) {
-                                themeTabRoot.currentWallpaperDir = value;
-                                themeTabRoot.updateWallpaperDirSetting();
-                            }
-                            onSelected: function(index, value) {
-                                themeTabRoot.currentWallpaperDir = value;
-                                themeTabRoot.updateWallpaperDirSetting();
-                            }
-                            onClicked: {
-                                wallpaperDirScanner.running = false;
-                                wallpaperDirScanner.running = true;
-                            }
-                        }
+                    }
+                    onTriggered: {
+                        let rounded = Math.round(radiusSelector.value);
+                        let snapped = themeTabRoot.getSnappedRadius(rounded);
+                        themeTabRoot.currentBorderRadius = snapped;
+                        themeTabRoot.updateBorderRadiusSetting();
                     }
                 }
             }
 
             Rectangle {
                 Layout.fillWidth: true
-                implicitHeight: row0Layout.implicitHeight + rootObj.s(24)
+                implicitHeight: themesSectionCol.implicitHeight + rootObj.s(12)
                 radius: ThemeBackend.borderRadius
                 color: Qt.alpha(ThemeBackend.surface0, 0.4)
                 border.width: 0
+                clip: true
 
-                RowLayout {
-                    id: row0Layout
+                ColumnLayout {
+                    id: themesSectionCol
                     anchors.left: parent.left
-                    anchors.leftMargin: rootObj.s(14)
                     anchors.right: parent.right
-                    anchors.rightMargin: rootObj.s(14)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: rootObj.s(12)
+                    anchors.top: parent.top
+                    spacing: 0
 
-                    IconButton {
-                        enabled: false
-                        size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
-                        Layout.alignment: Qt.AlignVCenter
-                        cornerRadius: ThemeBackend.borderRadius
-                        buttonIcon: "󰛖"
-                        iconFontSize: rootObj.s(16)
-                        accentColor: ThemeBackend.surface0
-                        textColor: "#ffffff"
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: rootObj.s(2)
-
-                        Text { Layout.fillWidth: true; text: I18n.t("guide.theme.font.title"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                        Text { Layout.fillWidth: true; text: I18n.t("guide.theme.font.desc"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                    }
-
-                    RowLayout {
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                        spacing: rootObj.s(8)
+                    SettingsRow {
+                        id: colorSchemesRow
+                        rootObj: themeTabRoot.rootObj
+                        settingId: "colors"
+                        icon: "󰏘"
+                        title: I18n.t("guide.theme.colors.title")
+                        description: I18n.t("guide.theme.colors.desc")
+                        searchKeywords: "colors theme presets scheme palette matugen catppuccin"
+                        baseColor: "transparent"
+                        hoverColor: "transparent"
+                        borderWidth: 0
+                        color: highlightFlash > 0.001 ? Qt.rgba(ThemeBackend.mauve.r, ThemeBackend.mauve.g, ThemeBackend.mauve.b, highlightFlash * 0.18) : "transparent"
 
                         IconButton {
+                            Layout.alignment: Qt.AlignVCenter
+                            size: rootObj.s(32)
                             Layout.preferredWidth: rootObj.s(32)
                             Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            cornerRadius: rootObj.s(6)
-                            buttonIcon: "󰉋"
-                            iconOffsetX: -2
-                            iconFontSize: rootObj.s(14)
-                            accentColor: ThemeBackend.surface0
-                            textColor: isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2
-                            onClicked: {
-                                let userFontsPath = Caching.stateDir ? (Caching.stateDir + "/fonts") : (Caching.home + "/.local/state/serpantinum/fonts");
-                                let escapeBash = function(str) { return String(str).replace(/(["\\$`])/g, '\\$1'); };
-                                Quickshell.execDetached(["bash", "-c", "mkdir -p \"" + escapeBash(userFontsPath) + "\" && xdg-open \"" + escapeBash(userFontsPath) + "\""]);
-                            }
-                        }
-
-                        IconButton {
-                            Layout.preferredWidth: rootObj.s(32)
-                            Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            cornerRadius: rootObj.s(6)
+                            cornerRadius: rootObj.s(8)
                             buttonIcon: "󰐕"
                             iconFontSize: rootObj.s(14)
                             accentColor: ThemeBackend.surface0
                             textColor: isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2
-                            onClicked: fontPickerPopup.openPicker()
+                            onClicked: {
+                                if (typeof Sounds !== "undefined") Sounds.playSfx("reusables/clickbutton/click.wav");
+                                themeEditorPopup.openForNew();
+                            }
                         }
 
-                        Dropdown {
-                            id: fontDropdown
-                            onOpened: backgroundSourceDropdown.closePopup()
-                            Layout.preferredWidth: rootObj.s(220)
-                            Layout.preferredHeight: rootObj.s(32)
+                        Input {
+                            id: themeSearchInput
                             Layout.alignment: Qt.AlignVCenter
-                            options: themeTabRoot.availableFonts
-                            currentIndex: options.indexOf(themeTabRoot.currentFontFamily) >= 0 ? options.indexOf(themeTabRoot.currentFontFamily) : 0
-                            placeholderText: I18n.t("guide.theme.font.select")
-                            fontFamily: ThemeBackend.fontFamily
-                            useOptionAsFontFamily: true
-                            accentColor: ThemeBackend.mauve
+                            implicitWidth: rootObj.s(180)
+                            placeholderText: I18n.t("guide.theme.colors.search")
                             baseColor: ThemeBackend.surface0
-                            hoverColor: ThemeBackend.surface1
-                            dropdownColor: ThemeBackend.surface0
-                            borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                            accentColor: ThemeBackend.mauve
                             textColor: ThemeBackend.text
-                            activeTextColor: ThemeBackend.crust
+                            subTextColor: ThemeBackend.subtext0
+                            borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
                             cornerRadius: ThemeBackend.borderRadius
                             fontPixelSize: rootObj.s(11)
-                            onValueChanged: function(index, value) {
-                                themeTabRoot.currentFontFamily = value;
-                                themeTabRoot.updateFontSetting();
-                            }
-                            onClicked: {
-                                themeTabRoot.loadAvailableFonts();
-                            }
+                            charSpacing: 1
+                            onTextEdited: newText => themeTabRoot.themeSearchText = newText
                         }
                     }
-                }
-            }
 
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: rowRadLayout.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
-
-                RowLayout {
-                    id: rowRadLayout
-                    anchors.left: parent.left
-                    anchors.leftMargin: rootObj.s(14)
-                    anchors.right: parent.right
-                    anchors.rightMargin: rootObj.s(14)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: rootObj.s(12)
-
-                    IconButton {
-                        enabled: false
-                        size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
-                        Layout.alignment: Qt.AlignVCenter
-                        cornerRadius: ThemeBackend.borderRadius
-                        buttonIcon: "󰞁"
-                        iconFontSize: rootObj.s(16)
-                        accentColor: ThemeBackend.surface0
-                        textColor: "#ffffff"
-                    }
-
-                    ColumnLayout {
+                    Rectangle {
                         Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: rootObj.s(2)
-
-                        Text { Layout.fillWidth: true; text: I18n.t("guide.theme.radius.title"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                        Text { Layout.fillWidth: true; text: I18n.t("guide.theme.radius.desc"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                    }
-
-                    NumberSelector {
-                        id: radiusSelector
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                        implicitWidth: rootObj.s(150)
-                        implicitHeight: rootObj.s(32)
-                        from: 0
-                        to: 64
-                        stepSize: 1
-                        decimals: 0
-                        suffix: "px"
-                        value: themeTabRoot.currentBorderRadius
-                        baseColor: ThemeBackend.surface0
-                        accentColor: ThemeBackend.mauve
-                        buttonColor: ThemeBackend.surface1
-                        buttonTextColor: ThemeBackend.text
-                        textColor: ThemeBackend.text
-                        subTextColor: ThemeBackend.subtext0
-                        borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                        cornerRadius: ThemeBackend.borderRadius
-                        fontFamily: ThemeBackend.fontFamily
-                        fontPixelSize: rootObj.s(11)
-                        onValueChanged: function(val) {
-                            let num = (typeof val === "number" && !isNaN(val)) ? val : value;
-                            let rounded = Math.round(num);
-                            let snapped = themeTabRoot.getSnappedRadius(rounded);
-                            if (!isNaN(snapped) && snapped >= 0 && snapped <= 64 && themeTabRoot.currentBorderRadius !== snapped) {
-                                themeTabRoot.currentBorderRadius = snapped;
-                                borderRadiusDebounceTimer.restart();
-                            }
-                        }
-                        onTriggered: {
-                            let rounded = Math.round(radiusSelector.value);
-                            let snapped = themeTabRoot.getSnappedRadius(rounded);
-                            themeTabRoot.currentBorderRadius = snapped;
-                            themeTabRoot.updateBorderRadiusSetting();
-                        }
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: popupBackgroundGroup.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
-                ColumnLayout {
-                    id: popupBackgroundGroup
-                    anchors.left: parent.left; anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: rootObj.s(14); anchors.rightMargin: rootObj.s(14)
-                    spacing: rootObj.s(4)
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.bottomMargin: rootObj.s(4)
-                        spacing: rootObj.s(12)
-                        IconButton {
-                            enabled: false
-                            Layout.preferredWidth: rootObj.s(32); Layout.preferredHeight: rootObj.s(32)
-                            size: rootObj.s(32); buttonIcon: "󰋩"; iconFontSize: rootObj.s(16)
-                            cornerRadius: ThemeBackend.borderRadius
-                            accentColor: ThemeBackend.surface0; textColor: ThemeBackend.text
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true; spacing: rootObj.s(2)
-                            Text { Layout.fillWidth: true; text: "Popup background"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                            Text { Layout.fillWidth: true; text: "Background source, surface and ambient effects"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0; elide: Text.ElideRight }
-                        }
-                    }
-                BackgroundRow {
-                    title: "Background source"; detail: "Keep theme tint, or blend an image beneath it"; icon: "󰋩"
-                    Dropdown {
-                        id: backgroundSourceDropdown
-                        onVisibleChanged: if (!visible) closePopup()
-                        onOpened: { wpDirDropdown.closePopup(); fontDropdown.closePopup(); }
-                        Layout.fillWidth: true; implicitHeight: rootObj.s(32)
-                        options: ["Theme", "Current wallpaper", "Custom image"]
-                        currentIndex: Math.max(0, ["theme", "current", "custom"].indexOf(themeTabRoot.currentUiSourceMode))
-                        fontFamily: ThemeBackend.fontFamily
-                        fontPixelSize: rootObj.s(11)
-                        baseColor: ThemeBackend.surface0
-                        hoverColor: ThemeBackend.surface1
-                        dropdownColor: ThemeBackend.surface0
-                        borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                        textColor: ThemeBackend.text
-                        activeTextColor: ThemeBackend.crust
-                        accentColor: ThemeBackend.mauve
-                        cornerRadius: ThemeBackend.borderRadius
-                        onValueChanged: function(index, value) {
-                            backgroundSourceDropdown.closePopup();
-                            themeTabRoot.currentUiSourceMode = ["theme", "current", "custom"][index];
-                            if (index === 2 && !themeTabRoot.currentUiCustomPath) uiBackgroundPicker.openPicker(themeTabRoot.currentWallpaperDir, false);
-                            themeTabRoot.updateAppearanceSettings();
-                        }
-                    }
-                }
-                BackgroundRow {
-                    visible: themeTabRoot.currentUiSourceMode === "custom"
-                    title: "Custom image"; detail: themeTabRoot.currentUiCustomPath || "Choose a background image"; icon: "󰉋"
-                    ClickButton {
-                        Layout.fillWidth: true; Layout.preferredHeight: rootObj.s(32)
-                        buttonText: "Choose image"; buttonIcon: "󰉋"
-                        textFontSize: rootObj.s(11); iconFontSize: rootObj.s(14)
-                        cornerRadius: ThemeBackend.borderRadius
-                        accentColor: ThemeBackend.surface0; textColor: ThemeBackend.text
-                        onClicked: {
-                            backgroundSourceDropdown.closePopup();
-                            uiBackgroundPicker.openPicker(themeTabRoot.currentUiCustomPath || themeTabRoot.currentWallpaperDir, false);
-                        }
-                    }
-                }
-                BackgroundRow {
-                    title: "Surface opacity"; detail: "Theme-colored surface; glossy mode allows lighter tint"; icon: "󰖙"
-                    Draggable {
-                        Layout.fillWidth: true; implicitHeight: rootObj.s(18)
-                        from: 18; to: 100; stepSize: 1; defaultValue: 96
-                        value: themeTabRoot.currentUiOpacity
-                        showValueBubble: true; valueFormatter: function(v) { return Math.round(v) + "%" }
-                        backgroundColor: ThemeBackend.crust; accentColor: ThemeBackend.mauve
-                        gradColor1: ThemeBackend.mauve; gradColor2: ThemeBackend.mauve; gradColor3: ThemeBackend.mauve
-                        handleColor: ThemeBackend.text; handleBorderColor: ThemeBackend.base
-                        cornerRadius: rootObj.s(9); handleSize: rootObj.s(18)
-                        onMoved: function(v) { themeTabRoot.currentUiOpacity = Math.round(v); appearanceDebounceTimer.restart(); }
-                        onDragFinished: { appearanceDebounceTimer.stop(); themeTabRoot.updateAppearanceSettings(); }
-                    }
-                }
-                BackgroundRow {
-                    title: "Gaussian blur"; detail: "Softens the selected background image"; icon: "󰂃"
-                    Draggable {
-                        Layout.fillWidth: true; implicitHeight: rootObj.s(18)
-                        from: 0; to: 100; stepSize: 1; defaultValue: 68
-                        value: themeTabRoot.currentUiBlur
-                        showValueBubble: true; valueFormatter: function(v) { return Math.round(v) + "%" }
-                        backgroundColor: ThemeBackend.crust; accentColor: ThemeBackend.mauve
-                        gradColor1: ThemeBackend.mauve; gradColor2: ThemeBackend.mauve; gradColor3: ThemeBackend.mauve
-                        handleColor: ThemeBackend.text; handleBorderColor: ThemeBackend.base
-                        cornerRadius: rootObj.s(9); handleSize: rootObj.s(18)
-                        onMoved: function(v) { themeTabRoot.currentUiBlur = Math.round(v); appearanceDebounceTimer.restart(); }
-                        onDragFinished: { appearanceDebounceTimer.stop(); themeTabRoot.updateAppearanceSettings(); }
-                    }
-                }
-                BackgroundRow {
-                    title: "Dynamic ambient"; detail: "Strength of the ambient accents; 0 disables them"; icon: "󰔎"
-                    Draggable {
-                        Layout.fillWidth: true; implicitHeight: rootObj.s(18)
-                        from: 0; to: 160; stepSize: 1; defaultValue: 100
-                        value: themeTabRoot.currentAmbientStrength
-                        showValueBubble: true; valueFormatter: function(v) { return Math.round(v) + "%" }
-                        backgroundColor: ThemeBackend.crust; accentColor: ThemeBackend.mauve
-                        gradColor1: ThemeBackend.mauve; gradColor2: ThemeBackend.mauve; gradColor3: ThemeBackend.mauve
-                        handleColor: ThemeBackend.text; handleBorderColor: ThemeBackend.base
-                        cornerRadius: rootObj.s(9); handleSize: rootObj.s(18)
-                        onMoved: function(v) { themeTabRoot.currentAmbientStrength = Math.round(v); appearanceDebounceTimer.restart(); }
-                        onDragFinished: { appearanceDebounceTimer.stop(); themeTabRoot.updateAppearanceSettings(); }
-                    }
-                }
-                BackgroundRow {
-                    title: "Control Center content"; detail: "Opacity of cards, notifications and quick-action tiles"; icon: "󰒓"
-                    Draggable {
-                        Layout.fillWidth: true; implicitHeight: rootObj.s(18)
-                        from: 0; to: 100; stepSize: 1; defaultValue: 100
-                        value: themeTabRoot.currentContentOpacity
-                        showValueBubble: true; valueFormatter: function(v) { return Math.round(v) + "%" }
-                        backgroundColor: ThemeBackend.crust; accentColor: ThemeBackend.mauve
-                        gradColor1: ThemeBackend.mauve; gradColor2: ThemeBackend.mauve; gradColor3: ThemeBackend.mauve
-                        handleColor: ThemeBackend.text; handleBorderColor: ThemeBackend.base
-                        cornerRadius: rootObj.s(9); handleSize: rootObj.s(18)
-                        onMoved: function(v) { themeTabRoot.currentContentOpacity = Math.round(v); appearanceDebounceTimer.restart(); }
-                        onDragFinished: { appearanceDebounceTimer.stop(); themeTabRoot.updateAppearanceSettings(); }
-                    }
-                }
-                BackgroundRow {
-                    title: "Glossy surface"; detail: "Translucent theme tint with soft highlights and a fine rim"; icon: "󰛨"
-                    Item { Layout.fillWidth: true }
-                    Reusables.Toggle {
-                        checked: themeTabRoot.currentGlossy
-                        accentColor: ThemeBackend.mauve; baseColor: ThemeBackend.crust
-                        handleColor: ThemeBackend.base; handleOffColor: ThemeBackend.text
-                        onToggled: function(value) { themeTabRoot.currentGlossy = value; themeTabRoot.updateAppearanceSettings(); }
-                    }
-                }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: themesSectionCol.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
-
-                ColumnLayout {
-                    id: themesSectionCol
-                    anchors.fill: parent
-                    anchors.margins: rootObj.s(12)
-                    spacing: rootObj.s(14)
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: rootObj.s(12)
-
-                        IconButton {
-                            enabled: false
-                            size: rootObj.s(32)
-                            Layout.preferredWidth: rootObj.s(32)
-                            Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            cornerRadius: ThemeBackend.borderRadius
-                            buttonIcon: "󰏘"
-                            iconFontSize: rootObj.s(16)
-                            accentColor: ThemeBackend.surface0
-                            textColor: "#ffffff"
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-                            spacing: rootObj.s(2)
-
-                            Text {
-                                Layout.fillWidth: true
-                                text: I18n.t("guide.theme.colors.title")
-                                font.family: ThemeBackend.fontFamily
-                                font.pixelSize: rootObj.s(13)
-                                color: ThemeBackend.text
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                text: I18n.t("guide.theme.colors.desc")
-                                font.family: ThemeBackend.fontFamily
-                                font.pixelSize: rootObj.s(11)
-                                color: ThemeBackend.subtext0
-                                wrapMode: Text.WordWrap
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            spacing: rootObj.s(8)
-
-                            IconButton {
-                                Layout.alignment: Qt.AlignVCenter
-                                size: rootObj.s(32)
-                                Layout.preferredWidth: rootObj.s(32)
-                                Layout.preferredHeight: rootObj.s(32)
-                                cornerRadius: rootObj.s(8)
-                                buttonIcon: "󰐕"
-                                iconFontSize: rootObj.s(14)
-                                accentColor: ThemeBackend.surface0
-                                textColor: isHoveredOrHighlighted ? ThemeBackend.text : ThemeBackend.overlay2
-                                onClicked: {
-                                    if (typeof Sounds !== "undefined") Sounds.playSfx("reusables/clickbutton/click.wav");
-                                    themeEditorPopup.openForNew();
-                                }
-                            }
-
-                            Input {
-                                id: themeSearchInput
-                                Layout.alignment: Qt.AlignVCenter
-                                implicitWidth: rootObj.s(180)
-                                placeholderText: I18n.t("guide.theme.colors.search")
-                                baseColor: ThemeBackend.surface0
-                                accentColor: ThemeBackend.mauve
-                                textColor: ThemeBackend.text
-                                subTextColor: ThemeBackend.subtext0
-                                borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                                cornerRadius: ThemeBackend.borderRadius
-                                fontPixelSize: rootObj.s(11)
-                                charSpacing: 1
-                                onTextEdited: newText => themeTabRoot.themeSearchText = newText
-                            }
-                        }
+                        height: 1
+                        color: Qt.alpha(ThemeBackend.surface1, 0.3)
                     }
 
                     GridLayout {
                         id: themesGrid
                         Layout.fillWidth: true
+                        Layout.leftMargin: rootObj.s(12)
+                        Layout.rightMargin: rootObj.s(12)
+                        Layout.topMargin: rootObj.s(12)
+                        Layout.bottomMargin: rootObj.s(12)
                         columns: 3
                         rowSpacing: rootObj.s(10)
                         columnSpacing: rootObj.s(10)

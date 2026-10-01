@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "widgets"
 
 ShellRoot {
     readonly property bool performanceMode: !!(Config.getSetting("general", {}).performance)
@@ -16,6 +17,7 @@ ShellRoot {
     Main {}
     Bar {}
     Lock {}
+    WidgetRedactor {}
 
     Launcher {}
     Clipboard {}    

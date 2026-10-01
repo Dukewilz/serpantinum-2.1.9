@@ -326,7 +326,11 @@
       "workspaces": {
         "title": "Anzahl anzuzeigender arbeitsflächen auswählen",
         "disc": "Hinweis: Dies beeinflusst nicht die tatsächliche anzahl der arbeitsflächen im compositor",
-        "desc": "Anzahl der anzuzeigenden Arbeitsflächen"
+        "desc": "Anzahl der anzuzeigenden Arbeitsflächen",
+        "hide_empty": {
+          "title": "Leere Arbeitsbereiche ausblenden",
+          "desc": "Nur belegte und den aktiven Arbeitsbereich anzeigen"
+        }
       },
       "opacity": {
         "title": "Leistentransparenz",
@@ -408,7 +412,9 @@
       "places": {
         "home": "Persönlicher ordner",
         "downloads": "Downloads",
-        "pictures": "Bilder"
+        "pictures": "Bilder",
+        "music": "Musik",
+        "documents": "Dokumente"
       }
     },
     "font_picker": {
@@ -681,6 +687,16 @@
         "title": "Intelligentes automatisches Ausblenden",
         "desc": "Dock nur bei geöffneten Fenstern ausblenden, auf dem Desktop sichtbar lassen"
       }
+    },
+    "lyrics_picker": {
+      "title": "Songtext-Datei auswählen",
+      "no_lyrics_selected": "Keine Songtext-Datei ausgewählt"
+    },
+    "settings": "Einstellungen",
+    "search": {
+      "placeholder": "Einstellungen suchen...",
+      "prompt": "Tippen, um Einstellungen zu suchen...",
+      "no_results": "Keine Einstellungen gefunden"
     }
   },
   "sysnotif": {
@@ -783,7 +799,11 @@
       "jazz": "Jazz",
       "classic": "Klassik",
       "custom": "Benutzerdefiniert"
-    }
+    },
+    "searching_lyrics": "Suche Songtext...",
+    "no_lyrics": "Kein Songtext gefunden",
+    "select_local_file": "Lokale Datei auswählen",
+    "lyrics": "Songtext"
   },
   "network": {
     "tabs": {
@@ -1067,7 +1087,8 @@
       "visualizer": "Visualisierer",
       "user": "Benutzer",
       "usage": "Auslastung",
-      "battery": "Akku"
+      "battery": "Akku",
+      "github": "Github"
     },
     "variants": {
       "digital": "Digital",
@@ -1083,7 +1104,9 @@
       "default": "Standard",
       "material": "Material",
       "materialAnalog": "Material analog",
-      "lumen": "Lumen"
+      "lumen": "Lumen",
+      "lyrics": "Songtext",
+      "simpleLyrics": "Einfacher Songtext"
     },
     "presets": {
       "minimal": {
@@ -1098,6 +1121,26 @@
         "name": "Dashboard",
         "desc": "Umfassender Systemmonitor mit Digitaluhr, Hardware-Auslastung und Akkustand."
       }
+    },
+    "github": {
+      "set_user": "Benutzer festlegen",
+      "error": "Fehler",
+      "commit": "Commit",
+      "commits": "Commits",
+      "no_day_selected": "Kein Tag ausgewählt",
+      "fetching": "GitHub-Beiträge werden geladen...",
+      "fetch_error": "Benutzer @{user} konnte nicht geladen werden",
+      "enter_username": "GitHub-Benutzernamen eingeben",
+      "no_contributions": "Keine Beiträge gefunden"
+    },
+    "settings": {
+      "lyricsLines": "Zeilen",
+      "lyricsAlignment": "Ausrichtung"
+    },
+    "align": {
+      "left": "Links",
+      "center": "Mitte",
+      "right": "Rechts"
     }
   },
   "cli": {

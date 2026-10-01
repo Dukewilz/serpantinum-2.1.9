@@ -325,7 +325,11 @@
       "workspaces": {
         "title": "Chọn số lượng không gian làm việc để hiển thị",
         "disc": "Lưu ý: điều này không ảnh hưởng đến số lượng không gian làm việc thực tế trong compositor",
-        "desc": "Số lượng không gian làm việc hiển thị"
+        "desc": "Số lượng không gian làm việc hiển thị",
+        "hide_empty": {
+          "title": "Ẩn không gian làm việc trống",
+          "desc": "Chỉ hiển thị không gian đang dùng và không gian hiện tại"
+        }
       },
       "opacity": {
         "title": "Độ mờ thanh tác vụ",
@@ -407,7 +411,9 @@
       "places": {
         "home": "Thư mục cá nhân",
         "downloads": "Tải xuống",
-        "pictures": "Hình ảnh"
+        "pictures": "Hình ảnh",
+        "music": "Âm nhạc",
+        "documents": "Tài liệu"
       }
     },
     "font_picker": {
@@ -637,6 +643,16 @@
         "title": "Tự động ẩn thông minh",
         "desc": "Chỉ ẩn dock khi có cửa sổ mở, giữ hiển thị trên màn hình chính"
       }
+    },
+    "lyrics_picker": {
+      "title": "Chọn tệp lời bài hát",
+      "no_lyrics_selected": "Chưa chọn tệp lời bài hát"
+    },
+    "settings": "Cài đặt",
+    "search": {
+      "placeholder": "Tìm kiếm cài đặt...",
+      "prompt": "Nhập để tìm kiếm cài đặt...",
+      "no_results": "Không tìm thấy cài đặt"
     }
   },
   "sysnotif": {
@@ -739,7 +755,11 @@
       "jazz": "Jazz",
       "classic": "Cổ điển",
       "custom": "Tùy chỉnh"
-    }
+    },
+    "searching_lyrics": "Đang tìm lời bài hát...",
+    "no_lyrics": "Không tìm thấy lời bài hát",
+    "select_local_file": "Chọn tệp cục bộ",
+    "lyrics": "Lời bài hát"
   },
   "network": {
     "tabs": {
@@ -1023,7 +1043,8 @@
       "visualizer": "Trình trực quan hóa",
       "user": "Người dùng",
       "usage": "Mức sử dụng",
-      "battery": "Pin"
+      "battery": "Pin",
+      "github": "Github"
     },
     "variants": {
       "digital": "Điện tử",
@@ -1039,7 +1060,9 @@
       "default": "Mặc định",
       "material": "Material",
       "materialAnalog": "Material kim",
-      "lumen": "Lumen"
+      "lumen": "Lumen",
+      "lyrics": "Lời bài hát",
+      "simpleLyrics": "Lời bài hát đơn giản"
     },
     "presets": {
       "minimal": {
@@ -1054,6 +1077,26 @@
         "name": "Bảng Điều Khiển",
         "desc": "Bảng theo dõi toàn diện với đồng hồ số, mức sử dụng phần cứng và trạng thái pin."
       }
+    },
+    "github": {
+      "set_user": "Đặt người dùng",
+      "error": "Lỗi",
+      "commit": "commit",
+      "commits": "commit",
+      "no_day_selected": "Chưa chọn ngày",
+      "fetching": "Đang tải đóng góp GitHub...",
+      "fetch_error": "Không thể tải người dùng @{user}",
+      "enter_username": "Nhập tên người dùng GitHub",
+      "no_contributions": "Không tìm thấy đóng góp nào"
+    },
+    "settings": {
+      "lyricsLines": "Dòng",
+      "lyricsAlignment": "Căn chỉnh"
+    },
+    "align": {
+      "left": "Trái",
+      "center": "Giữa",
+      "right": "Phải"
     }
   },
   "cli": {

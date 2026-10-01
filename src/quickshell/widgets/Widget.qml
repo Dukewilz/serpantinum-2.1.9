@@ -18,8 +18,35 @@ PanelWindow {
     property real wOpacity: 1.0
     property real wRotation: 0
 
+    property var customProps: ({})
+
+    function applyCustomProps() {
+        let it = faceLoader.item;
+        if (!it || !customProps) return;
+        let ignoredProps = [
+            "objectName", "destroyed", "deleteLater", "parent", "data",
+            "resources", "children", "visible", "enabled", "x", "y", "z",
+            "width", "height", "opacity", "rotation", "scale"
+        ];
+        for (let k in customProps) {
+            if (!k || typeof k !== "string") continue;
+            if (k.endsWith("Changed") || k.startsWith("on") || typeof customProps[k] === "function" || customProps[k] === undefined) continue;
+            if (ignoredProps.includes(k)) continue;
+            try {
+                if (it[k] !== undefined && it[k] !== customProps[k]) {
+                    it[k] = customProps[k];
+                }
+            } catch (e) {}
+        }
+    }
+
+    onCustomPropsChanged: applyCustomProps()
+
     property bool isRedacting: false
     property bool initialized: false
+
+    property bool wantsKeyboardFocus: false
+    readonly property bool effectiveKeyboardFocus: wantsKeyboardFocus || (faceLoader.item && (faceLoader.item.wantsKeyboardFocus || faceLoader.item.keyboardFocus || faceLoader.item.isEditingUser)) || false
 
     property real animX: wX
     property real animY: wY
@@ -48,10 +75,16 @@ PanelWindow {
 
     WlrLayershell.namespace: "qs-widget-" + wType + "-" + wId
     WlrLayershell.layer: WlrLayer.Bottom
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: effectiveKeyboardFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     exclusionMode: ExclusionMode.Ignore
-    focusable: false
+    focusable: effectiveKeyboardFocus
+
+    onEffectiveKeyboardFocusChanged: {
+        if (effectiveKeyboardFocus && typeof root.requestActivate === "function") {
+            root.requestActivate();
+        }
+    }
 
     anchors.top: true
     anchors.left: true
@@ -126,20 +159,37 @@ PanelWindow {
         Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
         onLoaded: {
             if (item) {
-                if (item.imagePath !== undefined) {
-                    item.imagePath = Qt.binding(() => root.wImagePath);
-                }
-                if (item.wImagePath !== undefined) {
-                    item.wImagePath = Qt.binding(() => root.wImagePath);
-                }
-                if (item.path !== undefined) {
-                    item.path = Qt.binding(() => root.wImagePath);
-                }
-                if (item.source !== undefined && typeof item.source === "string") {
-                    item.source = Qt.binding(() => root.wImagePath);
-                }
+                try {
+                    if (item.imagePath !== undefined) {
+                        item.imagePath = Qt.binding(() => root.wImagePath);
+                    }
+                    if (item.wImagePath !== undefined) {
+                        item.wImagePath = Qt.binding(() => root.wImagePath);
+                    }
+                    if (item.path !== undefined) {
+                        item.path = Qt.binding(() => root.wImagePath);
+                    }
+                    if (item.source !== undefined && typeof item.source === "string") {
+                        item.source = Qt.binding(() => root.wImagePath);
+                    }
+                } catch (e) {}
             }
+            root.applyCustomProps();
             root.updateEffectiveSize();
+        }
+    }
+
+    MouseArea {
+        id: widgetMenuArea
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton | (DesktopMenuController.isVisible ? Qt.LeftButton : 0)
+        enabled: !root.isRedacting
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) {
+                DesktopMenuController.toggle(root.screen, root.animX + mouse.x, root.animY + mouse.y, "widget", root.wId);
+            } else {
+                DesktopMenuController.hide();
+            }
         }
     }
 }

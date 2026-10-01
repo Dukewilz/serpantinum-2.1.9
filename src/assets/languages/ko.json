@@ -325,7 +325,11 @@
       "workspaces": {
         "title": "표시할 작업 공간 개수를 선택하세요",
         "disc": "참고: 이 설정은 컴포지터의 실제 작업 공간 개수에는 영향을 주지 않습니다",
-        "desc": "표시할 작업 공간 개수"
+        "desc": "표시할 작업 공간 개수",
+        "hide_empty": {
+          "title": "빈 작업 공간 숨기기",
+          "desc": "사용 중인 작업 공간과 현재 작업 공간만 표시"
+        }
       },
       "opacity": {
         "title": "바 불투명도",
@@ -407,7 +411,9 @@
       "places": {
         "home": "홈",
         "downloads": "다운로드",
-        "pictures": "사진"
+        "pictures": "사진",
+        "music": "음악",
+        "documents": "문서"
       }
     },
     "font_picker": {
@@ -637,6 +643,16 @@
         "title": "스마트 자동 숨기기",
         "desc": "창이 열려 있을 때만 독을 숨기고 바탕화면에서는 항상 표시"
       }
+    },
+    "lyrics_picker": {
+      "title": "가사 파일 선택",
+      "no_lyrics_selected": "선택된 가사 없음"
+    },
+    "settings": "설정",
+    "search": {
+      "placeholder": "설정 검색...",
+      "prompt": "설정을 검색하려면 입력하세요...",
+      "no_results": "설정을 찾을 수 없습니다"
     }
   },
   "sysnotif": {
@@ -739,7 +755,11 @@
       "jazz": "재즈",
       "classic": "클래식",
       "custom": "사용자 지정"
-    }
+    },
+    "searching_lyrics": "가사 검색 중...",
+    "no_lyrics": "가사를 찾을 수 없음",
+    "select_local_file": "로컬 파일 선택",
+    "lyrics": "가사"
   },
   "network": {
     "tabs": {
@@ -1023,7 +1043,8 @@
       "visualizer": "시각화 도구",
       "user": "사용자",
       "usage": "사용량",
-      "battery": "배터리"
+      "battery": "배터리",
+      "github": "Github"
     },
     "variants": {
       "digital": "디지털",
@@ -1039,7 +1060,9 @@
       "default": "기본",
       "material": "머티리얼",
       "materialAnalog": "머티리얼 아날로그",
-      "lumen": "루멘"
+      "lumen": "루멘",
+      "lyrics": "가사",
+      "simpleLyrics": "단순 가사"
     },
     "presets": {
       "minimal": {
@@ -1054,6 +1077,26 @@
         "name": "대시보드",
         "desc": "디지털 시계, 하드웨어 리소스 사용량 및 배터리 상태를 보여주는 대시보드입니다."
       }
+    },
+    "github": {
+      "set_user": "사용자 설정",
+      "error": "오류",
+      "commit": "커밋",
+      "commits": "커밋",
+      "no_day_selected": "선택된 날짜 없음",
+      "fetching": "GitHub 기여 내역 가져오는 중...",
+      "fetch_error": "@{user} 사용자를 가져올 수 없습니다",
+      "enter_username": "GitHub 사용자명을 입력하세요",
+      "no_contributions": "기여 내역이 없습니다"
+    },
+    "settings": {
+      "lyricsLines": "줄 수",
+      "lyricsAlignment": "정렬"
+    },
+    "align": {
+      "left": "왼쪽",
+      "center": "가운데",
+      "right": "오른쪽"
     }
   },
   "cli": {

@@ -62,6 +62,21 @@ Rectangle {
 
     property int workspaceCount: Math.max(2, (activeIndex >= baseWorkspaceCount) ? (activeIndex + 1) : baseWorkspaceCount)
 
+    property bool hideEmptyWorkspaces: {
+        let dummy = configRevision;
+        if (typeof Config !== "undefined" && Config.rawSettings) {
+            let bar = Config.rawSettings.bar || {};
+            let side = Config.rawSettings.sideBar || {};
+            if (side.hideEmptyWorkspaces !== undefined)
+                return Boolean(side.hideEmptyWorkspaces);
+            if (bar.sideHideEmptyWorkspaces !== undefined)
+                return Boolean(bar.sideHideEmptyWorkspaces);
+            if (bar.hideEmptyWorkspaces !== undefined)
+                return Boolean(bar.hideEmptyWorkspaces);
+        }
+        return false;
+    }
+
     ListModel {
         id: workspaceListModel
     }
@@ -129,6 +144,12 @@ Rectangle {
         }
         let ws = wsForId(index + 1);
         return ws !== null && ws.toplevels && ws.toplevels.values && ws.toplevels.values.length > 0;
+    }
+
+    function isShown(index) {
+        if (!hideEmptyWorkspaces)
+            return true;
+        return index === activeIndex || isOccupied(index);
     }
 
     function focusWorkspace(index) {
@@ -358,7 +379,7 @@ Rectangle {
     height: targetHeight
     Behavior on height { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
 
-    opacity: (moduleActive && workspaceCount > 0) ? ((barWindow && (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) !== undefined) ? (barWindow.barOpacity * (barWindow.barContentOpacity !== undefined ? barWindow.barContentOpacity : 1.0)) : 1.0) : 0.0
+    opacity: (moduleActive && workspaceCount > 0) ? ((barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0) : 0.0
     visible: opacity > 0
     Behavior on opacity { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
 

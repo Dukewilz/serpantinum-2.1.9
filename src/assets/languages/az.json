@@ -323,7 +323,11 @@
       "workspaces": {
         "title": "Göstəriləcək iş sahələrinin sayını seçin",
         "disc": "Qeyd: bu, görüntü birləşdiricisindəki iş sahələrinin həqiqi sayına təsir etmir",
-        "desc": "Göstəriləcək iş sahələrinin sayı"
+        "desc": "Göstəriləcək iş sahələrinin sayı",
+        "hide_empty": {
+          "title": "Boş iş sahələrini gizlət",
+          "desc": "Yalnız dolu və aktiv iş sahələrini göstər"
+        }
       },
       "opacity": {
         "title": "Zolağın qeyri-şəffaflığı",
@@ -405,7 +409,9 @@
       "places": {
         "home": "Ev qovluğu",
         "downloads": "Endirilənlər",
-        "pictures": "Şəkillər"
+        "pictures": "Şəkillər",
+        "music": "Musiqi",
+        "documents": "Sənədlər"
       }
     },
     "font_picker": {
@@ -631,6 +637,16 @@
         "title": "Ağıllı avto-gizlətmə",
         "desc": "Doku yalnız pəncərələr açıq olduqda gizlət, masaüstündə görünən saxla"
       }
+    },
+    "lyrics_picker": {
+      "title": "Mahnı mətni faylını seçin",
+      "no_lyrics_selected": "Mahnı mətni seçilməyib"
+    },
+    "settings": "Tənzimləmələr",
+    "search": {
+      "placeholder": "Tənzimləmələri axtarın...",
+      "prompt": "Axtarmaq üçün yazın...",
+      "no_results": "Tənzimləmə tapılmadı"
     }
   },
   "sysnotif": {
@@ -733,7 +749,11 @@
       "jazz": "Caz",
       "classic": "Klassik",
       "custom": "Xüsusi"
-    }
+    },
+    "searching_lyrics": "Sözlər axtarılır...",
+    "no_lyrics": "Sözlər tapılmadı",
+    "select_local_file": "Lokal fayl seçin",
+    "lyrics": "Mahnı sözləri"
   },
   "network": {
     "tabs": {
@@ -1017,7 +1037,8 @@
       "visualizer": "Səs görüntüləyicisi",
       "user": "İstifadəçi",
       "usage": "İstifadə",
-      "battery": "Batareya"
+      "battery": "Batareya",
+      "github": "Github"
     },
     "variants": {
       "digital": "Rəqəmsal",
@@ -1033,7 +1054,9 @@
       "default": "Standart",
       "material": "Material",
       "materialAnalog": "Material analoq",
-      "lumen": "Lümen"
+      "lumen": "Lümen",
+      "lyrics": "Mahnı sözləri",
+      "simpleLyrics": "Sadə mahnı mətni"
     },
     "presets": {
       "minimal": {
@@ -1048,6 +1071,26 @@
         "name": "İdarəetmə Paneli",
         "desc": "Rəqəmsal saat, sistem resursları və batareya vəziyyətini göstərən tam iş paneli."
       }
+    },
+    "github": {
+      "set_user": "İstifadəçi təyin et",
+      "error": "Xəta",
+      "commit": "commit",
+      "commits": "commit",
+      "no_day_selected": "Gün seçilməyib",
+      "fetching": "GitHub töhfələri yüklənir...",
+      "fetch_error": "@{user} istifadəçisi yüklənmədi",
+      "enter_username": "GitHub istifadəçi adını daxil edin",
+      "no_contributions": "Heç bir töhfə tapılmadı"
+    },
+    "settings": {
+      "lyricsLines": "Sətirlər",
+      "lyricsAlignment": "Hizalama"
+    },
+    "align": {
+      "left": "Sol",
+      "center": "Mərkəz",
+      "right": "Sağ"
     }
   },
   "cli": {

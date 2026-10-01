@@ -21,10 +21,6 @@ Item {
         return Scaler.s(val);
     }
 
-    function contentColor(value) {
-        return Qt.alpha(value, ThemeBackend.uiContentOpacity);
-    }
-
     readonly property string barPosition: {
         if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.position !== undefined) {
             return Config.rawSettings.bar.position;
@@ -392,11 +388,14 @@ Item {
         property bool isActive: false
         property string iconText: ""
         property color activeColor: ThemeBackend.blue
+        readonly property bool isHovered: qaMa.containsMouse
+        property real customFontSize: 0
+        property string customFontFamily: ""
 
         signal leftClicked()
         signal rightClicked()
 
-        color: root.contentColor(isActive ? activeColor : (qaMa.containsMouse ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04)))
+        color: isActive ? activeColor : (qaMa.containsMouse ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04))
         Behavior on color {
             enabled: root.visible
             ColorAnimation { duration: 150 }
@@ -408,10 +407,12 @@ Item {
             NumberAnimation { duration: 200; easing.type: Easing.OutQuart }
         }
 
-        CenteredIcon {
-            anchors.fill: parent
-            pixelSize: root.s(22)
-            color: qaBtn.isActive ? (ThemeBackend.uiContentOpacity >= 0.75 ? ThemeBackend.crust : ThemeBackend.text) : (qaMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+        Text {
+            anchors.centerIn: parent
+            font.family: qaBtn.customFontFamily !== "" ? qaBtn.customFontFamily : "Iosevka Nerd Font"
+            font.pixelSize: qaBtn.customFontSize > 0 ? qaBtn.customFontSize : root.s(22)
+            font.weight: qaBtn.customFontSize > 0 ? Font.Bold : Font.Normal
+            color: qaBtn.isActive ? ThemeBackend.crust : (qaMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
             text: qaBtn.iconText
             Behavior on color {
                 enabled: root.visible
@@ -435,25 +436,12 @@ Item {
     Rectangle {
         id: sidebarPanel
         anchors.fill: parent
-        color: Qt.alpha(ThemeBackend.surface0, ThemeBackend.uiPopupBaseOpacity)
+        color: Qt.rgba(ThemeBackend.base.r, ThemeBackend.base.g, ThemeBackend.base.b, 0.97)
         radius: Math.min(ThemeBackend.borderRadius, root.s(28))
-        border.width: 1
-        border.color: Qt.alpha(ThemeBackend.text, 0.08)
+        border.width: 0
         clip: true
         opacity: root.introContent
         transform: Translate { x: (root.isLeftAnchored ? -root.slideDistance : root.slideDistance) * (1.0 - root.introContent) }
-
-        PopupSurface {
-            anchors.fill: parent
-            z: 0
-            accentColor: ThemeBackend.mauve
-            secondaryColor: ThemeBackend.sapphire
-            tertiaryColor: ThemeBackend.teal
-            glyph: "󰍹"
-            strength: 0.80
-            active: root.visible
-            animate: root.visible
-        }
 
         Rectangle {
             anchors.top: parent.top
@@ -479,7 +467,7 @@ Item {
                     Layout.preferredHeight: root.s(54)
                     Layout.maximumHeight: root.s(54)
                     radius: root.boxRadius
-                    color: root.contentColor(Qt.darker(ThemeBackend.surface0, 1.04))
+                    color: Qt.darker(ThemeBackend.surface0, 1.04)
                     opacity: root.introTop
                     transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introTop) }
 
@@ -499,13 +487,6 @@ Item {
                             backgroundColor: SystemInfo.avatarPath === "" ? ThemeBackend.surface1 : "transparent"
 
                             Text {
-        id: v24Icon2
-        TextMetrics { id: v24Ink2; text: v24Icon2.text; font: v24Icon2.font }
-        transform: Translate {
-            x: (v24Icon2.implicitWidth - v24Ink2.tightBoundingRect.width) / 2 - v24Ink2.tightBoundingRect.x
-            y: (v24Icon2.implicitHeight - v24Ink2.tightBoundingRect.height) / 2 - v24Ink2.tightBoundingRect.y - v24Icon2.baselineOffset
-        }
-
                                 anchors.centerIn: parent
                                 text: ""
                                 font.family: "Iosevka Nerd Font"
@@ -540,13 +521,12 @@ Item {
 
                         ClickButton {
                             id: logoutBtn
-                            property bool awaitingConfirmation: false
                             Layout.alignment: Qt.AlignTop | Qt.AlignRight
                             Layout.preferredWidth: root.s(92)
                             Layout.preferredHeight: root.s(34)
                             horizontalPadding: root.s(10)
                             cornerRadius: root.s(12)
-                            buttonText: awaitingConfirmation ? "Confirm" : I18n.t("syspanel.user.logout")
+                            buttonText: I18n.t("syspanel.user.logout")
                             textFontSize: root.s(11)
                             buttonIcon: "󰍃"
                             iconFontSize: root.s(14)
@@ -563,20 +543,7 @@ Item {
                                 }
                             }
 
-                            Timer {
-                                id: logoutConfirmTimer
-                                interval: 2600
-                                onTriggered: logoutBtn.awaitingConfirmation = false
-                            }
-
                             onTriggered: {
-                                if (!awaitingConfirmation) {
-                                    awaitingConfirmation = true;
-                                    logoutConfirmTimer.restart();
-                                    return;
-                                }
-                                logoutConfirmTimer.stop();
-                                awaitingConfirmation = false;
                                 logoutOpenTimer.start();
                             }
                         }
@@ -589,7 +556,7 @@ Item {
                     Layout.preferredHeight: slidersCol.implicitHeight + root.s(20)
                     Layout.maximumHeight: slidersCol.implicitHeight + root.s(20)
                     radius: root.boxRadius
-                    color: root.contentColor(Qt.darker(ThemeBackend.surface0, 1.04))
+                    color: Qt.darker(ThemeBackend.surface0, 1.04)
                     opacity: root.introSliders
                     transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introSliders) }
 
@@ -791,7 +758,7 @@ Item {
                             function updateState() {
                                 let anyEnabled = false;
                                 if (typeof BlueLight !== "undefined" && typeof BlueLight.isAnyEnabled === "function") {
-                                anyEnabled = BlueLight.isAnyEnabled();
+                                    anyEnabled = BlueLight.isAnyEnabled();
                                 } else if (typeof Config !== "undefined") {
                                     let ds = Config.getSetting("display", {"monitors": {}});
                                     let mons = (ds && ds.monitors) ? ds.monitors : {};
@@ -830,46 +797,29 @@ Item {
                                 let target = !nightLightBtn.isActive;
                                 nightLightBtn.isActive = target;
 
+                                let monNames = [];
                                 let ds = typeof Config !== "undefined" ? Config.getSetting("display", {"monitors": {}}) : {"monitors": {}};
                                 let mons = (ds && ds.monitors) ? ds.monitors : {};
-                                if (typeof BlueLight !== "undefined" && typeof BlueLight.setEnabled === "function") {
-                                    let monNames = [];
-                                    for (let m in mons) {
-                                        if (monNames.indexOf(m) === -1) {
-                                            monNames.push(m);
+                                for (let m in mons) {
+                                    if (monNames.indexOf(m) === -1) {
+                                        monNames.push(m);
+                                    }
+                                }
+                                if (typeof Quickshell !== "undefined" && Quickshell.screens) {
+                                    for (let i = 0; i < Quickshell.screens.length; i++) {
+                                        let scr = Quickshell.screens[i];
+                                        if (scr && scr.name && monNames.indexOf(scr.name) === -1) {
+                                            monNames.push(scr.name);
                                         }
                                     }
-                                    if (typeof Quickshell !== "undefined" && Quickshell.screens) {
-                                        for (let i = 0; i < Quickshell.screens.length; i++) {
-                                            let scr = Quickshell.screens[i];
-                                            if (scr && scr.name && monNames.indexOf(scr.name) === -1) {
-                                                monNames.push(scr.name);
-                                            }
-                                        }
-                                    }
+                                }
 
-                                    if (monNames.length > 0) {
-                                        for (let i = 0; i < monNames.length; i++) {
-                                            BlueLight.setEnabled(monNames[i], target);
-                                        }
-                                    } else {
-                                        BlueLight.setEnabled("", target);
+                                if (monNames.length > 0) {
+                                    for (let i = 0; i < monNames.length; i++) {
+                                        BlueLight.setEnabled(monNames[i], target);
                                     }
                                 } else {
-                                    for (let mName in mons) {
-                                        let mSet = mons[mName] || {};
-                                        let temp = mSet.temperature !== undefined ? mSet.temperature : 50;
-                                        let kelvin = Math.round(6500 - (temp / 100) * (6500 - 2500));
-                                        if (target) {
-                                            Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/blue_light_filter.sh", "set", kelvin.toString(), mName]);
-                                        } else {
-                                            Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/blue_light_filter.sh", "reset", mName]);
-                                        }
-                                        mSet.enabled = target;
-                                        mons[mName] = mSet;
-                                    }
-                                    ds.monitors = mons;
-                                    Config.setSetting("display", ds);
+                                    BlueLight.setEnabled("", target);
                                 }
                                 nightLightBtn.updateState();
                             }
@@ -882,19 +832,164 @@ Item {
 
                         QuickActionBtn {
                             id: coffeeBtn
-                            iconText: "󰅶"
                             activeColor: Qt.tint(ThemeBackend.peach, "#5c3016")
 
+                            readonly property string stateFilePath: Caching.runDir + "/caffeine_state.json"
+                            property double coffeeStartTime: 0
+                            property double coffeeEndTime: 0
+                            property int remainingSeconds: 0
+
+                            readonly property string remainingTimeString: {
+                                let secs = remainingSeconds;
+                                if (secs <= 0) return "< 1m";
+                                let h = Math.floor(secs / 3600);
+                                let m = Math.floor((secs % 3600) / 60);
+                                if (h > 0) {
+                                    return h + "h " + (m < 10 ? "0" + m : m) + "m";
+                                }
+                                return Math.max(1, m) + "m";
+                            }
+
+                            iconText: (isActive && isHovered) ? remainingTimeString : "󰅶"
+                            customFontSize: (isActive && isHovered) ? root.s(12) : 0
+                            customFontFamily: (isActive && isHovered) ? ThemeBackend.fontFamily : ""
+
+                            function updateRemaining() {
+                                if (!isActive || coffeeEndTime <= 0) {
+                                    remainingSeconds = 0;
+                                    return;
+                                }
+                                let now = Date.now();
+                                let diff = Math.round((coffeeEndTime - now) / 1000);
+                                if (diff <= 0) {
+                                    remainingSeconds = 0;
+                                    disableCaffeine();
+                                } else {
+                                    remainingSeconds = diff;
+                                }
+                            }
+
+                            function saveState() {
+                                let data = {
+                                    "enabled": isActive,
+                                    "startTime": coffeeStartTime,
+                                    "enabledAt": coffeeStartTime > 0 ? new Date(coffeeStartTime).toISOString() : "",
+                                    "endTime": coffeeEndTime,
+                                    "durationSeconds": (coffeeEndTime > coffeeStartTime) ? Math.round((coffeeEndTime - coffeeStartTime) / 1000) : 0
+                                };
+                                let jsonStr = JSON.stringify(data);
+                                Quickshell.execDetached(["sh", "-c", "mkdir -p '" + Caching.runDir + "' && echo '" + jsonStr + "' > '" + stateFilePath + "'"]);
+                            }
+
+                            function syncConfig(enabled) {
+                                if (typeof Config === "undefined") return;
+                                let idleObj = Object.assign({}, Config.getSetting("idle", {}));
+                                idleObj.manualInhibit = enabled;
+                                idleObj.caffeineStartTime = enabled ? coffeeStartTime : 0;
+                                idleObj.caffeineEndTime = enabled ? coffeeEndTime : 0;
+                                Config.setSetting("idle", idleObj);
+                            }
+
+                            function enableCaffeine(durationMs) {
+                                let now = Date.now();
+                                coffeeStartTime = now;
+                                coffeeEndTime = now + durationMs;
+                                isActive = true;
+                                updateRemaining();
+                                saveState();
+                                syncConfig(true);
+                            }
+
+                            function increaseCaffeine(addMs) {
+                                let now = Date.now();
+                                if (!isActive || coffeeEndTime <= now) {
+                                    enableCaffeine(addMs);
+                                } else {
+                                    coffeeEndTime += addMs;
+                                    updateRemaining();
+                                    saveState();
+                                    syncConfig(true);
+                                }
+                            }
+
+                            function disableCaffeine() {
+                                isActive = false;
+                                coffeeStartTime = 0;
+                                coffeeEndTime = 0;
+                                remainingSeconds = 0;
+                                saveState();
+                                syncConfig(false);
+                            }
+
+                            function applyLoadedState(rawText) {
+                                if (!rawText || rawText.trim() === "") return;
+                                try {
+                                    let data = JSON.parse(rawText.trim());
+                                    if (data && data.enabled && data.endTime) {
+                                        let now = Date.now();
+                                        if (now < data.endTime) {
+                                            coffeeStartTime = data.startTime || now;
+                                            coffeeEndTime = data.endTime;
+                                            isActive = true;
+                                            updateRemaining();
+                                            syncConfig(true);
+                                            return;
+                                        }
+                                    }
+                                } catch (e) {}
+
+                                if (isActive) {
+                                    disableCaffeine();
+                                }
+                            }
+
                             function updateState() {
-                                let idleObj = Config.getSetting("idle", {"manualInhibit": false});
-                                isActive = Boolean(idleObj && idleObj.manualInhibit);
+                                let now = Date.now();
+                                if (typeof Config !== "undefined") {
+                                    let idleObj = Config.getSetting("idle", {"manualInhibit": false});
+                                    if (idleObj && idleObj.manualInhibit && idleObj.caffeineEndTime && idleObj.caffeineEndTime > now) {
+                                        coffeeStartTime = idleObj.caffeineStartTime || now;
+                                        coffeeEndTime = idleObj.caffeineEndTime;
+                                        isActive = true;
+                                        updateRemaining();
+                                    } else if (idleObj && !idleObj.manualInhibit) {
+                                        isActive = false;
+                                        coffeeEndTime = 0;
+                                        coffeeStartTime = 0;
+                                        remainingSeconds = 0;
+                                    }
+                                }
+                                coffeeStateReader.running = true;
+                            }
+
+                            Process {
+                                id: coffeeStateReader
+                                command: ["sh", "-c", "cat '" + coffeeBtn.stateFilePath + "' 2>/dev/null || true"]
+                                running: false
+                                stdout: StdioCollector {
+                                    onStreamFinished: {
+                                        coffeeBtn.applyLoadedState(this.text.trim());
+                                    }
+                                }
+                            }
+
+                            Timer {
+                                id: coffeeTicker
+                                interval: root.visible ? 1000 : 15000
+                                repeat: true
+                                running: coffeeBtn.isActive
+                                triggeredOnStart: true
+                                onTriggered: {
+                                    coffeeBtn.updateRemaining();
+                                }
                             }
 
                             Component.onCompleted: updateState()
 
                             Connections {
-                                target: Config
-                                enabled: root.visible
+                                target: typeof Config !== "undefined" ? Config : null
+                                enabled: true
+                                ignoreUnknownSignals: true
                                 function onSettingsLoaded() {
                                     coffeeBtn.updateState();
                                 }
@@ -902,15 +997,16 @@ Item {
 
                             onLeftClicked: {
                                 Sounds.playSfx("system/quick_click.wav");
-                                isActive = !isActive;
-                                let idleObj = Object.assign({}, Config.getSetting("idle", {}));
-                                idleObj.manualInhibit = isActive;
-                                Config.setSetting("idle", idleObj);
+                                if (isActive) {
+                                    disableCaffeine();
+                                } else {
+                                    enableCaffeine(3600 * 1000);
+                                }
                             }
 
                             onRightClicked: {
-                                closeSequence.start();
-                                Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/qs_manager.sh", "toggle", "guide", "idle"]);
+                                Sounds.playSfx("system/quick_click.wav");
+                                increaseCaffeine(3600 * 1000);
                             }
                         }
 
@@ -977,7 +1073,7 @@ Item {
                     Layout.minimumHeight: root.s(68)
                     cornerRadius: root.boxRadius
                     cardRadius: root.cardRadius
-                    baseColor: root.contentColor(Qt.darker(ThemeBackend.surface0, 1.04))
+                    baseColor: Qt.darker(ThemeBackend.surface0, 1.04)
                     rootContext: root
                     opacity: root.introNotifs
                     transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introNotifs) }
@@ -1016,7 +1112,7 @@ Item {
                                 Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introActions) }
                             ]
 
-                            color: root.contentColor((actionMa.containsMouse && !isDisabled) ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04))
+                            color: (actionMa.containsMouse && !isDisabled) ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04)
                             Behavior on color {
                                 enabled: root.visible
                                 ColorAnimation { duration: 200 }
@@ -1115,6 +1211,7 @@ Item {
                                         ctx.bezierCurveTo(width * 0.33, cp2y, width * 0.66, cp1y, width, fillY);
                                         ctx.lineTo(width, height);
                                         ctx.lineTo(0, height);
+                                        ctx.lineTo(0, height);
                                     } else {
                                         ctx.lineTo(width, 0);
                                         ctx.lineTo(width, height);
@@ -1147,13 +1244,6 @@ Item {
                             }
 
                             Text {
-        id: v24Icon1
-        TextMetrics { id: v24Ink1; text: v24Icon1.text; font: v24Icon1.font }
-        transform: Translate {
-            x: (v24Icon1.implicitWidth - v24Ink1.tightBoundingRect.width) / 2 - v24Ink1.tightBoundingRect.x
-            y: (v24Icon1.implicitHeight - v24Ink1.tightBoundingRect.height) / 2 - v24Ink1.tightBoundingRect.y - v24Icon1.baselineOffset
-        }
-
                                 anchors.centerIn: parent
                                 font.family: "Iosevka Nerd Font"
                                 font.pixelSize: root.s(24)
@@ -1281,7 +1371,7 @@ Item {
                     Layout.preferredHeight: root.isDesktop ? root.s(52) : root.s(72)
                     Layout.maximumHeight: Layout.preferredHeight
                     radius: root.isDesktop ? root.s(15) : root.boxRadius
-                    color: root.isDesktop ? "transparent" : root.contentColor(Qt.darker(ThemeBackend.surface0, 1.04))
+                    color: root.isDesktop ? "transparent" : Qt.darker(ThemeBackend.surface0, 1.04)
                     clip: true
                     opacity: root.introCore
                     transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introCore) }
@@ -1429,44 +1519,41 @@ Item {
                             implicitWidth: root.isDesktop ? parent.width : (PowerProfiles.hasPerformanceProfile ? root.s(240) : root.s(162))
                             implicitHeight: root.isDesktop ? root.s(48) : root.s(52)
                             cornerRadius: root.s(15)
-                            fontPixelSize: root.isDesktop ? root.s(13) : root.s(22)
-                            iconPixelSize: root.s(17)
-                            iconSpacing: root.s(9)
-                            optionIcons: PowerProfiles.hasPerformanceProfile ? ["󰓅", "󰗑", "󰌪"] : ["󰗑", "󰌪"]
+                            fontPixelSize: root.isDesktop ? root.s(14) : root.s(22)
                             options: {
                                 if (root.isDesktop) {
                                     return PowerProfiles.hasPerformanceProfile
-                                        ? [I18n.t("syspanel.profiles.performance"), I18n.t("syspanel.profiles.balanced"), I18n.t("syspanel.profiles.power_saver")]
-                                        : [I18n.t("syspanel.profiles.balanced"), I18n.t("syspanel.profiles.power_saver")];
+                                        ? ["󰌪 " + I18n.t("syspanel.profiles.power_saver"), "󰗑 " + I18n.t("syspanel.profiles.balanced"), "󰓅 " + I18n.t("syspanel.profiles.performance")]
+                                        : ["󰌪 " + I18n.t("syspanel.profiles.power_saver"), "󰗑 " + I18n.t("syspanel.profiles.balanced")];
                                 } else {
                                     return PowerProfiles.hasPerformanceProfile
-                                        ? ["", "", ""]
-                                        : ["", ""];
+                                        ? ["󰌪", "󰗑", "󰓅"]
+                                        : ["󰌪", "󰗑"];
                                 }
                             }
                             accentColor: root.profileColor
-                            baseColor: root.contentColor(ThemeBackend.surface1)
+                            baseColor: ThemeBackend.surface1
                             textColor: ThemeBackend.text
                             activeTextColor: ThemeBackend.crust
                             currentIndex: {
                                 if (PowerProfiles.hasPerformanceProfile) {
-                                    if (root.powerProfile === "performance") return 0;
+                                    if (root.powerProfile === "power-saver") return 0;
                                     if (root.powerProfile === "balanced") return 1;
                                     return 2;
                                 } else {
-                                    if (root.powerProfile === "balanced") return 0;
+                                    if (root.powerProfile === "power-saver") return 0;
                                     return 1;
                                 }
                             }
 
                             onValueChanged: (idx, val) => {
                                 if (PowerProfiles.hasPerformanceProfile) {
-                                    if (idx === 0) PowerProfiles.profile = PowerProfile.Performance;
+                                    if (idx === 0) PowerProfiles.profile = PowerProfile.PowerSaver;
                                     else if (idx === 1) PowerProfiles.profile = PowerProfile.Balanced;
-                                    else PowerProfiles.profile = PowerProfile.PowerSaver;
+                                    else PowerProfiles.profile = PowerProfile.Performance;
                                 } else {
-                                    if (idx === 0) PowerProfiles.profile = PowerProfile.Balanced;
-                                    else PowerProfiles.profile = PowerProfile.PowerSaver;
+                                    if (idx === 0) PowerProfiles.profile = PowerProfile.PowerSaver;
+                                    else PowerProfiles.profile = PowerProfile.Balanced;
                                 }
                             }
                         }

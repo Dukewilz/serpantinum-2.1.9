@@ -325,7 +325,11 @@
       "workspaces": {
         "title": "Quantidade de workspaces a exibir",
         "disc": "Nota: isto não afeta a quantidade real de workspaces no compositor",
-        "desc": "Número de workspaces a exibir"
+        "desc": "Número de workspaces a exibir",
+        "hide_empty": {
+          "title": "Ocultar áreas de trabalho vazias",
+          "desc": "Mostrar apenas as áreas ocupadas e a ativa"
+        }
       },
       "opacity": {
         "title": "Opacidade da barra",
@@ -407,7 +411,9 @@
       "places": {
         "home": "Início",
         "downloads": "Downloads",
-        "pictures": "Imagens"
+        "pictures": "Imagens",
+        "music": "Música",
+        "documents": "Documentos"
       }
     },
     "font_picker": {
@@ -637,6 +643,16 @@
         "title": "Ocultação automática inteligente",
         "desc": "Ocultar a dock apenas quando houver janelas abertas, mantendo-a visível na área de trabalho"
       }
+    },
+    "lyrics_picker": {
+      "title": "Selecionar arquivo de letras",
+      "no_lyrics_selected": "Nenhum arquivo de letras selecionado"
+    },
+    "settings": "Configurações",
+    "search": {
+      "placeholder": "Pesquisar configurações...",
+      "prompt": "Digite para pesquisar configurações...",
+      "no_results": "Nenhuma configuração encontrada"
     }
   },
   "sysnotif": {
@@ -739,7 +755,11 @@
       "jazz": "Jazz",
       "classic": "Clássica",
       "custom": "Personalizado"
-    }
+    },
+    "searching_lyrics": "Procurando letra...",
+    "no_lyrics": "Nenhuma letra encontrada",
+    "select_local_file": "Selecionar um arquivo local",
+    "lyrics": "Letra"
   },
   "network": {
     "tabs": {
@@ -1023,7 +1043,8 @@
       "visualizer": "Visualizador",
       "user": "Usuário",
       "usage": "Uso",
-      "battery": "Bateria"
+      "battery": "Bateria",
+      "github": "Github"
     },
     "variants": {
       "digital": "Digital",
@@ -1039,7 +1060,9 @@
       "default": "Padrão",
       "material": "Material",
       "materialAnalog": "Material analógico",
-      "lumen": "Lúmen"
+      "lumen": "Lúmen",
+      "lyrics": "Letra",
+      "simpleLyrics": "Letra simples"
     },
     "presets": {
       "minimal": {
@@ -1054,6 +1077,26 @@
         "name": "Painel",
         "desc": "Monitor de sistema completo com relógio digital, uso de hardware e nível de bateria."
       }
+    },
+    "github": {
+      "set_user": "Definir usuário",
+      "error": "Erro",
+      "commit": "commit",
+      "commits": "commits",
+      "no_day_selected": "Nenhum dia selecionado",
+      "fetching": "Buscando contribuições do GitHub...",
+      "fetch_error": "Não foi possível carregar o usuário @{user}",
+      "enter_username": "Digite um nome de usuário do GitHub",
+      "no_contributions": "Nenhuma contribuição encontrada"
+    },
+    "settings": {
+      "lyricsLines": "Linhas",
+      "lyricsAlignment": "Alinhamento"
+    },
+    "align": {
+      "left": "Esquerda",
+      "center": "Centro",
+      "right": "Direita"
     }
   },
   "cli": {

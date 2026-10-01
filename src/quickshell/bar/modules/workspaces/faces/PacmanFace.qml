@@ -10,6 +10,8 @@ Item {
     property real slotSize: widget ? widget.s(widget.isCompact ? 16 : 18) : 18
     property real slotSpacing: widget ? widget.s(widget.isCompact ? 7 : 8) : 8
 
+    property real pacmanSize: slotSize * 1.15
+
     implicitWidth: pelletsRow.implicitWidth
     implicitHeight: pelletsRow.implicitHeight
 
@@ -25,11 +27,11 @@ Item {
         NumberAnimation { duration: 320; easing.type: Easing.OutQuint }
     }
 
-    property real mouthAngle: 0.25
+    property real mouthAngle: 0.18
 
     SequentialAnimation {
         id: chompAnim
-        loops: 2
+        loops: 3
         NumberAnimation {
             target: pacmanFaceRoot
             property: "mouthAngle"
@@ -40,13 +42,21 @@ Item {
         NumberAnimation {
             target: pacmanFaceRoot
             property: "mouthAngle"
-            to: 0.25
+            to: 0.18
             duration: 80
             easing.type: Easing.InOutQuad
         }
     }
 
     onMouthAngleChanged: pacmanCanvas.requestPaint()
+
+    readonly property color pacmanColor: (ThemeBackend && ThemeBackend.primary)
+        ? ThemeBackend.primary
+        : ((ThemeBackend && ThemeBackend.mauve) ? ThemeBackend.mauve : "#cba6f7")
+
+    readonly property color ghostColor: (ThemeBackend && ThemeBackend.surface2)
+        ? ThemeBackend.surface2
+        : ((ThemeBackend && ThemeBackend.surface1) ? ThemeBackend.surface1 : "#585b70")
 
     onActiveIdxChanged: {
         if (activeIdx < prevIdx) {
@@ -83,24 +93,112 @@ Item {
                 Rectangle {
                     id: dot
                     anchors.centerIn: parent
+                    visible: !pelletSlot.isOccupied
                     width: pelletSlot.isPowerPellet
-                        ? (pelletSlot.isOccupied
-                            ? (widget ? widget.s(widget.isCompact ? 9 : 11) : 11)
-                            : (widget ? widget.s(widget.isCompact ? 7 : 8) : 8))
-                        : (pelletSlot.isOccupied
-                            ? (widget ? widget.s(widget.isCompact ? 5 : 6) : 6)
-                            : (widget ? widget.s(widget.isCompact ? 4 : 5) : 5))
+                        ? (widget ? widget.s(widget.isCompact ? 10 : 12) : 12)
+                        : (widget ? widget.s(widget.isCompact ? 7 : 9) : 9)
                     height: width
                     radius: width / 2
-                    color: pelletSlot.isOccupied
-                        ? ThemeBackend.surface2
-                        : ((widget && widget.isCompact) ? ThemeBackend.surface1 : ThemeBackend.surface0)
+                    color: (widget && widget.isCompact) ? ThemeBackend.surface1 : ThemeBackend.surface0
                     opacity: pelletSlot.isActive ? 0.0 : (pelletSlot.isHovered ? 1.0 : 0.85)
 
-                    scale: pelletMouse.pressed ? 0.88 : (pelletSlot.isHovered ? 1.15 : 1.0)
-                    Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+                    scale: pelletSlot.isActive ? 0.0 : (pelletMouse.pressed ? 0.88 : (pelletSlot.isHovered ? 1.2 : 1.0))
+                    Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
                     Behavior on opacity { NumberAnimation { duration: 180 } }
                     Behavior on color { ColorAnimation { duration: 250 } }
+                }
+
+                Item {
+                    id: ghostItem
+                    anchors.centerIn: parent
+                    visible: pelletSlot.isOccupied
+                    width: pacmanFaceRoot.slotSize * 1.2
+                    height: width * 1.1
+
+                    scale: pelletSlot.isActive ? 0.0 : (pelletMouse.pressed ? 0.88 : (pelletSlot.isHovered ? 1.15 : 1.0))
+                    opacity: pelletSlot.isActive ? 0.0 : (pelletSlot.isHovered ? 1.0 : 0.85)
+
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: pelletSlot.isActive ? 180 : 250
+                            easing.type: pelletSlot.isActive ? Easing.InBack : Easing.OutBack
+                        }
+                    }
+                    Behavior on opacity { NumberAnimation { duration: 180 } }
+
+                    Canvas {
+                        id: ghostCanvas
+                        anchors.fill: parent
+
+                        Connections {
+                            target: ThemeBackend
+                            ignoreUnknownSignals: true
+                            function onSurface2Changed() { ghostCanvas.requestPaint(); }
+                            function onSurface1Changed() { ghostCanvas.requestPaint(); }
+                            function onOverlay0Changed() { ghostCanvas.requestPaint(); }
+                            function onCrustChanged() { ghostCanvas.requestPaint(); }
+                        }
+
+                        Connections {
+                            target: pacmanFaceRoot
+                            ignoreUnknownSignals: true
+                            function onActiveIdxChanged() { ghostCanvas.requestPaint(); }
+                        }
+
+                        onWidthChanged: requestPaint()
+                        onHeightChanged: requestPaint()
+                        Component.onCompleted: requestPaint()
+
+                        onPaint: {
+                            let ctx = getContext("2d");
+                            ctx.reset();
+
+                            let pad = 1.0;
+                            let w = width - 2 * pad;
+                            let h = height - 2 * pad;
+                            let r = w / 2;
+                            let x0 = pad;
+                            let y0 = pad;
+                            let bottomY = y0 + h;
+                            let waveH = h * 0.14;
+
+                            let c = pacmanFaceRoot.ghostColor;
+
+                            ctx.beginPath();
+                            ctx.moveTo(x0, y0 + r);
+                            ctx.arc(x0 + r, y0 + r, r, Math.PI, 0, false);
+                            ctx.lineTo(x0 + w, bottomY);
+                            ctx.quadraticCurveTo(x0 + w * 5 / 6, bottomY - waveH, x0 + w * 2 / 3, bottomY);
+                            ctx.quadraticCurveTo(x0 + w / 2, bottomY - waveH, x0 + w / 3, bottomY);
+                            ctx.quadraticCurveTo(x0 + w / 6, bottomY - waveH, x0, bottomY);
+                            ctx.lineTo(x0, y0 + r);
+                            ctx.closePath();
+                            ctx.fillStyle = c;
+                            ctx.fill();
+
+                            let eyeR = w * 0.16;
+                            let eye1X = x0 + w * 0.32;
+                            let eye2X = x0 + w * 0.68;
+                            let eyeY = y0 + r * 0.95;
+
+                            ctx.beginPath();
+                            ctx.arc(eye1X, eyeY, eyeR, 0, 2 * Math.PI, false);
+                            ctx.arc(eye2X, eyeY, eyeR, 0, 2 * Math.PI, false);
+                            ctx.fillStyle = "#ffffff";
+                            ctx.fill();
+
+                            let pupilR = eyeR * 0.55;
+                            let pShift = (pacmanFaceRoot.activeIdx > pelletSlot.index)
+                                ? (eyeR * 0.35)
+                                : ((pacmanFaceRoot.activeIdx < pelletSlot.index) ? (-eyeR * 0.35) : 0);
+
+                            ctx.beginPath();
+                            ctx.arc(eye1X + pShift, eyeY, pupilR, 0, 2 * Math.PI, false);
+                            ctx.arc(eye2X + pShift, eyeY, pupilR, 0, 2 * Math.PI, false);
+                            ctx.fillStyle = (ThemeBackend && ThemeBackend.crust) ? ThemeBackend.crust : "#11111b";
+                            ctx.fill();
+                        }
+                    }
                 }
 
                 opacity: initAnimTrigger ? 1.0 : 0.0
@@ -143,10 +241,10 @@ Item {
     Item {
         id: pacmanActor
         z: 3
-        x: pacmanFaceRoot.currentPacmanX
+        x: pacmanFaceRoot.currentPacmanX + (pacmanFaceRoot.slotSize - width) / 2
         y: pelletsRow.y + (pelletsRow.height - height) / 2
-        width: pacmanFaceRoot.slotSize
-        height: pacmanFaceRoot.slotSize
+        width: pacmanFaceRoot.pacmanSize
+        height: pacmanFaceRoot.pacmanSize
         visible: widget && widget.workspaceCount > 0 && widget.activeIndex >= 0
         opacity: visible ? 1.0 : 0.0
         Behavior on opacity { NumberAnimation { duration: 180 } }
@@ -163,6 +261,8 @@ Item {
 
             Connections {
                 target: ThemeBackend
+                ignoreUnknownSignals: true
+                function onPrimaryChanged() { pacmanCanvas.requestPaint(); }
                 function onMauveChanged() { pacmanCanvas.requestPaint(); }
                 function onCrustChanged() { pacmanCanvas.requestPaint(); }
             }
@@ -181,16 +281,18 @@ Item {
                 ctx.moveTo(r, r);
                 ctx.arc(r, r, r - 0.5, m, (2 * Math.PI) - m, false);
                 ctx.closePath();
-                ctx.fillStyle = (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.mauve, 1.05) : ThemeBackend.mauve;
+                ctx.fillStyle = (widget && widget.isCompact)
+                    ? Qt.lighter(pacmanFaceRoot.pacmanColor, 1.05)
+                    : pacmanFaceRoot.pacmanColor;
                 ctx.fill();
 
-                let eyeR = Math.max(1.5, r * 0.15);
-                let eyeX = r + r * 0.1;
-                let eyeY = r - r * 0.45;
+                let eyeR = Math.max(1.5, r * 0.14);
+                let eyeX = r + r * 0.12;
+                let eyeY = r - r * 0.46;
 
                 ctx.beginPath();
                 ctx.arc(eyeX, eyeY, eyeR, 0, 2 * Math.PI, false);
-                ctx.fillStyle = ThemeBackend.crust;
+                ctx.fillStyle = (ThemeBackend && ThemeBackend.crust) ? ThemeBackend.crust : "#11111b";
                 ctx.fill();
             }
         }

@@ -430,7 +430,7 @@ Item {
             radius: ThemeBackend.borderRadius
             color: Qt.alpha(window.base, ThemeBackend.uiPopupBaseOpacity)
             border.color: window.surface0
-            border.width: 1
+            border.width: 0
             clip: true
             PopupSurface {
                 anchors.fill: parent
@@ -660,8 +660,7 @@ Item {
                             return Math.round(Math.max(window.s(36), baseSize * scaleFactor));
                         }
                         color: window.text
-                        style: Text.Outline
-                        styleColor: Qt.alpha(window.crust, 0.4)
+                        style: Text.Normal
                     }
 
                     Text {
@@ -721,7 +720,7 @@ Item {
                                 radius: Math.min(window.s(26), ThemeBackend.borderRadius * 1.75)
                                 color: isHighlighted ? window.textAccent : (hrMa.containsMouse ? Qt.lighter(window.surface0, 1.12) : window.surface0)
                                 border.color: isHighlighted ? Qt.lighter(window.textAccent, 1.1) : (hrMa.containsMouse ? Qt.alpha(window.surface2, 0.9) : Qt.alpha(window.surface1, 0.6))
-                                border.width: 1
+                                border.width: 0
 
                                 Behavior on color { ColorAnimation { duration: 180 } }
                                 Behavior on border.color { ColorAnimation { duration: 180 } }
@@ -774,7 +773,7 @@ Item {
                 color: Qt.alpha(window.surface0, 0.2)
                 radius: ThemeBackend.borderRadius
                 border.color: Qt.alpha(window.surface1, 0.4)
-                border.width: 1
+                border.width: 0
                 z: 10
 
                 opacity: introCalendar
@@ -964,11 +963,9 @@ Item {
                             font.weight: Font.Black
                             font.pixelSize: window.s(68)
                             color: window.tempGlowColor
-                            style: Text.Outline
-                            styleColor: window.isTempAnimating ? Qt.alpha(window.tempGlowColor, 0.5) : Qt.alpha(window.crust, 0.4)
+                            style: Text.Normal
 
                             Behavior on color { ColorAnimation { duration: 300 } }
-                            Behavior on styleColor { ColorAnimation { duration: 300 } }
                         }
 
                         Text {

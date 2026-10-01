@@ -889,8 +889,11 @@ Scope {
                         z: 1
                         autoPaddingEnabled: false
                         blurEnabled: true
-                        blurMax: screenRoot.s(48)
-                        blur: screenRoot.inputActive ? 1.0 : 0.55
+                        blurMax: screenRoot.s(64)
+                        saturation: 0.25
+                        contrast: 0.06
+                        brightness: 0.02
+                        blur: screenRoot.inputActive ? 1.0 : 0.72
                         Behavior on blur {
                             enabled: !screenRoot.isPlayingIntro && !screenRoot.isUnlocking
                             NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
@@ -904,7 +907,7 @@ Scope {
                         anchors.fill: parent
                         z: 2
                         color: ThemeBackend.crust
-                        opacity: (screenRoot.inputActive ? 0.72 : 0.32) * screenRoot.panelReveal
+                        opacity: (screenRoot.inputActive ? 0.14 : 0.38) * screenRoot.panelReveal
                         Behavior on opacity {
                             enabled: !screenRoot.isPlayingIntro && !screenRoot.isUnlocking
                             NumberAnimation { duration: 600; easing.type: Easing.OutCubic }
@@ -1001,37 +1004,6 @@ Scope {
                         }
                     }
 
-                    Item {
-                        id: materialLockEmblem
-                        anchors.centerIn: parent
-                        width: screenRoot.s(104); height: width
-                        z: 30
-                        visible: screenRoot.isPlayingIntro
-                        opacity: Math.min(1, screenRoot.panelReveal * 5) * Math.max(0, Math.min(1, (1 - screenRoot.panelReveal) * 5))
-                        scale: 0.65 + 0.35 * Math.min(1, screenRoot.panelReveal * 2.5)
-                        rotation: -12 * Math.pow(1 - screenRoot.panelReveal, 3)
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: width * (0.3 + 0.2 * screenRoot.panelReveal)
-                            color: ThemeBackend.mauve
-                            border.width: screenRoot.s(1)
-                            border.color: Qt.alpha(ThemeBackend.text, 0.2)
-                        }
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: parent.width * (1 + screenRoot.panelReveal * 0.6); height: width
-                            radius: width / 2; color: "transparent"
-                            border.width: screenRoot.s(2)
-                            border.color: Qt.alpha(ThemeBackend.mauve, 0.3 * (1 - screenRoot.panelReveal))
-                        }
-                        Text {
-                            anchors.centerIn: parent; text: "󰌾"
-                            font.family: "Iosevka Nerd Font"; font.pixelSize: screenRoot.s(44)
-                            color: ThemeBackend.crust
-                            transform: Translate { y: -screenRoot.s(8) * Math.pow(1 - screenRoot.panelReveal, 2) }
-                        }
-                    }
-
                     SequentialAnimation {
                         id: introSequence
 
@@ -1118,8 +1090,18 @@ Scope {
                                         font.pixelSize: screenRoot.s(120)
                                         font.weight: Font.Normal
                                         color: "#ffffff"
-                                        style: Text.Raised
-                                        styleColor: Qt.rgba(0, 0, 0, 0.25)
+
+                                        Text {
+                                            anchors.fill: parent
+                                            anchors.topMargin: screenRoot.s(1.5)
+                                            anchors.bottomMargin: -screenRoot.s(1.5)
+                                            font.family: parent.font.family
+                                            font.pixelSize: parent.font.pixelSize
+                                            font.weight: parent.font.weight
+                                            color: Qt.rgba(0, 0, 0, 0.16)
+                                            text: parent.text
+                                            z: -1
+                                        }
                                     }
 
                                     Text {
@@ -1131,8 +1113,6 @@ Scope {
                                         Layout.alignment: Qt.AlignVCenter
                                         opacity: colonPulse.running ? colonOpacity : 0.6
                                         color: "#ffffff"
-                                        style: Text.Raised
-                                        styleColor: Qt.rgba(0, 0, 0, 0.25)
 
                                         property real colonOpacity: 0.6
                                         SequentialAnimation on colonOpacity {
@@ -1142,6 +1122,18 @@ Scope {
                                             NumberAnimation { to: 1.0; duration: 500; easing.type: Easing.OutCubic }
                                             NumberAnimation { to: 0.35; duration: 500; easing.type: Easing.InCubic }
                                         }
+
+                                        Text {
+                                            anchors.fill: parent
+                                            anchors.topMargin: screenRoot.s(1.5)
+                                            anchors.bottomMargin: -screenRoot.s(1.5)
+                                            font.family: parent.font.family
+                                            font.pixelSize: parent.font.pixelSize
+                                            font.weight: parent.font.weight
+                                            color: Qt.rgba(0, 0, 0, 0.16)
+                                            text: parent.text
+                                            z: -1
+                                        }
                                     }
 
                                     Text {
@@ -1150,8 +1142,18 @@ Scope {
                                         font.pixelSize: screenRoot.s(120)
                                         font.weight: Font.Normal
                                         color: "#ffffff"
-                                        style: Text.Raised
-                                        styleColor: Qt.rgba(0, 0, 0, 0.25)
+
+                                        Text {
+                                            anchors.fill: parent
+                                            anchors.topMargin: screenRoot.s(1.5)
+                                            anchors.bottomMargin: -screenRoot.s(1.5)
+                                            font.family: parent.font.family
+                                            font.pixelSize: parent.font.pixelSize
+                                            font.weight: parent.font.weight
+                                            color: Qt.rgba(0, 0, 0, 0.16)
+                                            text: parent.text
+                                            z: -1
+                                        }
                                     }
 
                                     Text {
@@ -1164,8 +1166,18 @@ Scope {
                                         opacity: 0.8
                                         Layout.alignment: Qt.AlignBottom
                                         Layout.bottomMargin: screenRoot.s(24)
-                                        style: Text.Raised
-                                        styleColor: Qt.rgba(0, 0, 0, 0.25)
+
+                                        Text {
+                                            anchors.fill: parent
+                                            anchors.topMargin: screenRoot.s(1.5)
+                                            anchors.bottomMargin: -screenRoot.s(1.5)
+                                            font.family: parent.font.family
+                                            font.pixelSize: parent.font.pixelSize
+                                            font.weight: parent.font.weight
+                                            color: Qt.rgba(0, 0, 0, 0.16)
+                                            text: parent.text
+                                            z: -1
+                                        }
                                     }
                                 }
 
@@ -1178,6 +1190,19 @@ Scope {
                                     font.letterSpacing: 1.4
                                     color: "#ffffff"
                                     opacity: 0.85
+
+                                    Text {
+                                        anchors.fill: parent
+                                        anchors.topMargin: screenRoot.s(1.5)
+                                        anchors.bottomMargin: -screenRoot.s(1.5)
+                                        font.family: parent.font.family
+                                        font.pixelSize: parent.font.pixelSize
+                                        font.weight: parent.font.weight
+                                        font.letterSpacing: parent.font.letterSpacing
+                                        color: Qt.rgba(0, 0, 0, 0.16)
+                                        text: parent.text
+                                        z: -1
+                                    }
                                 }
 
                                 Timer {
@@ -1197,11 +1222,24 @@ Scope {
                             }
 
                             Rectangle {
+                                id: mainDashboardShellShadow
+                                anchors.fill: mainDashboardShell
+                                anchors.topMargin: screenRoot.s(1.5)
+                                anchors.bottomMargin: -screenRoot.s(1.5)
+                                radius: mainDashboardShell.radius
+                                color: Qt.rgba(0, 0, 0, 0.14)
+                                opacity: mainDashboardShell.opacity
+                                scale: mainDashboardShell.scale
+                                visible: mainDashboardShell.visible
+                                transform: mainDashboardShell.transform
+                            }
+
+                            Rectangle {
                                 id: mainDashboardShell
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: screenRoot.inputActive ? screenRoot.s(0) : screenRoot.s(90)
                                 width: Math.min(parent.width - screenRoot.s(48), screenRoot.s(440) + (screenRoot.wingsReveal * screenRoot.s(780)))
-                                height: screenRoot.s(540)
+                                height: screenRoot.s(580)
                                 radius: ThemeBackend.borderRadius * 1.5
                                 color: ThemeBackend.surface0
                                 border.width: 1.5
@@ -1257,53 +1295,64 @@ Scope {
                                         anchors.margins: screenRoot.s(24)
                                         spacing: 0
 
-                                        Item { Layout.fillHeight: true; Layout.preferredHeight: screenRoot.s(22) }
+                                        Item { Layout.fillHeight: true; Layout.preferredHeight: screenRoot.s(16) }
 
                                         ImageBox {
                                             Layout.alignment: Qt.AlignHCenter
-                                            Layout.preferredWidth: screenRoot.s(190)
-                                            Layout.preferredHeight: screenRoot.s(190)
-                                            size: screenRoot.s(190)
-                                            cornerRadius: screenRoot.s(95)
-                                            imageRadius: screenRoot.s(95)
+                                            Layout.preferredWidth: screenRoot.s(214)
+                                            Layout.preferredHeight: screenRoot.s(214)
+                                            size: screenRoot.s(214)
+                                            cornerRadius: screenRoot.s(107)
+                                            imageRadius: screenRoot.s(107)
                                             source: screenRoot.faceIconPath !== "" ? screenRoot.faceIconPath : (SystemInfo.avatarPath !== "" ? (SystemInfo.avatarPath.startsWith("file://") ? SystemInfo.avatarPath : "file://" + SystemInfo.avatarPath) : "")
                                             backgroundColor: (screenRoot.faceIconPath === "" && SystemInfo.avatarPath === "") ? ThemeBackend.surface1 : "transparent"
 
                                             Text {
-        id: v24Icon0
-        TextMetrics { id: v24Ink0; text: v24Icon0.text; font: v24Icon0.font }
-        transform: Translate {
-            x: (v24Icon0.implicitWidth - v24Ink0.tightBoundingRect.width) / 2 - v24Ink0.tightBoundingRect.x
-            y: (v24Icon0.implicitHeight - v24Ink0.tightBoundingRect.height) / 2 - v24Ink0.tightBoundingRect.y - v24Icon0.baselineOffset
-        }
-
                                                 anchors.centerIn: parent
                                                 text: ""
                                                 font.family: "Iosevka Nerd Font"
-                                                font.pixelSize: screenRoot.s(95)
+                                                font.pixelSize: screenRoot.s(107)
                                                 color: ThemeBackend.text
                                                 visible: screenRoot.faceIconPath === "" && SystemInfo.avatarPath === ""
                                             }
                                         }
 
-                                        Item { Layout.fillHeight: true; Layout.preferredHeight: screenRoot.s(20) }
+                                        Item { Layout.fillHeight: true; Layout.preferredHeight: screenRoot.s(16) }
 
                                         ColumnLayout {
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignHCenter
                                             spacing: screenRoot.s(14)
 
-                                            ClickButton {
+                                            RowLayout {
                                                 Layout.alignment: Qt.AlignHCenter
-                                                Layout.preferredHeight: screenRoot.s(38)
-                                                cornerRadius: ThemeBackend.borderRadius
-                                                horizontalPadding: screenRoot.s(16)
-                                                buttonIcon: ""
-                                                iconFontSize: screenRoot.s(15)
-                                                buttonText: screenRoot.currentUser + " • " + lockUI.statusText
-                                                textFontSize: screenRoot.s(13)
-                                                accentColor: Qt.lighter(ThemeBackend.surface0, 1.28)
-                                                textColor: lockUI.failed ? ThemeBackend.red : (lockUI.authenticating ? ThemeBackend.peach : ThemeBackend.text)
+                                                spacing: screenRoot.s(10)
+
+                                                ClickButton {
+                                                    Layout.preferredHeight: screenRoot.s(38)
+                                                    cornerRadius: ThemeBackend.borderRadius
+                                                    horizontalPadding: screenRoot.s(16)
+                                                    buttonIcon: "󰀉"
+                                                    iconFontSize: screenRoot.s(15)
+                                                    buttonText: screenRoot.currentUser
+                                                    textFontSize: screenRoot.s(13)
+                                                    accentColor: Qt.lighter(ThemeBackend.surface0, 1.28)
+                                                    textColor: ThemeBackend.text
+                                                    onClicked: screenRoot.restoreFocus()
+                                                }
+
+                                                ClickButton {
+                                                    Layout.preferredHeight: screenRoot.s(38)
+                                                    cornerRadius: ThemeBackend.borderRadius
+                                                    horizontalPadding: screenRoot.s(16)
+                                                    buttonIcon: ""
+                                                    iconFontSize: screenRoot.s(15)
+                                                    buttonText: lockUI.statusText
+                                                    textFontSize: screenRoot.s(13)
+                                                    accentColor: Qt.lighter(ThemeBackend.surface0, 1.28)
+                                                    textColor: lockUI.failed ? ThemeBackend.red : (lockUI.authenticating ? ThemeBackend.peach : ThemeBackend.text)
+                                                    onClicked: screenRoot.restoreFocus()
+                                                }
                                             }
 
                                             PasswordInput {
@@ -1577,10 +1626,10 @@ Scope {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    anchors.topMargin: screenRoot.s(2)
-                                    anchors.bottomMargin: -screenRoot.s(2)
+                                    anchors.topMargin: screenRoot.s(1.5)
+                                    anchors.bottomMargin: -screenRoot.s(1.5)
                                     radius: screenRoot.s(16)
-                                    color: Qt.rgba(0, 0, 0, 0.22)
+                                    color: Qt.rgba(0, 0, 0, 0.14)
                                 }
 
                                 Rectangle {
@@ -1933,7 +1982,7 @@ Scope {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 hasShadow: true
-                                shadowColor: Qt.rgba(0, 0, 0, 0.22)
+                                shadowColor: Qt.rgba(0, 0, 0, 0.14)
                                 baseColor: Qt.lighter(ThemeBackend.surface0, 1.28)
                                 borderWidth: 1
                                 borderColor: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.06)
@@ -1950,10 +1999,10 @@ Scope {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    anchors.topMargin: screenRoot.s(2)
-                                    anchors.bottomMargin: -screenRoot.s(2)
+                                    anchors.topMargin: screenRoot.s(1.5)
+                                    anchors.bottomMargin: -screenRoot.s(1.5)
                                     radius: screenRoot.s(16)
-                                    color: Qt.rgba(0, 0, 0, 0.22)
+                                    color: Qt.rgba(0, 0, 0, 0.14)
                                 }
 
                                 Rectangle {

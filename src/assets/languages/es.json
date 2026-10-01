@@ -326,7 +326,11 @@
       "workspaces": {
         "title": "Elegir cantidad de espacios de trabajo a mostrar",
         "disc": "Nota: esto no afecta la cantidad real de espacios de trabajo en el compositor",
-        "desc": "Número de espacios de trabajo a mostrar"
+        "desc": "Número de espacios de trabajo a mostrar",
+        "hide_empty": {
+          "title": "Ocultar escritorios vacíos",
+          "desc": "Mostrar solo los escritorios ocupados y el activo"
+        }
       },
       "opacity": {
         "title": "Opacidad de la barra",
@@ -408,7 +412,9 @@
       "places": {
         "home": "Carpeta personal",
         "downloads": "Descargas",
-        "pictures": "Imágenes"
+        "pictures": "Imágenes",
+        "music": "Música",
+        "documents": "Documentos"
       }
     },
     "font_picker": {
@@ -681,6 +687,16 @@
         "title": "Ocultación automática inteligente",
         "desc": "Ocultar el dock solo cuando haya ventanas abiertas, mantener visible en el escritorio"
       }
+    },
+    "lyrics_picker": {
+      "title": "Seleccionar archivo de letras",
+      "no_lyrics_selected": "Ningún archivo de letras seleccionado"
+    },
+    "settings": "Ajustes",
+    "search": {
+      "placeholder": "Buscar ajustes...",
+      "prompt": "Escribe para buscar ajustes...",
+      "no_results": "No se encontraron ajustes"
     }
   },
   "sysnotif": {
@@ -783,7 +799,11 @@
       "jazz": "Jazz",
       "classic": "Clásica",
       "custom": "Personalizado"
-    }
+    },
+    "searching_lyrics": "Buscando letra...",
+    "no_lyrics": "No se encontró la letra",
+    "select_local_file": "Seleccionar un archivo local",
+    "lyrics": "Letra"
   },
   "network": {
     "tabs": {
@@ -1067,7 +1087,8 @@
       "visualizer": "Visualizador",
       "user": "Usuario",
       "usage": "Uso",
-      "battery": "Batería"
+      "battery": "Batería",
+      "github": "Github"
     },
     "variants": {
       "digital": "Digital",
@@ -1083,7 +1104,9 @@
       "default": "Predeterminado",
       "material": "Material",
       "materialAnalog": "Material analógico",
-      "lumen": "Lumen"
+      "lumen": "Lumen",
+      "lyrics": "Letra",
+      "simpleLyrics": "Letra simple"
     },
     "presets": {
       "minimal": {
@@ -1098,6 +1121,26 @@
         "name": "Panel de Control",
         "desc": "Monitor de espacio de trabajo completo con reloj digital, uso de hardware y estado de la batería."
       }
+    },
+    "github": {
+      "set_user": "Establecer usuario",
+      "error": "Error",
+      "commit": "commit",
+      "commits": "commits",
+      "no_day_selected": "Ningún día seleccionado",
+      "fetching": "Obteniendo contribuciones de GitHub...",
+      "fetch_error": "No se pudo obtener el usuario @{user}",
+      "enter_username": "Introduce un nombre de usuario de GitHub",
+      "no_contributions": "No se encontraron contribuciones"
+    },
+    "settings": {
+      "lyricsLines": "Líneas",
+      "lyricsAlignment": "Alineación"
+    },
+    "align": {
+      "left": "Izquierda",
+      "center": "Centro",
+      "right": "Derecha"
     }
   },
   "cli": {

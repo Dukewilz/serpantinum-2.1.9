@@ -8,6 +8,28 @@ import "../reusables"
 QtObject {
     id: registry
 
+    readonly property var standardKeys: [
+        "id", "wId", "type", "wType", "variant", "wVariant",
+        "x", "y", "wX", "wY", "w", "h", "width", "height", "wWidth", "wHeight",
+        "opacity", "wOpacity", "rotation", "wRotation",
+        "imagePath", "wImagePath", "path",
+        "stretchWidth", "wStretchWidth", "stretchHeight", "wStretchHeight",
+        "offsetX", "offsetY", "anchor", "anchors", "anchorH", "anchorX", "horizontalAnchor",
+        "hAnchor", "anchorHorizontal", "anchorV", "anchorY", "verticalAnchor", "vAnchor",
+        "anchorVertical", "isRemoving", "wProps"
+    ]
+
+    function extractProps(obj) {
+        let out = {};
+        if (!obj) return out;
+        for (let k in obj) {
+            if (!standardKeys.includes(k) && typeof obj[k] !== "function") {
+                out[k] = obj[k];
+            }
+        }
+        return out;
+    }
+
     property var componentCache: ({})
 
     property Component defaultToolbarButtonComponent: Component {
@@ -53,6 +75,213 @@ QtObject {
         }
     }
 
+    property Component lyricsLinesSelectorComponent: Component {
+        Item {
+            id: settingRoot
+            property var typeData: null
+            property var settingData: null
+            property var redactor: null
+            property var widget: null
+            property var widgetData: null
+            property var item: null
+
+            readonly property var targetWidget: {
+                if (settingRoot.widget) return settingRoot.widget;
+                if (settingRoot.widgetData) return settingRoot.widgetData;
+                if (settingRoot.item) return settingRoot.item;
+                if (settingRoot.redactor) {
+                    if (settingRoot.redactor.selectedWidget) return settingRoot.redactor.selectedWidget;
+                    if (settingRoot.redactor.currentWidget) return settingRoot.redactor.currentWidget;
+                    if (settingRoot.redactor.activeWidget) return settingRoot.redactor.activeWidget;
+                    if (settingRoot.redactor.widget) return settingRoot.redactor.widget;
+                }
+                if (typeof Config !== "undefined" && Config.selectedWidget) return Config.selectedWidget;
+                return null;
+            }
+
+            readonly property bool isApplicable: {
+                let w = settingRoot.targetWidget;
+                if (!w) return true;
+                let v = w.variant || (settingRoot.typeData ? settingRoot.typeData.variant : "");
+                return !v || v === "simpleLyrics";
+            }
+
+            visible: isApplicable
+            implicitWidth: selector.implicitWidth
+            implicitHeight: selector.implicitHeight
+
+            function syncValue() {
+                let w = settingRoot.targetWidget;
+                if (!w) return;
+                let cur = (w.lyricsLines !== undefined) ? w.lyricsLines : 1;
+                if (selector.value !== cur) {
+                    selector.setValue(cur);
+                }
+            }
+
+            Component.onCompleted: syncValue()
+            onTargetWidgetChanged: syncValue()
+
+            Connections {
+                target: settingRoot.targetWidget
+                ignoreUnknownSignals: true
+                function onLyricsLinesChanged() {
+                    settingRoot.syncValue();
+                }
+            }
+
+            NumberSelector {
+                id: selector
+                anchors.centerIn: parent
+                implicitWidth: Scaler.s(120)
+                implicitHeight: Scaler.s(32)
+                from: 0
+                to: 4
+                stepSize: 1
+                decimals: 0
+                value: {
+                    let w = settingRoot.targetWidget;
+                    return (w && w.lyricsLines !== undefined) ? w.lyricsLines : 1;
+                }
+                specialZeroText: "0"
+                fontFamily: (typeof ThemeBackend !== "undefined" && ThemeBackend.fontFamily) ? ThemeBackend.fontFamily : "JetBrains Mono"
+                accentColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.mauve) ? ThemeBackend.mauve : "#cba6f7"
+                baseColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.surface0) ? ThemeBackend.surface0 : "#313244"
+                buttonColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.surface1) ? ThemeBackend.surface1 : "#45475a"
+                textColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.text) ? ThemeBackend.text : "#cdd6f4"
+                buttonTextColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.subtext1) ? ThemeBackend.subtext1 : "#bac2de"
+                cornerRadius: (typeof ThemeBackend !== "undefined" && ThemeBackend.borderRadius !== undefined) ? ThemeBackend.borderRadius : 10
+
+                onTriggered: {
+                    let w = settingRoot.targetWidget;
+                    let val = Math.round(selector.value);
+                    if (w) {
+                        w.lyricsLines = val;
+                        if (typeof w.linesBehind !== "undefined") w.linesBehind = val;
+                        if (typeof w.linesAfter !== "undefined") w.linesAfter = val;
+                    }
+                    if (settingRoot.redactor) {
+                        if (typeof settingRoot.redactor.setWidgetProperty === "function") {
+                            settingRoot.redactor.setWidgetProperty("lyricsLines", val);
+                        } else if (typeof settingRoot.redactor.updateWidgetProperty === "function") {
+                            settingRoot.redactor.updateWidgetProperty(w, "lyricsLines", val);
+                        } else if (typeof settingRoot.redactor.saveConfig === "function") {
+                            settingRoot.redactor.saveConfig();
+                        } else if (typeof settingRoot.redactor.save === "function") {
+                            settingRoot.redactor.save();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    property Component lyricsAlignmentSelectorComponent: Component {
+        Item {
+            id: settingRoot
+            property var typeData: null
+            property var settingData: null
+            property var redactor: null
+            property var widget: null
+            property var widgetData: null
+            property var item: null
+
+            readonly property var targetWidget: {
+                if (settingRoot.widget) return settingRoot.widget;
+                if (settingRoot.widgetData) return settingRoot.widgetData;
+                if (settingRoot.item) return settingRoot.item;
+                if (settingRoot.redactor) {
+                    if (settingRoot.redactor.selectedWidget) return settingRoot.redactor.selectedWidget;
+                    if (settingRoot.redactor.currentWidget) return settingRoot.redactor.currentWidget;
+                    if (settingRoot.redactor.activeWidget) return settingRoot.redactor.activeWidget;
+                    if (settingRoot.redactor.widget) return settingRoot.redactor.widget;
+                }
+                if (typeof Config !== "undefined" && Config.selectedWidget) return Config.selectedWidget;
+                return null;
+            }
+
+            readonly property bool isApplicable: {
+                let w = settingRoot.targetWidget;
+                if (!w) return true;
+                let v = w.variant || (settingRoot.typeData ? settingRoot.typeData.variant : "");
+                return !v || v === "lyrics" || v === "simpleLyrics";
+            }
+
+            visible: isApplicable
+            implicitWidth: alignSwitch.implicitWidth
+            implicitHeight: alignSwitch.implicitHeight
+
+            readonly property var alignOptions: [
+                { id: "left", label: typeof I18n !== "undefined" ? I18n.t("widgets.align.left", "Left") : "Left" },
+                { id: "center", label: typeof I18n !== "undefined" ? I18n.t("widgets.align.center", "Center") : "Center" },
+                { id: "right", label: typeof I18n !== "undefined" ? I18n.t("widgets.align.right", "Right") : "Right" }
+            ]
+
+            function syncValue() {
+                let w = settingRoot.targetWidget;
+                if (!w) return;
+                let cur = (w.lyricsAlignment !== undefined && w.lyricsAlignment !== "") ? w.lyricsAlignment : ((w.alignment !== undefined && w.alignment !== "") ? w.alignment : "left");
+                for (let i = 0; i < alignOptions.length; i++) {
+                    if (alignOptions[i].id === cur) {
+                        if (alignSwitch.currentIndex !== i) {
+                            alignSwitch.currentIndex = i;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            Component.onCompleted: syncValue()
+            onTargetWidgetChanged: syncValue()
+
+            Connections {
+                target: settingRoot.targetWidget
+                ignoreUnknownSignals: true
+                function onLyricsAlignmentChanged() {
+                    settingRoot.syncValue();
+                }
+                function onAlignmentChanged() {
+                    settingRoot.syncValue();
+                }
+            }
+
+            Switch {
+                id: alignSwitch
+                anchors.centerIn: parent
+                implicitHeight: Scaler.s(32)
+                implicitWidth: Scaler.s(160)
+                accentColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.mauve) ? ThemeBackend.mauve : "#cba6f7"
+                baseColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.surface0) ? ThemeBackend.surface0 : "#313244"
+                textColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.text) ? ThemeBackend.text : "#cdd6f4"
+                activeTextColor: (typeof ThemeBackend !== "undefined" && ThemeBackend.crust) ? ThemeBackend.crust : "#11111b"
+                cornerRadius: (typeof ThemeBackend !== "undefined" && ThemeBackend.borderRadius !== undefined) ? ThemeBackend.borderRadius : 10
+                fontPixelSize: Scaler.s(11)
+                options: alignOptions.map(o => o.label || o.id)
+
+                onToggled: (idx) => {
+                    if (idx < 0 || idx >= alignOptions.length) return;
+                    let val = alignOptions[idx].id;
+                    let w = settingRoot.targetWidget;
+                    if (w) {
+                        w.lyricsAlignment = val;
+                        if (typeof w.alignment !== "undefined") w.alignment = val;
+                    }
+                    if (settingRoot.redactor) {
+                        if (typeof settingRoot.redactor.setWidgetProperty === "function") {
+                            settingRoot.redactor.setWidgetProperty("lyricsAlignment", val);
+                        } else if (typeof settingRoot.redactor.updateWidgetProperty === "function") {
+                            settingRoot.redactor.updateWidgetProperty(w, "lyricsAlignment", val);
+                        } else if (typeof settingRoot.redactor.saveConfig === "function") {
+                            settingRoot.redactor.saveConfig();
+                        } else if (typeof settingRoot.redactor.save === "function") {
+                            settingRoot.redactor.save();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     property var types: ({
         "visualizer": {
             name: I18n.t("widgets.types.visualizer"),
@@ -88,9 +317,9 @@ QtObject {
                 "digital":        { file: "faces/ClockFaceDigital.qml",        icon: "1", label: I18n.t("widgets.variants.digital") },
                 "analog":         { file: "faces/ClockFaceAnalog.qml",         icon: "2", label: I18n.t("widgets.variants.analog") },
                 "minimal":        { file: "faces/ClockFaceMinimal.qml",        icon: "3", label: I18n.t("widgets.variants.minimal") },
-                "material":          { file: "faces/ClockFaceMaterial.qml",          icon: "4", label: I18n.t("widgets.variants.material") },
+                "material":       { file: "faces/ClockFaceMaterial.qml",       icon: "4", label: I18n.t("widgets.variants.material") },
                 "materialAnalog": { file: "faces/ClockFaceMaterialAnalog.qml", icon: "5", label: I18n.t("widgets.variants.materialAnalog") },
-                "lumen": { file: "faces/ClockFaceMaterialLumen.qml", icon: "6", label: I18n.t("widgets.variants.lumen") }
+                "lumen":          { file: "faces/ClockFaceMaterialLumen.qml",  icon: "6", label: I18n.t("widgets.variants.lumen") }
             }
         },
         "music": {
@@ -100,9 +329,45 @@ QtObject {
             defaultHeight: 120,
             defaultVariant: "full",
             variants: {
-                "full": { file: "faces/MusicFace.qml", icon: "1", label: I18n.t("widgets.variants.full") },
-                "round": { file: "faces/MusicFaceRound.qml", icon: "2", label: I18n.t("widgets.variants.round") }
-            }
+                "full":         { file: "faces/MusicFace.qml",             icon: "1", label: I18n.t("widgets.variants.full") },
+                "round":        { file: "faces/MusicFaceRound.qml",        icon: "2", label: I18n.t("widgets.variants.round") },
+                "lyrics":       { file: "faces/MusicFaceLyrics.qml",       icon: "3", label: I18n.t("widgets.variants.lyrics") },
+                "simpleLyrics": { file: "faces/MusicFaceLyricsSimple.qml", icon: "4", label: typeof I18n !== "undefined" ? I18n.t("widgets.variants.simpleLyrics", "Simple Lyrics") : "Simple Lyrics" }
+            },
+            additionalSettings: [
+                {
+                    id: "lyricsLines",
+                    name: typeof I18n !== "undefined" ? I18n.t("widgets.settings.lyricsLines", "Lines") : "Lines",
+                    icon: "󰎈",
+                    iconFontSize: 16,
+                    action: "lyricsLines",
+                    type: "custom",
+                    row: "top",
+                    variant: "simpleLyrics",
+                    variants: ["simpleLyrics"],
+                    property: "lyricsLines",
+                    from: 0,
+                    to: 4,
+                    stepSize: 1,
+                    accentColor: "surface0",
+                    textColor: "mauve",
+                    component: registry.lyricsLinesSelectorComponent
+                },
+                {
+                    id: "lyricsAlignment",
+                    name: typeof I18n !== "undefined" ? I18n.t("widgets.settings.lyricsAlignment", "Alignment") : "Alignment",
+                    icon: "󰝥",
+                    iconFontSize: 16,
+                    action: "lyricsAlignment",
+                    type: "custom",
+                    row: "top",
+                    variants: ["lyrics", "simpleLyrics"],
+                    property: "lyricsAlignment",
+                    accentColor: "surface0",
+                    textColor: "mauve",
+                    component: registry.lyricsAlignmentSelectorComponent
+                }
+            ]
         },
         "weather": {
             name: I18n.t("widgets.types.weather"),
@@ -113,8 +378,8 @@ QtObject {
             defaultVariant: "compact",
             variants: {
                 "compact": { file: "faces/WeatherFaceCompact.qml", icon: "1", label: I18n.t("widgets.variants.compact") },
-                "full": { file: "faces/WeatherFaceFull.qml", icon: "2", label: I18n.t("widgets.variants.full") },
-                "round": { file: "faces/WeatherFaceRound.qml", icon: "3", label: I18n.t("widgets.variants.round") }
+                "full":    { file: "faces/WeatherFaceFull.qml",    icon: "2", label: I18n.t("widgets.variants.full") },
+                "round":   { file: "faces/WeatherFaceRound.qml",   icon: "3", label: I18n.t("widgets.variants.round") }
             }
         },
         "image": {
@@ -126,9 +391,9 @@ QtObject {
             defaultVariant: "rect",
             requiresFilePicker: true,
             variants: {
-                "rect": { file: "faces/ImageFaceRect.qml", icon: "1", label: I18n.t("widgets.variants.rect") },
+                "rect":    { file: "faces/ImageFaceRect.qml",    icon: "1", label: I18n.t("widgets.variants.rect") },
                 "rounded": { file: "faces/ImageFaceRounded.qml", icon: "2", label: I18n.t("widgets.variants.rounded") },
-                "round": { file: "faces/ImageFaceRound.qml", icon: "3", label: I18n.t("widgets.variants.round") }
+                "round":   { file: "faces/ImageFaceRound.qml",   icon: "3", label: I18n.t("widgets.variants.round") }
             },
             additionalSettings: [
                 {
@@ -206,6 +471,17 @@ QtObject {
             defaultVariant: "default",
             variants: {
                 "default": { file: "faces/BatteryFace.qml", icon: "1", label: I18n.t("widgets.variants.default") }
+            }
+        },
+        "github": {
+            name: typeof I18n !== "undefined" ? I18n.t("widgets.types.github", "GitHub") : "GitHub",
+            icon: "󰊤",
+            iconOffsetX: -1,
+            defaultWidth: 540,
+            defaultHeight: 180,
+            defaultVariant: "default",
+            variants: {
+                "default": { file: "faces/GithubFace.qml", icon: "1", label: typeof I18n !== "undefined" ? I18n.t("widgets.variants.default", "Default") : "Default" }
             }
         }
     })
@@ -462,10 +738,18 @@ QtObject {
         return Object.keys(types).map(k => Object.assign({ id: k }, types[k]));
     }
 
-    function additionalSettings(type, row) {
+    function additionalSettings(type, row, variant) {
         let t = types[type];
         if (!t || !t.additionalSettings) return [];
-        if (!row) return t.additionalSettings;
-        return t.additionalSettings.filter(s => (s.row || "top") === row);
+        let list = t.additionalSettings;
+        if (variant !== undefined && variant !== null && variant !== "") {
+            list = list.filter(s => {
+                if (Array.isArray(s.variants)) return s.variants.includes(variant);
+                if (s.variant) return s.variant === variant;
+                return true;
+            });
+        }
+        if (!row) return list;
+        return list.filter(s => (s.row || "top") === row);
     }
 }

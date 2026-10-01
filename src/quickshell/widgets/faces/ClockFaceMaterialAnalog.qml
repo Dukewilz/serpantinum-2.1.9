@@ -17,22 +17,28 @@ Item {
     property bool showSeconds: true
 
     property var currentTime: new Date()
-    property real secondHeadAngle: (new Date()).getSeconds() * 6
+    property int lastSecond: (new Date()).getSeconds()
+    property real secondHeadAngle: lastSecond * 6
     property real secondTailAngle: secondHeadAngle
 
     function morphSecond(sec) {
         if (!root.showSeconds) return;
 
+        if (morphAnim.running) {
+            morphAnim.stop();
+            root.secondHeadAngle = Math.round(((headAnim.to % 360) + 360) % 360);
+            root.secondTailAngle = root.secondHeadAngle;
+        }
+
         var target = sec * 6;
-        var currentNorm = ((root.secondTailAngle % 360) + 360) % 360;
-        var diff = target - currentNorm;
-        diff = ((diff % 360) + 360) % 360;
+        var currentNorm = Math.round(((root.secondTailAngle % 360) + 360) % 360);
+        var diff = (target - currentNorm + 360) % 360;
+
         if (diff === 0) {
-            diff = 6;
+            return;
         }
 
         if (diff > 12) {
-            morphAnim.stop();
             root.secondHeadAngle = target;
             root.secondTailAngle = target;
             return;
@@ -72,26 +78,33 @@ Item {
         }
 
         onFinished: {
-            root.secondHeadAngle = ((root.secondHeadAngle % 360) + 360) % 360;
+            root.secondHeadAngle = Math.round(((root.secondHeadAngle % 360) + 360) % 360);
             root.secondTailAngle = root.secondHeadAngle;
         }
     }
 
     Timer {
-        interval: 1000
+        id: clockTimer
+        interval: Math.max(20, 1000 - (new Date()).getMilliseconds())
         running: true
         repeat: true
         onTriggered: {
             var now = new Date();
             root.currentTime = now;
-            root.morphSecond(now.getSeconds());
+            var sec = now.getSeconds();
+            if (sec !== root.lastSecond) {
+                root.lastSecond = sec;
+                root.morphSecond(sec);
+            }
+            interval = Math.max(20, 1000 - now.getMilliseconds());
         }
     }
 
     Component.onCompleted: {
         var now = new Date();
         root.currentTime = now;
-        root.secondHeadAngle = now.getSeconds() * 6;
+        root.lastSecond = now.getSeconds();
+        root.secondHeadAngle = root.lastSecond * 6;
         root.secondTailAngle = root.secondHeadAngle;
     }
 

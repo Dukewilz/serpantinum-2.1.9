@@ -332,8 +332,10 @@ if [ "$FULL_MODE" = true ] || [ -n "$GEOMETRY" ]; then
 
     if [ -s "$FILENAME" ]; then
         wl-copy --type image/png < "$FILENAME"
-        if command -v cliphist &>/dev/null; then
-            cliphist store < "$FILENAME"
+        if ! pgrep -f "wl-paste.*--type image.*cliphist" &>/dev/null; then
+            if command -v cliphist &>/dev/null; then
+                cliphist store < "$FILENAME"
+            fi
         fi
         (
             notif_app="$(t "screenshot.notifications.screenshot_app_name")"

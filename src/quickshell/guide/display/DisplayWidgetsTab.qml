@@ -512,14 +512,13 @@ Item {
     }
 
     function openRedactor(mon) {
-        let runnerTarget = Caching.serpantinumDir ? (Caching.serpantinumDir + "/quickshell/Runner.qml") : "";
-        let redactorTarget = Caching.widgetRedactor || (Caching.serpantinumDir ? Caching.serpantinumDir + "/quickshell/widgets/WidgetRedactor.qml" : Caching.mainQml);
-        let launchCmd = "{ mkdir -p '" + Caching.runDir + "' && printf '%s' '" + mon + "' > '" + Caching.runDir + "/redactor_target_monitor' && QS_WIDGET_MONITOR='" + mon + "' SERPANTINUM_TARGET_FILE='" + redactorTarget + "' quickshell -p '" + runnerTarget + "'; } >> /tmp/redactor_debug.log 2>&1";
-        Quickshell.execDetached(["bash", "-c", launchCmd]);
+        let dir = (typeof Caching !== "undefined" && Caching.serpantinumDir) ? Caching.serpantinumDir : "";
+        let scriptPath = dir ? (dir + "/scripts/redactor.sh") : "redactor.sh";
+        Quickshell.execDetached(["bash", scriptPath, mon || ""]);
         if (rootObj && typeof rootObj.closePopup === "function") {
             rootObj.closePopup();
         } else {
-            Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/qs_manager.sh", "close"]);
+            Quickshell.execDetached(["bash", dir ? (dir + "/scripts/qs_manager.sh") : "qs_manager.sh", "close"]);
         }
     }
 
@@ -682,69 +681,23 @@ Item {
             width: parent.width - (parent.contentHeight > parent.height ? rootObj.s(6) : 0)
             spacing: rootObj.s(6)
 
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: rowHideBarLayout.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
+            SettingsRow {
+                rootObj: displayWidgetsRoot.rootObj
+                icon: "󰘓"
+                title: I18n.t("guide.display.widgets.hide_bar.title", "Hide Bar in Redactor")
+                description: I18n.t("guide.display.widgets.hide_bar.desc", "Automatically hide the bar when editing widgets in redactor mode")
 
-                RowLayout {
-                    id: rowHideBarLayout
-                    anchors.left: parent.left
-                    anchors.leftMargin: rootObj.s(14)
-                    anchors.right: parent.right
-                    anchors.rightMargin: rootObj.s(14)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: rootObj.s(12)
-
-                    IconButton {
-                        enabled: false
-                        size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
-                        Layout.alignment: Qt.AlignVCenter
-                        cornerRadius: ThemeBackend.borderRadius
-                        buttonIcon: "󰘓"
-                        iconFontSize: rootObj.s(16)
-                        accentColor: ThemeBackend.surface0
-                        textColor: "#ffffff"
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: rootObj.s(2)
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: I18n.t("guide.display.widgets.hide_bar.title", "Hide Bar in Redactor")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(13)
-                            color: ThemeBackend.text
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: I18n.t("guide.display.widgets.hide_bar.desc", "Automatically hide the bar when editing widgets in redactor mode")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(11)
-                            color: ThemeBackend.subtext0
-                        }
-                    }
-
-                    Toggle {
-                        id: hideBarToggle
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                        checked: displayWidgetsRoot.currentHideBarInRedactor
-                        accentColor: ThemeBackend.mauve
-                        baseColor: ThemeBackend.surface1
-                        handleColor: ThemeBackend.crust
-                        handleOffColor: ThemeBackend.text
-                        onToggled: function(val) {
-                            displayWidgetsRoot.currentHideBarInRedactor = val;
-                            displayWidgetsRoot.updateWidgetsSetting("hideBarInRedactor", val);
-                        }
+                Toggle {
+                    id: hideBarToggle
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    checked: displayWidgetsRoot.currentHideBarInRedactor
+                    accentColor: ThemeBackend.mauve
+                    baseColor: ThemeBackend.surface1
+                    handleColor: ThemeBackend.crust
+                    handleOffColor: ThemeBackend.text
+                    onToggled: function(val) {
+                        displayWidgetsRoot.currentHideBarInRedactor = val;
+                        displayWidgetsRoot.updateWidgetsSetting("hideBarInRedactor", val);
                     }
                 }
             }
@@ -949,6 +902,26 @@ Item {
                                                     Layout.maximumHeight: Layout.preferredHeight
                                                     color: Qt.darker(presetCard.accentColor, 1.15)
                                                     clip: true
+
+                                                    layer.enabled: true
+                                                    layer.effect: MultiEffect {
+                                                        maskEnabled: true
+                                                        maskSource: previewMask
+                                                    }
+
+                                                    Item {
+                                                        id: previewMask
+                                                        anchors.fill: parent
+                                                        visible: false
+                                                        layer.enabled: true
+
+                                                        Rectangle {
+                                                            width: parent.width
+                                                            height: parent.height + ThemeBackend.borderRadius * 2
+                                                            radius: ThemeBackend.borderRadius
+                                                            color: "white"
+                                                        }
+                                                    }
 
                                                     Item {
                                                         id: virtualScreenWrapper

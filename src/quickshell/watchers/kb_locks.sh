@@ -72,23 +72,40 @@ def find_kbd_devices():
         devs = glob.glob("/dev/input/event*")
     return devs
 
-fds = {}
-for path in find_kbd_devices():
+def scan_devices():
+    res = {}
+    for path in find_kbd_devices():
+        try:
+            fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+            res[fd] = path
+        except Exception:
+            pass
+    return res
+
+def remove_fd(fd):
+    fds.pop(fd, None)
     try:
-        fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
-        fds[fd] = path
+        os.close(fd)
     except Exception:
         pass
+
+fds = scan_devices()
 
 if fds:
     while True:
         try:
+            if not fds:
+                time.sleep(1)
+                fds = scan_devices()
+                if not fds:
+                    continue
             rlist, _, _ = select.select(list(fds.keys()), [], [])
             for fd in rlist:
                 while True:
                     try:
                         buf = os.read(fd, event_size)
                         if not buf or len(buf) < event_size:
+                            remove_fd(fd)
                             break
                         _, _, ev_type, ev_code, ev_val = struct.unpack(event_fmt, buf)
                         if ev_type == 17:
@@ -107,8 +124,17 @@ if fds:
                     except (BlockingIOError, InterruptedError):
                         break
                     except Exception:
+                        remove_fd(fd)
                         break
         except Exception:
+            dead = []
+            for fd in list(fds.keys()):
+                try:
+                    select.select([fd], [], [], 0)
+                except Exception:
+                    dead.append(fd)
+            for fd in dead:
+                remove_fd(fd)
             time.sleep(1)
 else:
     caps_paths = glob.glob("/sys/class/leds/*capslock*/brightness")

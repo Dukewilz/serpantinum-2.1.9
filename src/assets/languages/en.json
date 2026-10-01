@@ -325,7 +325,11 @@
       "workspaces": {
         "title": "Choose an amount of workspaces to display",
         "disc": "Note: this doesn't affect the actual amount of workspaces in the compositor",
-        "desc": "Number of workspaces to display"
+        "desc": "Number of workspaces to display",
+        "hide_empty": {
+          "title": "Hide empty workspaces",
+          "desc": "Show only occupied workspaces and the active one"
+        }
       },
       "opacity": {
         "title": "Bar opacity",
@@ -407,7 +411,9 @@
       "places": {
         "home": "Home",
         "downloads": "Downloads",
-        "pictures": "Pictures"
+        "pictures": "Pictures",
+        "music": "Music",
+        "documents": "Documents"
       }
     },
     "font_picker": {
@@ -637,6 +643,16 @@
         "title": "Smart auto-hide",
         "desc": "Auto-hide dock only when windows are open, keep visible on desktop"
       }
+    },
+    "lyrics_picker": {
+      "title": "Select lyrics file",
+      "no_lyrics_selected": "No lyrics selected"
+    },
+    "settings": "Settings",
+    "search": {
+      "placeholder": "Search settings...",
+      "prompt": "Type to search settings...",
+      "no_results": "No settings found"
     }
   },
   "sysnotif": {
@@ -739,7 +755,11 @@
       "jazz": "Jazz",
       "classic": "Classic",
       "custom": "Custom"
-    }
+    },
+    "searching_lyrics": "Searching lyrics...",
+    "no_lyrics": "No lyrics found",
+    "select_local_file": "Select a local file",
+    "lyrics": "Lyrics"
   },
   "network": {
     "tabs": {
@@ -1023,7 +1043,8 @@
       "visualizer": "Visualizer",
       "user": "User",
       "usage": "Usage",
-      "battery": "Battery"
+      "battery": "Battery",
+      "github": "Github"
     },
     "variants": {
       "digital": "Digital",
@@ -1039,7 +1060,9 @@
       "default": "Default",
       "material": "Material",
       "materialAnalog": "Material Analog",
-      "lumen": "Lumen"
+      "lumen": "Lumen",
+      "lyrics": "Lyrics",
+      "simpleLyrics": "Simple Lyrics"
     },
     "presets": {
       "minimal": {
@@ -1051,6 +1074,26 @@
       "dashboard": {
         "name": "Dashboard"
       }
+    },
+    "github": {
+      "set_user": "Set user",
+      "error": "Error",
+      "commit": "commit",
+      "commits": "commits",
+      "no_day_selected": "No day selected",
+      "fetching": "Fetching GitHub contributions...",
+      "fetch_error": "Could not fetch user @{user}",
+      "enter_username": "Enter a GitHub username",
+      "no_contributions": "No contributions found"
+    },
+    "settings": {
+      "lyricsLines": "Lines",
+      "lyricsAlignment": "Alignment"
+    },
+    "align": {
+      "left": "Left",
+      "center": "Center",
+      "right": "Right"
     }
   },
   "cli": {

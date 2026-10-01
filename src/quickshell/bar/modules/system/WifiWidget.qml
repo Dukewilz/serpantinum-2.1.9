@@ -276,7 +276,6 @@ Rectangle {
             horizontalPadding: barWindow ? barWindow.s(wifiWidgetRoot.isCompact ? 9 : 10) : (wifiWidgetRoot.isCompact ? 9 : 10)
             buttonIcon: "󰈀"
             iconFontSize: barWindow ? barWindow.s(wifiWidgetRoot.isCompact ? 14 : 15) : (wifiWidgetRoot.isCompact ? 14 : 15)
-            iconOffsetY: -0.5
             buttonText: wifiWidgetRoot.ethStatus
             textFontSize: barWindow ? barWindow.s(wifiWidgetRoot.isCompact ? 11 : 12) : (wifiWidgetRoot.isCompact ? 11 : 12)
             accentColor: wifiWidgetRoot.ethStatus === "Connected"
@@ -299,7 +298,6 @@ Rectangle {
             horizontalPadding: barWindow ? barWindow.s(wifiWidgetRoot.isCompact ? 10 : 12) : (wifiWidgetRoot.isCompact ? 10 : 12)
             buttonIcon: wifiIcon
             iconFontSize: barWindow ? barWindow.s(wifiWidgetRoot.isCompact ? 14 : 15) : (wifiWidgetRoot.isCompact ? 14 : 15)
-            iconOffsetY: -0.5
             buttonText: isWifiOn ? (wifiSsid !== "" ? wifiSsid : "On") : "Off"
             textFontSize: barWindow ? barWindow.s(wifiWidgetRoot.isCompact ? 11 : 12) : (wifiWidgetRoot.isCompact ? 11 : 12)
             accentColor: isActive ? (wifiWidgetRoot.isCompact ? Qt.lighter(ThemeBackend.blue, 1.08) : ThemeBackend.blue) : (wifiWidgetRoot.isCompact ? Qt.lighter(ThemeBackend.surface0, 1.18) : ThemeBackend.surface0)

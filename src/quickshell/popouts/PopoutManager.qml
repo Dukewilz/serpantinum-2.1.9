@@ -8,4 +8,5 @@ Item {
     Osd {}
     TrayBase {}
     SideMusicPopout {}
+    DesktopMenu {}
 }

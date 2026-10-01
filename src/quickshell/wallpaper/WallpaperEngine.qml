@@ -25,7 +25,6 @@ ShellRoot {
 
                 focusable: false
                 exclusionMode: ExclusionMode.Ignore
-                mask: Region {}
                 color: "#0a0a0f"
 
                 anchors { top: true; bottom: true; left: true; right: true }
@@ -155,18 +154,32 @@ ShellRoot {
                     property string targetPath: ""
                     command: [
                         "bash", "-c",
-                        "ffmpeg -y -hide_banner -loglevel error -ss 00:00:01 -i \"$1\" -frames:v 1 -q:v 2 \"$2\" 2>/dev/null || ffmpeg -y -hide_banner -loglevel error -i \"$1\" -frames:v 1 -q:v 2 \"$2\" 2>/dev/null; cp -f \"$2\" \"$3\" 2>/dev/null || true",
+                        "ffmpeg -y -hide_banner -loglevel error -ss 00:00:01 -i \"$1\" -frames:v 1 -q:v 2 \"$2\" 2>/dev/null || ffmpeg -y -hide_banner -loglevel error -i \"$1\" -frames:v 1 -q:v 2 \"$2\" 2>/dev/null; cp -f \"$2\" \"$3\" 2>/dev/null || true; if command -v matugen >/dev/null 2>&1; then matugen image \"$2\" 2>/dev/null || true; fi; if [ -n \"$4\" ] && [ -f \"$4/scripts/wallpaper/matugen.sh\" ]; then bash \"$4/scripts/wallpaper/matugen.sh\" \"$2\" 2>/dev/null || true; fi",
                         "_",
                         targetPath,
                         barWindow.wpSnapshotPath,
-                        barWindow.wpMonitorSnapshotPath
+                        barWindow.wpMonitorSnapshotPath,
+                        (typeof Caching !== "undefined" && Caching.serpantinumDir) ? Caching.serpantinumDir : ""
                     ]
+                    onExited: exitCode => {
+                        if (exitCode === 0 && typeof Matugen !== "undefined" && typeof Matugen.generate === "function") {
+                            Matugen.generate(barWindow.wpSnapshotPath);
+                        }
+                    }
                 }
 
                 function isVideo(p) {
                     let lp = p.toLowerCase();
                     return lp.endsWith(".mp4") || lp.endsWith(".mkv") ||
                            lp.endsWith(".mov") || lp.endsWith(".webm");
+                }
+
+                function isSupportedMedia(p) {
+                    if (!p) return false;
+                    let lp = p.toLowerCase();
+                    return lp.endsWith(".jpg") || lp.endsWith(".jpeg") || lp.endsWith(".png") ||
+                           lp.endsWith(".webp") || lp.endsWith(".gif") || lp.endsWith(".bmp") ||
+                           lp.endsWith(".avif") || barWindow.isVideo(p);
                 }
 
                 function playA() {
@@ -267,18 +280,61 @@ ShellRoot {
                     let isInterrupted = transitionAnim.running && barWindow.transitionProgress > 0.1 && barWindow.transitionProgress < 0.85;
 
                     barWindow.isInitialLoad = false;
+
+                    let fromMenu = false;
+                    let customOriginX = -1;
+                    let customOriginY = -1;
+                    let chosenType = -1;
+
+                    if (typeof ttype === "object" && ttype !== null) {
+                        if (ttype.type !== undefined) chosenType = Number(ttype.type);
+                        if (ttype.originX !== undefined) customOriginX = Number(ttype.originX);
+                        if (ttype.originY !== undefined) customOriginY = Number(ttype.originY);
+                        fromMenu = true;
+                    } else if (typeof ttype === "string" && ttype.indexOf("circle") !== -1) {
+                        chosenType = 2;
+                        let parts = ttype.split(":");
+                        if (parts.length >= 3) {
+                            customOriginX = parseFloat(parts[1]);
+                            customOriginY = parseFloat(parts[2]);
+                        }
+                        fromMenu = true;
+                    } else if (typeof ttype === "number" && ttype >= 0) {
+                        chosenType = ttype;
+                    }
+
+                    if (typeof DesktopMenuController !== "undefined" && DesktopMenuController.isMenuShuffle) {
+                        let isTargetScreen = !DesktopMenuController.screen || !DesktopMenuController.screen.name || (barWindow.screen && DesktopMenuController.screen.name === barWindow.screen.name);
+                        if (isTargetScreen) {
+                            fromMenu = true;
+                            chosenType = 2;
+                            customOriginX = DesktopMenuController.menuOriginX;
+                            customOriginY = DesktopMenuController.menuOriginY;
+                        }
+                    }
+
                     if (isInterrupted) {
                         barWindow.activeTransitionType = 0;
-                    } else if (typeof ttype === "number" && ttype >= 0) {
-                        barWindow.activeTransitionType = ttype;
+                    } else if (chosenType >= 0) {
+                        barWindow.activeTransitionType = chosenType;
                     } else {
                         barWindow.activeTransitionType = Math.floor(Math.random() * 4);
                     }
 
                     barWindow.wipeIsVertical = Math.random() < 0.5;
                     barWindow.swipeDirection = Math.floor(Math.random() * 8);
-                    barWindow.transitionOriginX = 0.15 + Math.random() * 0.70;
-                    barWindow.transitionOriginY = 0.15 + Math.random() * 0.70;
+
+                    if (fromMenu && customOriginX >= 0 && customOriginY >= 0) {
+                        barWindow.transitionOriginX = customOriginX;
+                        barWindow.transitionOriginY = customOriginY;
+                    } else {
+                        barWindow.transitionOriginX = 0.15 + Math.random() * 0.70;
+                        barWindow.transitionOriginY = 0.15 + Math.random() * 0.70;
+                    }
+
+                    if (typeof DesktopMenuController !== "undefined") {
+                        DesktopMenuController.isMenuShuffle = false;
+                    }
 
                     let cleanPath = String(path).trim();
                     let slash = cleanPath.lastIndexOf("/");
@@ -290,6 +346,13 @@ ShellRoot {
                     let vid = barWindow.isVideo(cleanPath);
                     let snapshotPath = barWindow.wpSnapshotPath;
                     let monSnapshotPath = barWindow.wpMonitorSnapshotPath;
+                    let dir = (typeof Caching !== "undefined" && Caching.serpantinumDir) ? Caching.serpantinumDir : "";
+
+                    let matugenBash = vid ? "" : (
+                        " && ( if command -v matugen >/dev/null 2>&1; then matugen image '" + cleanPath + "' 2>/dev/null || true; fi; " +
+                        (dir ? "if [ -f '" + dir + "/scripts/wallpaper/matugen.sh' ]; then bash '" + dir + "/scripts/wallpaper/matugen.sh' '" + cleanPath + "' 2>/dev/null || true; fi; " : "") +
+                        ")"
+                    );
 
                     Quickshell.execDetached(["bash", "-c",
                         "mkdir -p '" + wpCopyDir + "'" +
@@ -297,16 +360,46 @@ ShellRoot {
                         " && printf '%s' '" + origName + "' > '" + wpStatePath + "_name'" +
                         " && cp -f '" + cleanPath + "' '" + dest + "'" +
                         (vid ? "" : " && cp -f '" + cleanPath + "' '" + snapshotPath + "' && cp -f '" + cleanPath + "' '" + monSnapshotPath + "'") +
-                        " && ( HIST='" + histFile + "'; if [ -f \"$HIST\" ]; then grep -v -F -x '" + origName + "' \"$HIST\" > \"$HIST.tmp\" 2>/dev/null || true; printf '%s\n' '" + origName + "' | cat - \"$HIST.tmp\" > \"$HIST\"; rm -f \"$HIST.tmp\"; else printf '%s\n' '" + origName + "' > \"$HIST\"; fi )"
+                        " && ( HIST='" + histFile + "'; if [ -f \"$HIST\" ]; then grep -v -F -x '" + origName + "' \"$HIST\" > \"$HIST.tmp\" 2>/dev/null || true; printf '%s\n' '" + origName + "' | cat - \"$HIST.tmp\" > \"$HIST\"; rm -f \"$HIST.tmp\"; else printf '%s\n' '" + origName + "' > \"$HIST\"; fi )" +
+                        matugenBash
                     ]);
 
                     if (vid) {
                         videoSnapshotProcess.targetPath = cleanPath;
                         videoSnapshotProcess.running = false;
                         videoSnapshotProcess.running = true;
+                    } else {
+                        if (typeof Matugen !== "undefined" && typeof Matugen.generate === "function") {
+                            Matugen.generate(cleanPath);
+                        }
                     }
 
                     barWindow._loadNew(cleanPath, true);
+                }
+
+                function handleDrop(drop) {
+                    let raw = "";
+                    if (drop.hasUrls && drop.urls.length > 0) {
+                        raw = drop.urls[0].toString();
+                    } else if (drop.hasText && drop.text.length > 0) {
+                        let lines = drop.text.trim().split("\n");
+                        raw = lines[0].trim();
+                    }
+                    if (!raw) return;
+
+                    let cleanPath = decodeURIComponent(raw.replace(/^file:\/\//, "")).trim();
+                    if (!barWindow.isSupportedMedia(cleanPath)) return;
+
+                    let scrW = barWindow.width > 0 ? barWindow.width : (barWindow.screen && barWindow.screen.geometry ? barWindow.screen.geometry.width : 1920);
+                    let scrH = barWindow.height > 0 ? barWindow.height : (barWindow.screen && barWindow.screen.geometry ? barWindow.screen.geometry.height : 1080);
+                    let normX = scrW > 0 ? Math.max(0.0, Math.min(1.0, drop.x / scrW)) : 0.5;
+                    let normY = scrH > 0 ? Math.max(0.0, Math.min(1.0, drop.y / scrH)) : 0.5;
+
+                    barWindow.changeWallpaper(cleanPath, {
+                        type: 2,
+                        originX: normX,
+                        originY: normY
+                    });
                 }
 
                 PropertyAnimation {
@@ -746,6 +839,43 @@ ShellRoot {
                                 if (item && barWindow.activeLayer === 1 && barWindow.isVideoB && !barWindow.playbackPaused) {
                                     item.play();
                                 }
+                            }
+                        }
+                    }
+                }
+
+                DropArea {
+                    anchors.fill: parent
+
+                    onEntered: drag => {
+                        if (drag.hasUrls || drag.hasText) {
+                            if (typeof drag.acceptProposedAction === "function") {
+                                drag.acceptProposedAction();
+                            } else if (typeof drag.accept === "function") {
+                                drag.accept();
+                            }
+                            drag.accepted = true;
+                        }
+                    }
+
+                    onDropped: drop => {
+                        barWindow.handleDrop(drop);
+                        if (typeof drop.acceptProposedAction === "function") {
+                            drop.acceptProposedAction();
+                        } else if (typeof drop.accept === "function") {
+                            drop.accept();
+                        }
+                        drop.accepted = true;
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton | Qt.LeftButton
+                        onClicked: mouse => {
+                            if (mouse.button === Qt.RightButton) {
+                                DesktopMenuController.toggle(barWindow.screen, mouse.x, mouse.y, "desktop");
+                            } else {
+                                DesktopMenuController.hide();
                             }
                         }
                     }

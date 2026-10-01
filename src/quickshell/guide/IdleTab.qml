@@ -544,392 +544,183 @@ Item {
                         anchors.topMargin: rootObj.s(8)
                         spacing: rootObj.s(6)
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            implicitHeight: rowRespectInhibitorsLayout.implicitHeight + rootObj.s(20)
-                            radius: ThemeBackend.borderRadius
-                            color: Qt.alpha(ThemeBackend.surface1, 0.35)
-                            border.width: 0
+                        SettingsRow {
+                            rootObj: idleTabRoot.rootObj
+                            baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                            icon: "󰌿"
+                            iconSize: 28
+                            iconFontSize: 14
+                            title: I18n.t("guide.idle.respect_inhibitors.title", "Respect App Inhibitors")
+                            description: I18n.t("guide.idle.respect_inhibitors.desc", "Honor Wayland idle inhibitor locks from applications")
+                            titlePixelSize: 12
+                            descriptionPixelSize: 10
+                            verticalPadding: rootObj.s(10)
 
-                            RowLayout {
-                                id: rowRespectInhibitorsLayout
-                                anchors.left: parent.left
-                                anchors.leftMargin: rootObj.s(14)
-                                anchors.right: parent.right
-                                anchors.rightMargin: rootObj.s(14)
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: rootObj.s(12)
-
-                                IconButton {
-                                    enabled: false
-                                    size: rootObj.s(28)
-                                    Layout.preferredWidth: rootObj.s(28)
-                                    Layout.preferredHeight: rootObj.s(28)
-                                    Layout.alignment: Qt.AlignVCenter
-                                    cornerRadius: ThemeBackend.borderRadius
-                                    buttonIcon: "󰌿"
-                                    iconFontSize: rootObj.s(14)
-                                    accentColor: ThemeBackend.surface0
-                                    textColor: "#ffffff"
+                            Toggle {
+                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                                checked: actionCard.actRespectInhibitors
+                                accentColor: ThemeBackend.mauve
+                                baseColor: ThemeBackend.surface1
+                                handleColor: ThemeBackend.crust
+                                handleOffColor: ThemeBackend.text
+                                onToggled: function(c) {
+                                    idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "respectInhibitors", c);
                                 }
+                            }
+                        }
 
-                                ColumnLayout {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    spacing: rootObj.s(2)
+                        SettingsRow {
+                            rootObj: idleTabRoot.rootObj
+                            baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                            icon: "󰝚"
+                            iconSize: 28
+                            iconFontSize: 14
+                            title: I18n.t("guide.idle.mpris_inhibit.title", "Inhibit on Media")
+                            description: I18n.t("guide.idle.mpris_inhibit.desc", "Prevent idle trigger while MPRIS audio/video is playing")
+                            titlePixelSize: 12
+                            descriptionPixelSize: 10
+                            verticalPadding: rootObj.s(10)
 
-                                    Text {
-                                        text: I18n.t("guide.idle.respect_inhibitors.title", "Respect App Inhibitors")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(12)
-                                        color: ThemeBackend.text
-                                    }
-
-                                    Text {
-                                        text: I18n.t("guide.idle.respect_inhibitors.desc", "Honor Wayland idle inhibitor locks from applications")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(10)
-                                        color: ThemeBackend.subtext0
-                                    }
+                            Toggle {
+                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                                checked: actionCard.actMprisInhibit
+                                accentColor: ThemeBackend.mauve
+                                baseColor: ThemeBackend.surface1
+                                handleColor: ThemeBackend.crust
+                                handleOffColor: ThemeBackend.text
+                                onToggled: function(c) {
+                                    idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "mprisInhibit", c);
                                 }
+                            }
+                        }
 
-                                Item {
-                                    Layout.fillWidth: true
+                        SettingsRow {
+                            rootObj: idleTabRoot.rootObj
+                            baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                            icon: "󰀪"
+                            iconSize: 28
+                            iconFontSize: 14
+                            title: I18n.t("guide.idle.warning_command.title", "Warning Command")
+                            description: I18n.t("guide.idle.warning_command.desc", "Offset and command to execute before action")
+                            titlePixelSize: 12
+                            descriptionPixelSize: 10
+                            verticalPadding: rootObj.s(10)
+                            controlSpacing: rootObj.s(6)
+
+                            Input {
+                                Layout.alignment: Qt.AlignVCenter
+                                implicitWidth: rootObj.s(220)
+                                implicitHeight: rootObj.s(30)
+                                text: actionCard.actWarningCmd
+                                placeholderText: I18n.t("guide.idle.warning_command.placeholder", "Warning command")
+                                baseColor: ThemeBackend.surface0
+                                accentColor: ThemeBackend.mauve
+                                textColor: ThemeBackend.text
+                                subTextColor: ThemeBackend.subtext0
+                                borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                                cornerRadius: ThemeBackend.borderRadius
+                                fontPixelSize: rootObj.s(11)
+                                onAccepted: function(t) {
+                                    let val = (typeof t === "string") ? t : text;
+                                    idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "warningCommand", val);
                                 }
+                            }
 
-                                Toggle {
-                                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                    checked: actionCard.actRespectInhibitors
-                                    accentColor: ThemeBackend.mauve
-                                    baseColor: ThemeBackend.surface1
-                                    handleColor: ThemeBackend.crust
-                                    handleOffColor: ThemeBackend.text
-                                    onToggled: function(c) {
-                                        idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "respectInhibitors", c);
+                            NumberSelector {
+                                Layout.alignment: Qt.AlignVCenter
+                                implicitWidth: rootObj.s(90)
+                                implicitHeight: rootObj.s(30)
+                                from: 0
+                                to: Math.max(0, actionCard.actTimeout - 5)
+                                stepSize: 5
+                                decimals: 0
+                                suffix: "s"
+                                value: actionCard.actWarningTimeout
+                                baseColor: ThemeBackend.surface0
+                                accentColor: ThemeBackend.mauve
+                                buttonColor: ThemeBackend.surface1
+                                buttonTextColor: ThemeBackend.text
+                                textColor: ThemeBackend.text
+                                borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                                cornerRadius: ThemeBackend.borderRadius
+                                fontFamily: ThemeBackend.fontFamily
+                                fontPixelSize: rootObj.s(11)
+                                onValueChanged: function(val) {
+                                    let num = (typeof val === "number" && !isNaN(val)) ? val : value;
+                                    let rounded = Math.max(0, Math.round(num));
+                                    if (!isNaN(rounded) && actionCard.actWarningTimeout !== rounded) {
+                                        let targetId = actionCard.actId;
+                                        let isCustom = actionCard.isCustomAct;
+                                        actionCard.debounceAction(function() {
+                                            idleTabRoot.updateActionProp(targetId, isCustom, "warningTimeout", rounded);
+                                        });
                                     }
                                 }
                             }
                         }
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            implicitHeight: rowMprisInhibitLayout.implicitHeight + rootObj.s(20)
-                            radius: ThemeBackend.borderRadius
-                            color: Qt.alpha(ThemeBackend.surface1, 0.35)
-                            border.width: 0
-
-                            RowLayout {
-                                id: rowMprisInhibitLayout
-                                anchors.left: parent.left
-                                anchors.leftMargin: rootObj.s(14)
-                                anchors.right: parent.right
-                                anchors.rightMargin: rootObj.s(14)
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: rootObj.s(12)
-
-                                IconButton {
-                                    enabled: false
-                                    size: rootObj.s(28)
-                                    Layout.preferredWidth: rootObj.s(28)
-                                    Layout.preferredHeight: rootObj.s(28)
-                                    Layout.alignment: Qt.AlignVCenter
-                                    cornerRadius: ThemeBackend.borderRadius
-                                    buttonIcon: "󰝚"
-                                    iconFontSize: rootObj.s(14)
-                                    accentColor: ThemeBackend.surface0
-                                    textColor: "#ffffff"
-                                }
-
-                                ColumnLayout {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    spacing: rootObj.s(2)
-
-                                    Text {
-                                        text: I18n.t("guide.idle.mpris_inhibit.title", "Inhibit on Media")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(12)
-                                        color: ThemeBackend.text
-                                    }
-
-                                    Text {
-                                        text: I18n.t("guide.idle.mpris_inhibit.desc", "Prevent idle trigger while MPRIS audio/video is playing")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(10)
-                                        color: ThemeBackend.subtext0
-                                    }
-                                }
-
-                                Item {
-                                    Layout.fillWidth: true
-                                }
-
-                                Toggle {
-                                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                    checked: actionCard.actMprisInhibit
-                                    accentColor: ThemeBackend.mauve
-                                    baseColor: ThemeBackend.surface1
-                                    handleColor: ThemeBackend.crust
-                                    handleOffColor: ThemeBackend.text
-                                    onToggled: function(c) {
-                                        idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "mprisInhibit", c);
-                                    }
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            implicitHeight: rowWarningCmdLayout.implicitHeight + rootObj.s(20)
-                            radius: ThemeBackend.borderRadius
-                            color: Qt.alpha(ThemeBackend.surface1, 0.35)
-                            border.width: 0
-
-                            RowLayout {
-                                id: rowWarningCmdLayout
-                                anchors.left: parent.left
-                                anchors.leftMargin: rootObj.s(14)
-                                anchors.right: parent.right
-                                anchors.rightMargin: rootObj.s(14)
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: rootObj.s(12)
-
-                                IconButton {
-                                    enabled: false
-                                    size: rootObj.s(28)
-                                    Layout.preferredWidth: rootObj.s(28)
-                                    Layout.preferredHeight: rootObj.s(28)
-                                    Layout.alignment: Qt.AlignVCenter
-                                    cornerRadius: ThemeBackend.borderRadius
-                                    buttonIcon: "󰀪"
-                                    iconFontSize: rootObj.s(14)
-                                    accentColor: ThemeBackend.surface0
-                                    textColor: "#ffffff"
-                                }
-
-                                ColumnLayout {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    spacing: rootObj.s(2)
-
-                                    Text {
-                                        text: I18n.t("guide.idle.warning_command.title", "Warning Command")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(12)
-                                        color: ThemeBackend.text
-                                    }
-
-                                    Text {
-                                        text: I18n.t("guide.idle.warning_command.desc", "Offset and command to execute before action")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(10)
-                                        color: ThemeBackend.subtext0
-                                    }
-                                }
-
-                                Item {
-                                    Layout.fillWidth: true
-                                }
-
-                                RowLayout {
-                                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                    spacing: rootObj.s(6)
-
-                                    Input {
-                                        Layout.alignment: Qt.AlignVCenter
-                                        implicitWidth: rootObj.s(220)
-                                        implicitHeight: rootObj.s(30)
-                                        text: actionCard.actWarningCmd
-                                        placeholderText: I18n.t("guide.idle.warning_command.placeholder", "Warning command")
-                                        baseColor: ThemeBackend.surface0
-                                        accentColor: ThemeBackend.mauve
-                                        textColor: ThemeBackend.text
-                                        subTextColor: ThemeBackend.subtext0
-                                        borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                                        cornerRadius: ThemeBackend.borderRadius
-                                        fontPixelSize: rootObj.s(11)
-                                        onAccepted: function(t) {
-                                            let val = (typeof t === "string") ? t : text;
-                                            idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "warningCommand", val);
-                                        }
-                                    }
-
-                                    NumberSelector {
-                                        Layout.alignment: Qt.AlignVCenter
-                                        implicitWidth: rootObj.s(90)
-                                        implicitHeight: rootObj.s(30)
-                                        from: 0
-                                        to: Math.max(0, actionCard.actTimeout - 5)
-                                        stepSize: 5
-                                        decimals: 0
-                                        suffix: "s"
-                                        value: actionCard.actWarningTimeout
-                                        baseColor: ThemeBackend.surface0
-                                        accentColor: ThemeBackend.mauve
-                                        buttonColor: ThemeBackend.surface1
-                                        buttonTextColor: ThemeBackend.text
-                                        textColor: ThemeBackend.text
-                                        borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                                        cornerRadius: ThemeBackend.borderRadius
-                                        fontFamily: ThemeBackend.fontFamily
-                                        fontPixelSize: rootObj.s(11)
-                                        onValueChanged: function(val) {
-                                            let num = (typeof val === "number" && !isNaN(val)) ? val : value;
-                                            let rounded = Math.max(0, Math.round(num));
-                                            if (!isNaN(rounded) && actionCard.actWarningTimeout !== rounded) {
-                                                let targetId = actionCard.actId;
-                                                let isCustom = actionCard.isCustomAct;
-                                                actionCard.debounceAction(function() {
-                                                    idleTabRoot.updateActionProp(targetId, isCustom, "warningTimeout", rounded);
-                                                });
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        Rectangle {
+                        SettingsRow {
                             visible: actionCard.actId !== "suspend"
-                            Layout.fillWidth: true
-                            implicitHeight: rowBeforeCmdLayout.implicitHeight + rootObj.s(20)
-                            radius: ThemeBackend.borderRadius
-                            color: Qt.alpha(ThemeBackend.surface1, 0.35)
-                            border.width: 0
+                            rootObj: idleTabRoot.rootObj
+                            baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                            icon: "󰆍"
+                            iconSize: 28
+                            iconFontSize: 14
+                            title: I18n.t("guide.idle.before_command.title", "Before Command")
+                            description: I18n.t("guide.idle.before_command.desc", "Executed right before the action triggers")
+                            titlePixelSize: 12
+                            descriptionPixelSize: 10
+                            verticalPadding: rootObj.s(10)
 
-                            RowLayout {
-                                id: rowBeforeCmdLayout
-                                anchors.left: parent.left
-                                anchors.leftMargin: rootObj.s(14)
-                                anchors.right: parent.right
-                                anchors.rightMargin: rootObj.s(14)
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: rootObj.s(12)
-
-                                IconButton {
-                                    enabled: false
-                                    size: rootObj.s(28)
-                                    Layout.preferredWidth: rootObj.s(28)
-                                    Layout.preferredHeight: rootObj.s(28)
-                                    Layout.alignment: Qt.AlignVCenter
-                                    cornerRadius: ThemeBackend.borderRadius
-                                    buttonIcon: "󰆍"
-                                    iconFontSize: rootObj.s(14)
-                                    accentColor: ThemeBackend.surface0
-                                    textColor: "#ffffff"
-                                }
-
-                                ColumnLayout {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    spacing: rootObj.s(2)
-
-                                    Text {
-                                        text: I18n.t("guide.idle.before_command.title", "Before Command")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(12)
-                                        color: ThemeBackend.text
-                                    }
-
-                                    Text {
-                                        text: I18n.t("guide.idle.before_command.desc", "Executed right before the action triggers")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(10)
-                                        color: ThemeBackend.subtext0
-                                    }
-                                }
-
-                                Item {
-                                    Layout.fillWidth: true
-                                }
-
-                                Input {
-                                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                    implicitWidth: rootObj.s(280)
-                                    implicitHeight: rootObj.s(30)
-                                    text: actionCard.actBeforeCmd
-                                    placeholderText: I18n.t("guide.idle.before_command.placeholder", "Before action command")
-                                    baseColor: ThemeBackend.surface0
-                                    accentColor: ThemeBackend.mauve
-                                    textColor: ThemeBackend.text
-                                    subTextColor: ThemeBackend.subtext0
-                                    borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                                    cornerRadius: ThemeBackend.borderRadius
-                                    fontPixelSize: rootObj.s(11)
-                                    onAccepted: function(t) {
-                                        let val = (typeof t === "string") ? t : text;
-                                        idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "beforeCommand", val);
-                                    }
+                            Input {
+                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                                implicitWidth: rootObj.s(280)
+                                implicitHeight: rootObj.s(30)
+                                text: actionCard.actBeforeCmd
+                                placeholderText: I18n.t("guide.idle.before_command.placeholder", "Before action command")
+                                baseColor: ThemeBackend.surface0
+                                accentColor: ThemeBackend.mauve
+                                textColor: ThemeBackend.text
+                                subTextColor: ThemeBackend.subtext0
+                                borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                                cornerRadius: ThemeBackend.borderRadius
+                                fontPixelSize: rootObj.s(11)
+                                onAccepted: function(t) {
+                                    let val = (typeof t === "string") ? t : text;
+                                    idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "beforeCommand", val);
                                 }
                             }
                         }
 
-                        Rectangle {
+                        SettingsRow {
                             visible: actionCard.actId !== "suspend"
-                            Layout.fillWidth: true
-                            implicitHeight: rowResumeCmdLayout.implicitHeight + rootObj.s(20)
-                            radius: ThemeBackend.borderRadius
-                            color: Qt.alpha(ThemeBackend.surface1, 0.35)
-                            border.width: 0
+                            rootObj: idleTabRoot.rootObj
+                            baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+                            icon: "󰑐"
+                            iconSize: 28
+                            iconFontSize: 14
+                            title: I18n.t("guide.idle.resume_command.title", "Resume Command")
+                            description: I18n.t("guide.idle.resume_command.desc", "Executed when user activity resumes")
+                            titlePixelSize: 12
+                            descriptionPixelSize: 10
+                            verticalPadding: rootObj.s(10)
 
-                            RowLayout {
-                                id: rowResumeCmdLayout
-                                anchors.left: parent.left
-                                anchors.leftMargin: rootObj.s(14)
-                                anchors.right: parent.right
-                                anchors.rightMargin: rootObj.s(14)
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: rootObj.s(12)
-
-                                IconButton {
-                                    enabled: false
-                                    size: rootObj.s(28)
-                                    Layout.preferredWidth: rootObj.s(28)
-                                    Layout.preferredHeight: rootObj.s(28)
-                                    Layout.alignment: Qt.AlignVCenter
-                                    cornerRadius: ThemeBackend.borderRadius
-                                    buttonIcon: "󰑐"
-                                    iconFontSize: rootObj.s(14)
-                                    accentColor: ThemeBackend.surface0
-                                    textColor: "#ffffff"
-                                }
-
-                                ColumnLayout {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    spacing: rootObj.s(2)
-
-                                    Text {
-                                        text: I18n.t("guide.idle.resume_command.title", "Resume Command")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(12)
-                                        color: ThemeBackend.text
-                                    }
-
-                                    Text {
-                                        text: I18n.t("guide.idle.resume_command.desc", "Executed when user activity resumes")
-                                        font.family: ThemeBackend.fontFamily
-                                        font.pixelSize: rootObj.s(10)
-                                        color: ThemeBackend.subtext0
-                                    }
-                                }
-
-                                Item {
-                                    Layout.fillWidth: true
-                                }
-
-                                Input {
-                                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                    implicitWidth: rootObj.s(280)
-                                    implicitHeight: rootObj.s(30)
-                                    text: actionCard.actResumeCmd
-                                    placeholderText: idleTabRoot.getDefaultResumeCommand(actionCard.actId)
-                                    baseColor: ThemeBackend.surface0
-                                    accentColor: ThemeBackend.mauve
-                                    textColor: ThemeBackend.text
-                                    subTextColor: ThemeBackend.subtext0
-                                    borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
-                                    cornerRadius: ThemeBackend.borderRadius
-                                    fontPixelSize: rootObj.s(11)
-                                    onAccepted: function(t) {
-                                        let val = (typeof t === "string") ? t : text;
-                                        idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "resumeCommand", val);
-                                    }
+                            Input {
+                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                                implicitWidth: rootObj.s(280)
+                                implicitHeight: rootObj.s(30)
+                                text: actionCard.actResumeCmd
+                                placeholderText: idleTabRoot.getDefaultResumeCommand(actionCard.actId)
+                                baseColor: ThemeBackend.surface0
+                                accentColor: ThemeBackend.mauve
+                                textColor: ThemeBackend.text
+                                subTextColor: ThemeBackend.subtext0
+                                borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                                cornerRadius: ThemeBackend.borderRadius
+                                fontPixelSize: rootObj.s(11)
+                                onAccepted: function(t) {
+                                    let val = (typeof t === "string") ? t : text;
+                                    idleTabRoot.updateActionProp(actionCard.actId, actionCard.isCustomAct, "resumeCommand", val);
                                 }
                             }
                         }
@@ -954,108 +745,38 @@ Item {
             width: parent.width
             spacing: rootObj.s(6)
 
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: rowEnabledLayout.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
+            SettingsRow {
+                rootObj: idleTabRoot.rootObj
+                icon: "󰒲"
+                title: I18n.t("guide.idle.enabled.title", "Enable Idle System")
+                description: I18n.t("guide.idle.enabled.desc", "Activate power management and lock timeouts")
 
-                RowLayout {
-                    id: rowEnabledLayout
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.leftMargin: rootObj.s(14)
-                    anchors.rightMargin: rootObj.s(14)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: rootObj.s(12)
-
-                    IconButton {
-                        enabled: false
-                        size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
-                        Layout.alignment: Qt.AlignVCenter
-                        cornerRadius: ThemeBackend.borderRadius
-                        buttonIcon: "󰒲"
-                        iconFontSize: rootObj.s(16)
-                        accentColor: ThemeBackend.surface0
-                        textColor: "#ffffff"
-                    }
-
-                    ColumnLayout {
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: rootObj.s(2)
-                        Text { text: I18n.t("guide.idle.enabled.title", "Enable Idle System"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                        Text { text: I18n.t("guide.idle.enabled.desc", "Activate power management and lock timeouts"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    Toggle {
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                        checked: idleTabRoot.idleEnabled
-                        accentColor: ThemeBackend.mauve
-                        baseColor: ThemeBackend.surface1
-                        handleColor: ThemeBackend.crust
-                        handleOffColor: ThemeBackend.text
-                        onToggled: function(c) { idleTabRoot.updateRootSetting("enabled", c); }
-                    }
+                Toggle {
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    checked: idleTabRoot.idleEnabled
+                    accentColor: ThemeBackend.mauve
+                    baseColor: ThemeBackend.surface1
+                    handleColor: ThemeBackend.crust
+                    handleOffColor: ThemeBackend.text
+                    onToggled: function(c) { idleTabRoot.updateRootSetting("enabled", c); }
                 }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: rowManualInhibitLayout.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
+            SettingsRow {
+                rootObj: idleTabRoot.rootObj
                 visible: idleTabRoot.idleEnabled
+                icon: "󰅶"
+                title: I18n.t("guide.idle.manual_inhibit.title", "Do Not Disturb (Keep Awake)")
+                description: I18n.t("guide.idle.manual_inhibit.desc", "Manually prevent the system from idling")
 
-                RowLayout {
-                    id: rowManualInhibitLayout
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.leftMargin: rootObj.s(14)
-                    anchors.rightMargin: rootObj.s(14)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: rootObj.s(12)
-
-                    IconButton {
-                        enabled: false
-                        size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
-                        Layout.alignment: Qt.AlignVCenter
-                        cornerRadius: ThemeBackend.borderRadius
-                        buttonIcon: "󰅶"
-                        iconFontSize: rootObj.s(16)
-                        accentColor: ThemeBackend.surface0
-                        textColor: "#ffffff"
-                    }
-
-                    ColumnLayout {
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: rootObj.s(2)
-                        Text { text: I18n.t("guide.idle.manual_inhibit.title", "Do Not Disturb (Keep Awake)"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                        Text { text: I18n.t("guide.idle.manual_inhibit.desc", "Manually prevent the system from idling"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    Toggle {
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                        checked: idleTabRoot.manualInhibit
-                        accentColor: ThemeBackend.mauve
-                        baseColor: ThemeBackend.surface1
-                        handleColor: ThemeBackend.crust
-                        handleOffColor: ThemeBackend.text
-                        onToggled: function(c) { idleTabRoot.updateRootSetting("manualInhibit", c); }
-                    }
+                Toggle {
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    checked: idleTabRoot.manualInhibit
+                    accentColor: ThemeBackend.mauve
+                    baseColor: ThemeBackend.surface1
+                    handleColor: ThemeBackend.crust
+                    handleOffColor: ThemeBackend.text
+                    onToggled: function(c) { idleTabRoot.updateRootSetting("manualInhibit", c); }
                 }
             }
 

@@ -609,290 +609,144 @@ Item {
                 Layout.fillWidth: true
                 spacing: rootObj.s(10)
 
-                Rectangle {
+                SettingsRow {
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
-                    implicitHeight: capsRow.implicitHeight + rootObj.s(24)
-                    radius: ThemeBackend.borderRadius
-                    color: osdTabRoot.isVertical ? Qt.alpha(ThemeBackend.surface0, 0.18) : Qt.alpha(ThemeBackend.surface0, 0.4)
-                    border.width: 0
+                    rootObj: osdTabRoot.rootObj
+                    icon: "󰘲"
+                    title: I18n.t("guide.osd.capslock.title", "Show on Caps Lock")
+                    titlePixelSize: 12
+                    wrapText: true
+                    baseColor: osdTabRoot.isVertical ? Qt.alpha(ThemeBackend.surface0, 0.18) : Qt.alpha(ThemeBackend.surface0, 0.4)
+                    titleColor: osdTabRoot.isVertical ? ThemeBackend.subtext0 : ThemeBackend.text
                     opacity: osdTabRoot.isVertical ? 0.6 : 1.0
-
-                    Behavior on color { ColorAnimation { duration: 250 } }
                     Behavior on opacity { NumberAnimation { duration: 250 } }
+                    spacing: rootObj.s(10)
 
-                    RowLayout {
-                        id: capsRow
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.leftMargin: rootObj.s(14)
-                        anchors.rightMargin: rootObj.s(14)
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: rootObj.s(10)
-
-                        IconButton {
-                            enabled: false
-                            size: rootObj.s(32)
-                            Layout.preferredWidth: rootObj.s(32)
-                            Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            cornerRadius: ThemeBackend.borderRadius
-                            buttonIcon: "󰘲"
-                            iconFontSize: rootObj.s(16)
-                            accentColor: ThemeBackend.surface0
-                            textColor: "#ffffff"
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-                            text: I18n.t("guide.osd.capslock.title", "Show on Caps Lock")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(12)
-                            color: osdTabRoot.isVertical ? ThemeBackend.subtext0 : ThemeBackend.text
-                            wrapMode: Text.Wrap
-
-                            Behavior on color { ColorAnimation { duration: 250 } }
-                        }
-
-                        Text {
-                            visible: osdTabRoot.isVertical
-                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            text: I18n.t("guide.common.unavailable", "Unavailable")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(11)
-                            font.bold: true
-                            color: ThemeBackend.subtext0
-                        }
-
-                        Toggle {
-                            visible: !osdTabRoot.isVertical
-                            enabled: !osdTabRoot.isVertical
-                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            checked: osdTabRoot.showCapsLock
-                            accentColor: ThemeBackend.mauve
-                            baseColor: ThemeBackend.surface1
-                            handleColor: ThemeBackend.crust
-                            handleOffColor: ThemeBackend.text
-                            onToggled: function(c) {
-                                osdTabRoot.showCapsLock = c;
-                                osdTabRoot.updateOsdSetting("showCapsLock", c);
-                            }
-                        }
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: 1
-                    implicitHeight: numRow.implicitHeight + rootObj.s(24)
-                    radius: ThemeBackend.borderRadius
-                    color: osdTabRoot.isVertical ? Qt.alpha(ThemeBackend.surface0, 0.18) : Qt.alpha(ThemeBackend.surface0, 0.4)
-                    border.width: 0
-                    opacity: osdTabRoot.isVertical ? 0.6 : 1.0
-
-                    Behavior on color { ColorAnimation { duration: 250 } }
-                    Behavior on opacity { NumberAnimation { duration: 250 } }
-
-                    RowLayout {
-                        id: numRow
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.leftMargin: rootObj.s(14)
-                        anchors.rightMargin: rootObj.s(14)
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: rootObj.s(10)
-
-                        IconButton {
-                            enabled: false
-                            size: rootObj.s(32)
-                            Layout.preferredWidth: rootObj.s(32)
-                            Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            cornerRadius: ThemeBackend.borderRadius
-                            buttonIcon: "󰎤"
-                            iconFontSize: rootObj.s(16)
-                            accentColor: ThemeBackend.surface0
-                            textColor: "#ffffff"
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-                            text: I18n.t("guide.osd.numlock.title", "Show on Num Lock")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(12)
-                            color: osdTabRoot.isVertical ? ThemeBackend.subtext0 : ThemeBackend.text
-                            wrapMode: Text.Wrap
-
-                            Behavior on color { ColorAnimation { duration: 250 } }
-                        }
-
-                        Text {
-                            visible: osdTabRoot.isVertical
-                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            text: I18n.t("guide.common.unavailable", "Unavailable")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(11)
-                            font.bold: true
-                            color: ThemeBackend.subtext0
-                        }
-
-                        Toggle {
-                            visible: !osdTabRoot.isVertical
-                            enabled: !osdTabRoot.isVertical
-                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            checked: osdTabRoot.showNumLock
-                            accentColor: ThemeBackend.mauve
-                            baseColor: ThemeBackend.surface1
-                            handleColor: ThemeBackend.crust
-                            handleOffColor: ThemeBackend.text
-                            onToggled: function(c) {
-                                osdTabRoot.showNumLock = c;
-                                osdTabRoot.updateOsdSetting("showNumLock", c);
-                            }
-                        }
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: 1
-                    implicitHeight: airRow.implicitHeight + rootObj.s(24)
-                    radius: ThemeBackend.borderRadius
-                    color: osdTabRoot.isVertical ? Qt.alpha(ThemeBackend.surface0, 0.18) : Qt.alpha(ThemeBackend.surface0, 0.4)
-                    border.width: 0
-                    opacity: osdTabRoot.isVertical ? 0.6 : 1.0
-
-                    Behavior on color { ColorAnimation { duration: 250 } }
-                    Behavior on opacity { NumberAnimation { duration: 250 } }
-
-                    RowLayout {
-                        id: airRow
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.leftMargin: rootObj.s(14)
-                        anchors.rightMargin: rootObj.s(14)
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: rootObj.s(10)
-
-                        IconButton {
-                            enabled: false
-                            size: rootObj.s(32)
-                            Layout.preferredWidth: rootObj.s(32)
-                            Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            cornerRadius: ThemeBackend.borderRadius
-                            buttonIcon: "󰀝"
-                            iconFontSize: rootObj.s(16)
-                            accentColor: ThemeBackend.surface0
-                            textColor: "#ffffff"
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-                            text: I18n.t("guide.osd.airplane.title", "Show on Airplane Mode")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(12)
-                            color: osdTabRoot.isVertical ? ThemeBackend.subtext0 : ThemeBackend.text
-                            wrapMode: Text.Wrap
-
-                            Behavior on color { ColorAnimation { duration: 250 } }
-                        }
-
-                        Text {
-                            visible: osdTabRoot.isVertical
-                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            text: I18n.t("guide.common.unavailable", "Unavailable")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(11)
-                            font.bold: true
-                            color: ThemeBackend.subtext0
-                        }
-
-                        Toggle {
-                            visible: !osdTabRoot.isVertical
-                            enabled: !osdTabRoot.isVertical
-                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                            checked: osdTabRoot.showAirplane
-                            accentColor: ThemeBackend.mauve
-                            baseColor: ThemeBackend.surface1
-                            handleColor: ThemeBackend.crust
-                            handleOffColor: ThemeBackend.text
-                            onToggled: function(c) {
-                                osdTabRoot.showAirplane = c;
-                                osdTabRoot.updateOsdSetting("showAirplane", c);
-                            }
-                        }
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: attachRow.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
-
-                RowLayout {
-                    id: attachRow
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.leftMargin: rootObj.s(14)
-                    anchors.rightMargin: rootObj.s(14)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: rootObj.s(12)
-
-                    IconButton {
-                        enabled: false
-                        size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
-                        Layout.alignment: Qt.AlignVCenter
-                        cornerRadius: ThemeBackend.borderRadius
-                        buttonIcon: "󱂬"
-                        iconFontSize: rootObj.s(16)
-                        accentColor: ThemeBackend.surface0
-                        textColor: "#ffffff"
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: rootObj.s(2)
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: I18n.t("guide.osd.attach_bar.title", "Attach to the bar in solid/fill style")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(13)
-                            color: ThemeBackend.text
-                            wrapMode: Text.Wrap
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: I18n.t("guide.osd.attach_bar.desc", "Snap OSD popups to the status bar in solid or fill mode. When disabled, the OSD always stays in the configured position.")
-                            font.family: ThemeBackend.fontFamily
-                            font.pixelSize: rootObj.s(11)
-                            color: ThemeBackend.subtext0
-                            wrapMode: Text.Wrap
-                        }
+                    Text {
+                        visible: osdTabRoot.isVertical
+                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                        text: I18n.t("guide.common.unavailable", "Unavailable")
+                        font.family: ThemeBackend.fontFamily
+                        font.pixelSize: rootObj.s(11)
+                        font.bold: true
+                        color: ThemeBackend.subtext0
                     }
 
                     Toggle {
+                        visible: !osdTabRoot.isVertical
+                        enabled: !osdTabRoot.isVertical
                         Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                        checked: osdTabRoot.attachToBar
+                        checked: osdTabRoot.showCapsLock
                         accentColor: ThemeBackend.mauve
                         baseColor: ThemeBackend.surface1
                         handleColor: ThemeBackend.crust
                         handleOffColor: ThemeBackend.text
                         onToggled: function(c) {
-                            osdTabRoot.attachToBar = c;
-                            osdTabRoot.updateOsdSetting("attachToBar", c);
+                            osdTabRoot.showCapsLock = c;
+                            osdTabRoot.updateOsdSetting("showCapsLock", c);
                         }
+                    }
+                }
+
+                SettingsRow {
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    rootObj: osdTabRoot.rootObj
+                    icon: "󰎤"
+                    title: I18n.t("guide.osd.numlock.title", "Show on Num Lock")
+                    titlePixelSize: 12
+                    wrapText: true
+                    baseColor: osdTabRoot.isVertical ? Qt.alpha(ThemeBackend.surface0, 0.18) : Qt.alpha(ThemeBackend.surface0, 0.4)
+                    titleColor: osdTabRoot.isVertical ? ThemeBackend.subtext0 : ThemeBackend.text
+                    opacity: osdTabRoot.isVertical ? 0.6 : 1.0
+                    Behavior on opacity { NumberAnimation { duration: 250 } }
+                    spacing: rootObj.s(10)
+
+                    Text {
+                        visible: osdTabRoot.isVertical
+                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                        text: I18n.t("guide.common.unavailable", "Unavailable")
+                        font.family: ThemeBackend.fontFamily
+                        font.pixelSize: rootObj.s(11)
+                        font.bold: true
+                        color: ThemeBackend.subtext0
+                    }
+
+                    Toggle {
+                        visible: !osdTabRoot.isVertical
+                        enabled: !osdTabRoot.isVertical
+                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                        checked: osdTabRoot.showNumLock
+                        accentColor: ThemeBackend.mauve
+                        baseColor: ThemeBackend.surface1
+                        handleColor: ThemeBackend.crust
+                        handleOffColor: ThemeBackend.text
+                        onToggled: function(c) {
+                            osdTabRoot.showNumLock = c;
+                            osdTabRoot.updateOsdSetting("showNumLock", c);
+                        }
+                    }
+                }
+
+                SettingsRow {
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    rootObj: osdTabRoot.rootObj
+                    icon: "󰀝"
+                    title: I18n.t("guide.osd.airplane.title", "Show on Airplane Mode")
+                    titlePixelSize: 12
+                    wrapText: true
+                    baseColor: osdTabRoot.isVertical ? Qt.alpha(ThemeBackend.surface0, 0.18) : Qt.alpha(ThemeBackend.surface0, 0.4)
+                    titleColor: osdTabRoot.isVertical ? ThemeBackend.subtext0 : ThemeBackend.text
+                    opacity: osdTabRoot.isVertical ? 0.6 : 1.0
+                    Behavior on opacity { NumberAnimation { duration: 250 } }
+                    spacing: rootObj.s(10)
+
+                    Text {
+                        visible: osdTabRoot.isVertical
+                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                        text: I18n.t("guide.common.unavailable", "Unavailable")
+                        font.family: ThemeBackend.fontFamily
+                        font.pixelSize: rootObj.s(11)
+                        font.bold: true
+                        color: ThemeBackend.subtext0
+                    }
+
+                    Toggle {
+                        visible: !osdTabRoot.isVertical
+                        enabled: !osdTabRoot.isVertical
+                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                        checked: osdTabRoot.showAirplane
+                        accentColor: ThemeBackend.mauve
+                        baseColor: ThemeBackend.surface1
+                        handleColor: ThemeBackend.crust
+                        handleOffColor: ThemeBackend.text
+                        onToggled: function(c) {
+                            osdTabRoot.showAirplane = c;
+                            osdTabRoot.updateOsdSetting("showAirplane", c);
+                        }
+                    }
+                }
+            }
+
+            SettingsRow {
+                rootObj: osdTabRoot.rootObj
+                icon: "󱂬"
+                title: I18n.t("guide.osd.attach_bar.title", "Attach to the bar in solid/fill style")
+                description: I18n.t("guide.osd.attach_bar.desc", "Snap OSD popups to the status bar in solid or fill mode. When disabled, the OSD always stays in the configured position.")
+                wrapText: true
+
+                Toggle {
+                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    checked: osdTabRoot.attachToBar
+                    accentColor: ThemeBackend.mauve
+                    baseColor: ThemeBackend.surface1
+                    handleColor: ThemeBackend.crust
+                    handleOffColor: ThemeBackend.text
+                    onToggled: function(c) {
+                        osdTabRoot.attachToBar = c;
+                        osdTabRoot.updateOsdSetting("attachToBar", c);
                     }
                 }
             }
