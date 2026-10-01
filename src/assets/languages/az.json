@@ -269,7 +269,8 @@
         "save_preset": {
           "title": "Preseti yadda saxla"
         },
-        "preset_name_placeholder": "Presetin adını daxil edin..."
+        "preset_name_placeholder": "Presetin adını daxil edin...",
+        "screen_desc": "Masaüstü vidjetlərini konfiqurasiya edin və redaktə edin"
       }
     },
     "bar": {
@@ -327,6 +328,10 @@
         "hide_empty": {
           "title": "Boş iş sahələrini gizlət",
           "desc": "Yalnız dolu və aktiv iş sahələrini göstər"
+        },
+        "style": {
+          "title": "Stil",
+          "desc": "İş sahələri indikatorlarının vizual stilini seçin"
         }
       },
       "opacity": {
@@ -373,6 +378,10 @@
         "show_date": {
           "title": "Tarixi göstər",
           "desc": "Saatın yanında tarix mətnini göstərin"
+        },
+        "style": {
+          "title": "Stil",
+          "desc": "Saat və tarix ekranının vizual stilini seçin"
         }
       }
     },
@@ -397,7 +406,8 @@
         "desc": "Fon şəkillərinin axtarılacağı qovluq",
         "select_dir": "Qovluq seç...",
         "select_wallpaper": "Fon şəkli seç",
-        "no_wallpaper_selected": "Fon şəkli seçilməyib"
+        "no_wallpaper_selected": "Fon şəkli seçilməyib",
+        "select": "Divar kağızı"
       }
     },
     "file_picker": {
@@ -1038,7 +1048,8 @@
       "user": "İstifadəçi",
       "usage": "İstifadə",
       "battery": "Batareya",
-      "github": "Github"
+      "github": "Github",
+      "time": "Vaxt"
     },
     "variants": {
       "digital": "Rəqəmsal",

@@ -272,7 +272,8 @@
         "save_preset": {
           "title": "Guardar ajuste preestablecido"
         },
-        "preset_name_placeholder": "Introduce el nombre del ajuste..."
+        "preset_name_placeholder": "Introduce el nombre del ajuste...",
+        "screen_desc": "Configurar y editar widgets del escritorio"
       }
     },
     "bar": {
@@ -330,6 +331,10 @@
         "hide_empty": {
           "title": "Ocultar escritorios vacíos",
           "desc": "Mostrar solo los escritorios ocupados y el activo"
+        },
+        "style": {
+          "title": "Estilo",
+          "desc": "Elige el estilo visual para los indicadores de áreas de trabajo"
         }
       },
       "opacity": {
@@ -376,6 +381,10 @@
         "show_date": {
           "title": "Mostrar fecha",
           "desc": "Mostrar el texto de la fecha junto al reloj"
+        },
+        "style": {
+          "title": "Estilo",
+          "desc": "Elige el estilo visual para el reloj y la fecha"
         }
       }
     },
@@ -400,7 +409,8 @@
         "desc": "Directorio para buscar fondos de pantalla",
         "select_dir": "Seleccionar directorio...",
         "select_wallpaper": "Seleccionar fondo de pantalla",
-        "no_wallpaper_selected": "Ningún fondo de pantalla seleccionado"
+        "no_wallpaper_selected": "Ningún fondo de pantalla seleccionado",
+        "select": "Fondo de pantalla"
       }
     },
     "file_picker": {
@@ -1088,7 +1098,8 @@
       "user": "Usuario",
       "usage": "Uso",
       "battery": "Batería",
-      "github": "Github"
+      "github": "Github",
+      "time": "Hora"
     },
     "variants": {
       "digital": "Digital",

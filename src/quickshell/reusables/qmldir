@@ -1,11 +1,6 @@
 ScreenPositionSelector 1.0 behavior/ScreenPositionSelector.qml
 Draggable 1.0 behavior/Draggable.qml
 
-AmbientBackdrop 1.0 AmbientBackdrop.qml
-BackdropClip 1.0 BackdropClip.qml
-CenteredIcon 1.0 CenteredIcon.qml
-PopupSurface 1.0 PopupSurface.qml
-
 CanvasIconButton 1.0 buttons/CanvasIconButton.qml
 ClickButton 1.0 buttons/ClickButton.qml
 DeleteButton 1.0 buttons/DeleteButton.qml
@@ -37,3 +32,8 @@ Toggle 1.0 inputs/Toggle.qml
 
 SettingsRow 1.0 guide/SettingsRow.qml
 SettingsGroup 1.0 guide/SettingsGroup.qml
+
+AmbientBackdrop 1.0 AmbientBackdrop.qml
+CenteredIcon 1.0 CenteredIcon.qml
+PopupSurface 1.0 PopupSurface.qml
+BackdropClip 1.0 BackdropClip.qml

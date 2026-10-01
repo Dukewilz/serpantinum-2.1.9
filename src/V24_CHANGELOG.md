@@ -1,3 +1,4 @@
+# v24 / Serpantinum 2.1.9
 
 - Launcher 2.1.9 dipertahankan; penyesuaian v24 hanya pada wallpaper dan ambient backdrop.
 - Switch, varian clock, serta terjemahan resmi 2.1.9 digabung dengan fitur v24.

@@ -620,7 +620,7 @@ Item {
 
     Process {
         id: eqProc
-        running: true
+        running: false
         command: ["bash", "-c", Caching.qsDir + "/media/equalizer.sh get"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -762,8 +762,21 @@ Item {
             id: innerBg
             anchors.fill: parent
             anchors.margins: root.s(3)
-            color: ThemeBackend.base
+            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
             radius: ThemeBackend.borderRadius
+
+
+            PopupSurface {
+                anchors.fill: parent
+                z: 0
+                accentColor: ThemeBackend.mauve
+                secondaryColor: ThemeBackend.sapphire
+                tertiaryColor: ThemeBackend.pink
+                glyph: "󰎆"
+                strength: 0.68
+                active: root.active
+                animate: root.active
+            }
 
             Rectangle {
                 id: innerBgMask
@@ -844,7 +857,7 @@ Item {
                     x: (parent.width / 2 - width / 2) + Math.cos(root.globalOrbitAngle * 2) * root.s(150)
                     y: (parent.height / 2 - height / 2) + Math.sin(root.globalOrbitAngle * 2) * root.s(100)
 
-                    opacity: (root.targetPlayer && root.targetPlayer.isPlaying) ? 0.025 : (root.hasTargetPlayer ? 0.01 : 0.0)
+                    opacity: ((root.targetPlayer && root.targetPlayer.isPlaying) ? 0.025 : (root.hasTargetPlayer ? 0.01 : 0.0)) * ThemeBackend.uiAmbientStrength
                     color: (root.targetPlayer && root.targetPlayer.isPlaying) ? (ThemeBackend.mauve || "#cba6f7") : (ThemeBackend.surface2 || "#585b70")
                     Behavior on color { ColorAnimation { duration: 1000 } }
                     Behavior on opacity { NumberAnimation { duration: 1000 } }
@@ -855,7 +868,7 @@ Item {
                     x: (parent.width / 2 - width / 2) + Math.sin(root.globalOrbitAngle * 1.5) * root.s(-150)
                     y: (parent.height / 2 - height / 2) + Math.cos(root.globalOrbitAngle * 1.5) * root.s(-100)
 
-                    opacity: (root.targetPlayer && root.targetPlayer.isPlaying) ? 0.025 : (root.hasTargetPlayer ? 0.01 : 0.0)
+                    opacity: ((root.targetPlayer && root.targetPlayer.isPlaying) ? 0.025 : (root.hasTargetPlayer ? 0.01 : 0.0)) * ThemeBackend.uiAmbientStrength
                     color: (root.targetPlayer && root.targetPlayer.isPlaying) ? (ThemeBackend.blue || "#89b4fa") : (ThemeBackend.surface1 || "#45475a")
                     Behavior on color { ColorAnimation { duration: 1000 } }
                     Behavior on opacity { NumberAnimation { duration: 1000 } }

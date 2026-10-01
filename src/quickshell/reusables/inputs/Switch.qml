@@ -10,6 +10,10 @@ Item {
     implicitHeight: 32
 
     property var options: ["x", "y"]
+    property var optionIcons: []
+    property int iconPixelSize: fontPixelSize
+    property int iconSpacing: 8
+    FontLoader { id: switchIconFont; source: "../../assets/fonts/IosevkaNerdFont-Regular.ttf" }
     property int currentIndex: 0
 
     property color accentColor: "#89b4fa"
@@ -104,7 +108,9 @@ Item {
 
     onWidthChanged: recalculateLayout()
     onOptionsChanged: recalculateLayout()
+    onOptionIconsChanged: recalculateLayout()
     onFontPixelSizeChanged: recalculateLayout()
+    onIconPixelSizeChanged: recalculateLayout()
 
     Rectangle {
         id: bgShape
@@ -181,7 +187,8 @@ Item {
                     required property string modelData
                     required property int index
 
-                    readonly property real fitWidth: Math.max(28, Math.ceil(optMetrics.width) + 10)
+                    readonly property string optionIcon: root.optionIcons && root.optionIcons.length > index ? root.optionIcons[index] : ""
+                    readonly property real fitWidth: Math.max(28, Math.ceil(optMetrics.width) + (optionIcon ? Math.ceil(iconMetrics.width) + (modelData ? root.iconSpacing : 0) : 0) + 14)
 
                     width: (root.allocatedWidths && root.allocatedWidths.length > optionItem.index)
                         ? root.allocatedWidths[optionItem.index]
@@ -199,6 +206,14 @@ Item {
                         onWidthChanged: root.recalculateLayout()
                     }
 
+                    TextMetrics {
+                        id: iconMetrics
+                        font.family: switchIconFont.status === FontLoader.Ready ? switchIconFont.name : "Iosevka Nerd Font"
+                        font.pixelSize: root.iconPixelSize
+                        text: optionItem.optionIcon
+                        onWidthChanged: root.recalculateLayout()
+                    }
+
                     Rectangle {
                         anchors.fill: parent
                         topLeftRadius: optionItem.index === 0 ? root.cornerRadius : root.smallRadius
@@ -210,6 +225,7 @@ Item {
                     }
 
                     Text {
+                        visible: optionItem.optionIcon === ""
                         anchors.fill: parent
                         anchors.leftMargin: 4
                         anchors.rightMargin: 4
@@ -223,6 +239,35 @@ Item {
                         minimumPixelSize: root.minFontPixelSize
                         color: root.currentIndex === optionItem.index ? root.activeTextColor : root.textColor
                         Behavior on color { ColorAnimation { duration: 200 } }
+                    }
+
+                    RowLayout {
+                        visible: optionItem.optionIcon !== ""
+                        anchors.centerIn: parent
+                        width: Math.max(0, Math.min(parent.width - 12, iconMetrics.width + (optionItem.modelData ? root.iconSpacing + optMetrics.width : 0)))
+                        height: parent.height
+                        spacing: optionItem.modelData ? root.iconSpacing : 0
+
+                        CenteredIcon {
+                            Layout.preferredWidth: iconMetrics.width
+                            Layout.preferredHeight: root.iconPixelSize + 4
+                            Layout.alignment: Qt.AlignVCenter
+                            text: optionItem.optionIcon
+                            pixelSize: root.iconPixelSize
+                            color: root.currentIndex === optionItem.index ? root.activeTextColor : root.textColor
+                        }
+                        Text {
+                            visible: optionItem.modelData !== ""
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignVCenter
+                            text: optionItem.modelData
+                            elide: Text.ElideRight
+                            font.family: ThemeBackend.fontFamily
+                            font.pixelSize: root.fontPixelSize
+                            fontSizeMode: Text.Fit
+                            minimumPixelSize: root.minFontPixelSize
+                            color: root.currentIndex === optionItem.index ? root.activeTextColor : root.textColor
+                        }
                     }
 
                     MouseArea {

@@ -15,6 +15,9 @@ Item {
     property string buttonIcon: ""
     property int iconFontSize: 15
     property int textFontSize: 12
+    property real iconBoxWidth: buttonIcon !== "" ? Math.max(20, iconFontSize + 6) : 0
+    property real iconOffsetX: 0
+    property real iconOffsetY: 0
 
     property int maxTextWidth: 0
     property int maxWidth: 0
@@ -23,15 +26,15 @@ Item {
     property real rawTextWidth: Math.max(mainLabel.visible ? mainLabel.implicitWidth : 0, subLabel.visible ? subLabel.implicitWidth : 0)
     property real boundedTextWidth: root.maxTextWidth > 0 ? Math.min(rawTextWidth, root.maxTextWidth) : rawTextWidth
 
-    property real calculatedContentWidth: (iconLabel.visible ? iconLabel.implicitWidth : 0)
-                                         + (iconLabel.visible && textCol.visible ? mainRow.spacing : 0)
+    property real calculatedContentWidth: (iconBox.visible ? iconBox.width : 0)
+                                         + (iconBox.visible && textCol.visible ? mainRow.spacing : 0)
                                          + (textCol.visible ? boundedTextWidth : 0)
 
     property real desiredWidth: calculatedContentWidth + horizontalPadding * 2
     implicitWidth: root.maxWidth > 0 ? Math.min(desiredWidth, root.maxWidth) : desiredWidth
     implicitHeight: 30
 
-    property real availableTextWidth: Math.max(0, root.width - (root.horizontalPadding * 2) - (iconLabel.visible ? (iconLabel.implicitWidth + mainRow.spacing) : 0))
+    property real availableTextWidth: Math.max(0, root.width - (root.horizontalPadding * 2) - (iconBox.visible ? (iconBox.width + mainRow.spacing) : 0))
 
     property color accentColor: "#313244"
     property color textColor: "#cdd6f4"
@@ -80,14 +83,20 @@ Item {
             anchors.rightMargin: root.contentAlignment === Qt.AlignRight ? root.horizontalPadding : 0
             spacing: 8
 
-            Text {
-                id: iconLabel
+            Item {
+                id: iconBox
                 visible: root.buttonIcon !== ""
-                text: root.buttonIcon
-                font.family: "Iosevka Nerd Font"
-                font.pixelSize: root.iconFontSize
-                color: root.textColor
+                implicitWidth: root.iconBoxWidth
+                implicitHeight: root.iconFontSize + 4
                 Layout.alignment: Qt.AlignVCenter
+
+                CenteredIcon {
+                    anchors.fill: parent
+                    text: root.buttonIcon
+                    pixelSize: root.iconFontSize
+                    color: root.textColor
+                }
+
             }
 
             ColumnLayout {

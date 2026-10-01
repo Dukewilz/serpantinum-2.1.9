@@ -16,6 +16,7 @@ Item {
     property int iconFontSize: 18
     property int iconOffsetX: 0
     property int iconOffsetY: 0
+    property bool opticalCentering: true
 
     property color accentColor: ThemeBackend.surface0
     property color textColor: "#11111b"
@@ -51,16 +52,18 @@ Item {
             NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: 420; easing.type: Easing.OutQuint }
         }
 
-        Text {
-            anchors.centerIn: parent
-            anchors.horizontalCenterOffset: root.iconOffsetX
-            anchors.verticalCenterOffset: root.iconOffsetY
+        CenteredIcon {
+            anchors.fill: parent
             text: root.buttonIcon
-            font.family: "Iosevka Nerd Font"
-            font.pixelSize: root.iconFontSize
+            pixelSize: root.iconFontSize
             color: root.textColor
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+            opticalCentering: root.opticalCentering
+            // Legacy caller offsets were font-bearing workarounds. Measured
+            // centering supersedes them; explicit manual mode remains available.
+            transform: Translate {
+                x: root.opticalCentering ? 0 : root.iconOffsetX
+                y: root.opticalCentering ? 0 : root.iconOffsetY
+            }
         }
 
         Rectangle {

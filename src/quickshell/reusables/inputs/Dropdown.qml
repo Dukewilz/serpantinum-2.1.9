@@ -38,7 +38,6 @@ Item {
     property int charSpacing: 1
     property real horizontalPadding: 12
 
-    property bool enabled: true
     property bool action_highlight: false
     property string clickSound: "reusables/dropdown/click.wav"
     property string listSound: "reusables/dropdown/list.wav"

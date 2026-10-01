@@ -271,7 +271,8 @@
         "save_preset": {
           "title": "프리셋 저장"
         },
-        "preset_name_placeholder": "프리셋 이름 입력..."
+        "preset_name_placeholder": "프리셋 이름 입력...",
+        "screen_desc": "바탕화면 위젯 설정 및 편집"
       }
     },
     "bar": {
@@ -329,6 +330,10 @@
         "hide_empty": {
           "title": "빈 작업 공간 숨기기",
           "desc": "사용 중인 작업 공간과 현재 작업 공간만 표시"
+        },
+        "style": {
+          "title": "스타일",
+          "desc": "워크스페이스 표시기의 시각적 스타일을 선택합니다"
         }
       },
       "opacity": {
@@ -375,6 +380,10 @@
         "show_date": {
           "title": "날짜 표시",
           "desc": "시계 옆에 날짜 텍스트를 표시합니다"
+        },
+        "style": {
+          "title": "스타일",
+          "desc": "시계 및 날짜 표시의 시각적 스타일을 선택합니다"
         }
       }
     },
@@ -399,7 +408,8 @@
         "desc": "배경화면을 검색할 디렉터리",
         "select_dir": "디렉터리 선택...",
         "select_wallpaper": "배경화면 선택",
-        "no_wallpaper_selected": "선택된 배경화면 없음"
+        "no_wallpaper_selected": "선택된 배경화면 없음",
+        "select": "배경화면"
       }
     },
     "file_picker": {
@@ -1044,7 +1054,8 @@
       "user": "사용자",
       "usage": "사용량",
       "battery": "배터리",
-      "github": "Github"
+      "github": "Github",
+      "time": "시간"
     },
     "variants": {
       "digital": "디지털",

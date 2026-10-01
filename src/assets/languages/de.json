@@ -272,7 +272,8 @@
         "save_preset": {
           "title": "Voreinstellung speichern"
         },
-        "preset_name_placeholder": "Namen der Voreinstellung eingeben..."
+        "preset_name_placeholder": "Namen der Voreinstellung eingeben...",
+        "screen_desc": "Desktop-Widgets konfigurieren und bearbeiten"
       }
     },
     "bar": {
@@ -330,6 +331,10 @@
         "hide_empty": {
           "title": "Leere Arbeitsbereiche ausblenden",
           "desc": "Nur belegte und den aktiven Arbeitsbereich anzeigen"
+        },
+        "style": {
+          "title": "Stil",
+          "desc": "Wählen Sie das visuelle Design der Arbeitsflächen-Indikatoren"
         }
       },
       "opacity": {
@@ -376,6 +381,10 @@
         "show_date": {
           "title": "Datum anzeigen",
           "desc": "Datumstext neben der Uhr anzeigen"
+        },
+        "style": {
+          "title": "Stil",
+          "desc": "Wählen Sie das visuelle Design für die Uhrzeit- und Datumsanzeige"
         }
       }
     },
@@ -400,7 +409,8 @@
         "desc": "Ordner für die suche nach hintergrundbildern",
         "select_dir": "Ordner auswählen...",
         "select_wallpaper": "Hintergrundbild auswählen",
-        "no_wallpaper_selected": "Kein hintergrundbild ausgewählt"
+        "no_wallpaper_selected": "Kein hintergrundbild ausgewählt",
+        "select": "Hintergrundbild"
       }
     },
     "file_picker": {
@@ -1088,7 +1098,8 @@
       "user": "Benutzer",
       "usage": "Auslastung",
       "battery": "Akku",
-      "github": "Github"
+      "github": "Github",
+      "time": "Zeit"
     },
     "variants": {
       "digital": "Digital",

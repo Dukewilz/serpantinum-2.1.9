@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell.Io
@@ -79,21 +80,26 @@ Item {
     signal clicked()
     signal triggered()
 
+    // Passive click-outside monitor: does not consume or steal mouse/touch events
     Item {
         parent: root.currentWindow ? root.currentWindow.contentItem : null
         width: parent ? parent.width : 0
         height: parent ? parent.height : 0
         visible: root.hasFocus
 
-        TapHandler {
+        PointHandler {
             acceptedButtons: Qt.AllButtons
-            onTapped: function(eventPoint) {
-                let pt = eventPoint ? eventPoint.scenePosition : point.scenePosition;
-                let px = pt ? pt.x : 0;
-                let py = pt ? pt.y : 0;
-                let pos = root.mapFromItem(null, px, py);
-                if (pos.x < 0 || pos.x > root.width || pos.y < 0 || pos.y > root.height) {
-                    innerInput.focus = false;
+            grabPermissions: PointerHandler.TakeOverForbidden
+            target: null
+            onActiveChanged: {
+                if (active && point) {
+                    let pt = point.scenePosition || point.position;
+                    if (pt) {
+                        let pos = root.mapFromItem(null, pt.x, pt.y);
+                        if (pos.x < 0 || pos.x > root.width || pos.y < 0 || pos.y > root.height) {
+                            innerInput.focus = false;
+                        }
+                    }
                 }
             }
         }
@@ -331,6 +337,7 @@ Item {
 
             Rectangle {
                 id: selectionHighlight
+                visible: root.masked
                 readonly property int selMin: Math.min(innerInput.selectionStart, innerInput.selectionEnd)
                 readonly property int selMax: Math.max(innerInput.selectionStart, innerInput.selectionEnd)
                 readonly property bool hasSelection: selMax > selMin
@@ -351,6 +358,7 @@ Item {
 
             ListView {
                 id: charRow
+                visible: root.masked
                 height: parent.height
                 anchors.verticalCenter: parent.verticalCenter
                 orientation: ListView.Horizontal
@@ -430,7 +438,7 @@ Item {
                 width: 2
                 height: root.fontPixelSize * 1.2
                 color: root.caretColor
-                visible: root.showCaret && (root.hasFocus || root.action_highlight)
+                visible: root.masked && root.showCaret && (root.hasFocus || root.action_highlight)
                 anchors.verticalCenter: parent.verticalCenter
                 x: root.scrollOffset + (innerInput.cursorPosition * root.charSlotStep)
 
@@ -449,15 +457,17 @@ Item {
             TextInput {
                 id: innerInput
                 anchors.fill: parent
-                opacity: 0
-                color: "transparent"
-                selectionColor: "transparent"
-                selectedTextColor: "transparent"
+                opacity: root.masked ? 0 : 1
+                color: root.masked ? "transparent" : root.textColor
+                selectionColor: root.masked ? "transparent" : Qt.alpha(root.activeSignalColor, 0.45)
+                selectedTextColor: root.masked ? "transparent" : root.textColor
                 selectByMouse: true
                 mouseSelectionMode: TextInput.SelectCharacters
                 horizontalAlignment: root.horizontalAlignment
+                verticalAlignment: TextInput.AlignVCenter
                 font.family: root.fontFamily
                 font.pixelSize: root.fontPixelSize
+                renderType: Text.NativeRendering
                 enabled: root.enabled && !root.isBusy
                 maximumLength: root.maximumLength > 0 ? root.maximumLength : 32767
                 validator: root.validator

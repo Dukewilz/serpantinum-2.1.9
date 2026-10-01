@@ -644,6 +644,7 @@ Scope {
                         }
                     }
 
+                    property real v24LockProgress: 0.0
                     property real panelReveal: 0.0
                     property real contentReveal: 0.0
                     property real mainOpacity: 1.0
@@ -914,92 +915,47 @@ Scope {
                         }
                     }
 
-                    Canvas {
-                        id: wipeCanvas
-                        anchors.fill: parent
-                        z: 10
-                        renderTarget: Canvas.FramebufferObject
-                        renderStrategy: Canvas.Immediate
-
-                        property real lastPaintedRev: -1
-                        property real cachedS28: screenRoot.s(28)
-
-                        readonly property var wipeColors: [
-                            ThemeBackend.crust.toString(),
-                            ThemeBackend.surface1.toString(),
-                            ThemeBackend.blue.toString(),
-                            ThemeBackend.mauve.toString(),
-                            ThemeBackend.surface0.toString()
-                        ]
-                        readonly property var wipeAmps: [1.5, 1.3, 1.1, 0.9, 0.6]
-                        readonly property var wipeOffsets: [0.0, 0.5, 1.0, 1.5, 2.0]
-
-                        opacity: screenRoot.isPlayingIntro ? (screenRoot.panelReveal < 0.8 ? 1.0 : Math.max(0.0, (1.0 - screenRoot.panelReveal) / 0.2)) : 0.0
-                        visible: opacity > 0.001
-
-                        Connections {
-                            target: screenRoot
-                            enabled: screenRoot.isPlayingIntro && wipeCanvas.visible
-                            function onPanelRevealChanged() {
-                                if (Math.abs(screenRoot.panelReveal - wipeCanvas.lastPaintedRev) >= 0.005) {
-                                    wipeCanvas.requestPaint();
-                                }
-                            }
+                    // v24 2.2.2: open -> closed -> icon-only rotation.
+                    Item {
+                        id: materialLockEmblem
+                        anchors.centerIn: parent
+                        width: screenRoot.s(96); height: width
+                        z: 30
+                        visible: screenRoot.isPlayingIntro
+                        readonly property real progress: screenRoot.v24LockProgress
+                        readonly property real closure: Math.max(0, Math.min(1, (progress - 0.24) / 0.18))
+                        opacity: Math.min(1, progress / 0.16) * Math.max(0, Math.min(1, (1 - progress) / 0.14))
+                        scale: 0.78 + 0.22 * Math.min(1, progress / 0.22)
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: width * 0.34
+                            color: ThemeBackend.mauve
                         }
-
-                        onPaint: {
-                            var rev = screenRoot.panelReveal;
-                            lastPaintedRev = rev;
-                            if (rev <= 0.0) return;
-
-                            var ctx = getContext("2d");
-                            var w = width;
-                            var h = height;
-
-                            var lastFull = -1;
-                            for (var k = 4; k >= 0; k--) {
-                                var p = (rev - (k === 0 ? 0.0 : k * 0.07)) * 1.55;
-                                if (p >= 1.0) {
-                                    lastFull = k;
-                                    break;
-                                }
+                        Item {
+                            id: lockGlyphMotion
+                            anchors.centerIn: parent
+                            width: screenRoot.s(60); height: width
+                            readonly property real turn: Math.max(0, Math.min(1, (materialLockEmblem.progress - 0.46) / 0.32))
+                            // Rotation starts only after the open/closed transition.
+                            rotation: 12 * Math.sin(turn * Math.PI * 2) * (1 - turn)
+                            transformOrigin: Item.Center
+                            Text {
+                                anchors.centerIn: parent
+                                text: "󰌿"
+                                font.family: "Iosevka Nerd Font"
+                                font.pixelSize: screenRoot.s(44)
+                                color: ThemeBackend.crust
+                                opacity: 1 - materialLockEmblem.closure
+                                scale: 1 - 0.25 * materialLockEmblem.closure
                             }
-
-                            if (lastFull >= 0) {
-                                ctx.fillStyle = wipeColors[lastFull];
-                                ctx.fillRect(0, 0, w, h);
-                            } else {
-                                ctx.clearRect(0, 0, w, h);
-                            }
-
-                            var start = lastFull + 1;
-                            if (start >= 5) return;
-
-                            var phase = rev * 7.853981633974483;
-                            var s28 = cachedS28;
-                            var cp1x = w * 0.38;
-                            var cp2x = w * 0.72;
-                            var pi = 3.141592653589793;
-
-                            for (var i = start; i < 5; i++) {
-                                var prog = (rev - (i === 0 ? 0.0 : i * 0.07)) * 1.55;
-                                if (prog <= 0.0) continue;
-
-                                var smoothProg = Math.pow(prog, 1.4);
-                                var currentY = h * smoothProg;
-                                var waveAmp = s28 * Math.sin(smoothProg * pi) * wipeAmps[i];
-
-                                var cp1y = currentY + Math.sin(phase + wipeOffsets[i]) * waveAmp;
-                                var cp2y = currentY + Math.cos(phase + wipeOffsets[i] + pi) * waveAmp;
-
-                                ctx.beginPath();
-                                ctx.moveTo(0, 0);
-                                ctx.lineTo(0, currentY);
-                                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, w, currentY);
-                                ctx.lineTo(w, 0);
-                                ctx.closePath();
-                                ctx.fillStyle = wipeColors[i];
-                                ctx.fill();
+                            Text {
+                                anchors.centerIn: parent
+                                text: "󰌾"
+                                font.family: "Iosevka Nerd Font"
+                                font.pixelSize: screenRoot.s(44)
+                                color: ThemeBackend.crust
+                                opacity: materialLockEmblem.closure
+                                scale: 1 + 0.18 * (1 - materialLockEmblem.closure)
                             }
                         }
                     }
@@ -1009,16 +965,21 @@ Scope {
 
                         ParallelAnimation {
                             NumberAnimation {
+                                target: screenRoot; property: "v24LockProgress"
+                                from: 0; to: 1; duration: 1000
+                                easing.type: Easing.Linear
+                            }
+                            NumberAnimation {
                                 target: screenRoot
                                 property: "panelReveal"
                                 from: 0.0
                                 to: 1.0
-                                duration: 750
+                                duration: 720
                                 easing.type: Easing.OutCubic
                             }
 
                             SequentialAnimation {
-                                PauseAnimation { duration: 200 }
+                                PauseAnimation { duration: 900 }
                                 NumberAnimation {
                                     target: screenRoot
                                     property: "contentReveal"
@@ -1308,6 +1269,13 @@ Scope {
                                             backgroundColor: (screenRoot.faceIconPath === "" && SystemInfo.avatarPath === "") ? ThemeBackend.surface1 : "transparent"
 
                                             Text {
+        id: v24Icon0
+        TextMetrics { id: v24Ink0; text: v24Icon0.text; font: v24Icon0.font }
+        transform: Translate {
+            x: (v24Icon0.implicitWidth - v24Ink0.tightBoundingRect.width) / 2 - v24Ink0.tightBoundingRect.x
+            y: (v24Icon0.implicitHeight - v24Ink0.tightBoundingRect.height) / 2 - v24Ink0.tightBoundingRect.y - v24Icon0.baselineOffset
+        }
+
                                                 anchors.centerIn: parent
                                                 text: ""
                                                 font.family: "Iosevka Nerd Font"

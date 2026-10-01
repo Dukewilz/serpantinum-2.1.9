@@ -153,12 +153,118 @@ Item {
             width: parent.width
             spacing: rootObj.s(6)
 
+            Rectangle {
+                id: profileBanner
+                Layout.fillWidth: true
+                implicitHeight: rootObj.s(156)
+                radius: ThemeBackend.borderRadius
+                color: Qt.tint(ThemeBackend.surface0, Qt.alpha(ThemeBackend.blue, 0.08))
+                border.color: Qt.alpha(ThemeBackend.text, 0.10)
+                border.width: 1
+                clip: true
+                Layout.bottomMargin: rootObj.s(10)
+
+                Rectangle {
+                    width: rootObj.s(210); height: width; radius: width / 2
+                    x: parent.width - width * 0.55; y: -height * 0.52
+                    color: Qt.alpha(ThemeBackend.mauve, 0.075)
+                }
+                Rectangle {
+                    width: rootObj.s(150); height: width; radius: width / 2
+                    x: parent.width * 0.48; y: parent.height - height * 0.38
+                    color: Qt.alpha(ThemeBackend.sapphire, 0.055)
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: rootObj.s(18)
+                    spacing: rootObj.s(18)
+
+                    ImageBox {
+                        Layout.preferredWidth: rootObj.s(116)
+                        Layout.preferredHeight: rootObj.s(116)
+                        Layout.alignment: Qt.AlignVCenter
+                        size: rootObj.s(116)
+                        cornerRadius: rootObj.s(58)
+                        imageRadius: rootObj.s(56)
+                        source: generalTabRoot.currentAvatarSourcePath !== "" ? "file://" + generalTabRoot.currentAvatarSourcePath : ""
+                        backgroundColor: ThemeBackend.surface1
+
+                        Text {
+                            anchors.centerIn: parent
+                            visible: generalTabRoot.currentAvatarSourcePath === ""
+                            text: ""
+                            font.family: "Iosevka Nerd Font"
+                            font.pixelSize: rootObj.s(48)
+                            color: ThemeBackend.subtext0
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        spacing: rootObj.s(3)
+
+                        Text {
+                            text: SystemInfo.username !== "" ? SystemInfo.username : "user"
+                            font.family: ThemeBackend.fontFamily
+                            font.weight: Font.Bold
+                            font.pixelSize: rootObj.s(22)
+                            color: ThemeBackend.text
+                        }
+                        Text {
+                            text: "@" + (SystemInfo.hostname !== "" ? SystemInfo.hostname : "localhost")
+                            font.family: ThemeBackend.fontFamily
+                            font.pixelSize: rootObj.s(11)
+                            color: ThemeBackend.subtext0
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                            text: (SystemInfo.osName !== "" ? SystemInfo.osName : "Linux")
+                                + (SystemInfo.kernelVersion !== "" ? "  •  " + SystemInfo.kernelVersion : "")
+                            font.family: ThemeBackend.fontFamily
+                            font.pixelSize: rootObj.s(10.5)
+                            color: ThemeBackend.subtext1
+                        }
+
+                        RowLayout {
+                            Layout.topMargin: rootObj.s(7)
+                            spacing: rootObj.s(8)
+
+                            ClickButton {
+                                Layout.preferredHeight: rootObj.s(32)
+                                buttonText: "Change picture"
+                                buttonIcon: "󰉋"
+                                accentColor: ThemeBackend.mauve
+                                textColor: ThemeBackend.crust
+                                cornerRadius: ThemeBackend.borderRadius
+                                horizontalPadding: rootObj.s(13)
+                                iconFontSize: rootObj.s(14)
+                                textFontSize: rootObj.s(10.5)
+                                onTriggered: imagePicker.openPicker(generalTabRoot.currentAvatarSourcePath)
+                            }
+
+                            Text {
+                                Layout.maximumWidth: rootObj.s(310)
+                                elide: Text.ElideMiddle
+                                text: generalTabRoot.currentAvatarSourcePath !== "" ? generalTabRoot.currentAvatarSourcePath : "No custom picture selected"
+                                font.family: ThemeBackend.fontFamily
+                                font.pixelSize: rootObj.s(9.5)
+                                color: ThemeBackend.subtext0
+                            }
+                        }
+                    }
+                }
+            }
+
             SettingsRow {
                 rootObj: generalTabRoot.rootObj
                 icon: "󰀄"
                 title: I18n.t("guide.general.avatar.title") || "Profile picture"
                 description: I18n.t("guide.general.avatar.desc") || "Choose profile picture"
                 searchKeywords: "avatar profile picture photo image"
+                visible: false
 
                 RowLayout {
                     spacing: rootObj.s(12)

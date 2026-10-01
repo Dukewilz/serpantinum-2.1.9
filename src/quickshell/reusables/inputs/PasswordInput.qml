@@ -58,7 +58,6 @@ FocusScope {
     readonly property real charSlotStep: (root.charSlotWidth > 0 ? root.charSlotWidth : (root.revealProgress > 0.5 ? globalCharMetrics.width : root.dotSize)) + root.charSpacing
     property real scrollOffset: 0
 
-    property bool enabled: true
     property bool hasError: false
     property bool hasSuccess: false
     property bool isBusy: false

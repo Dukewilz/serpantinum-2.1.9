@@ -271,7 +271,8 @@
         "save_preset": {
           "title": "Salvar predefinição"
         },
-        "preset_name_placeholder": "Digite o nome da predefinição..."
+        "preset_name_placeholder": "Digite o nome da predefinição...",
+        "screen_desc": "Configurar e editar widgets da área de trabalho"
       }
     },
     "bar": {
@@ -329,6 +330,10 @@
         "hide_empty": {
           "title": "Ocultar áreas de trabalho vazias",
           "desc": "Mostrar apenas as áreas ocupadas e a ativa"
+        },
+        "style": {
+          "title": "Estilo",
+          "desc": "Escolha o estilo visual para os indicadores de áreas de trabalho"
         }
       },
       "opacity": {
@@ -375,6 +380,10 @@
         "show_date": {
           "title": "Mostrar data",
           "desc": "Exibir o texto da data ao lado do relógio"
+        },
+        "style": {
+          "title": "Estilo",
+          "desc": "Escolha o estilo visual para o relógio e a data"
         }
       }
     },
@@ -399,7 +408,8 @@
         "desc": "Pasta onde buscar papéis de parede",
         "select_dir": "Selecionar pasta...",
         "select_wallpaper": "Selecionar papel de parede",
-        "no_wallpaper_selected": "Nenhum papel de parede selecionado"
+        "no_wallpaper_selected": "Nenhum papel de parede selecionado",
+        "select": "Papel de parede"
       }
     },
     "file_picker": {
@@ -1044,7 +1054,8 @@
       "user": "Usuário",
       "usage": "Uso",
       "battery": "Bateria",
-      "github": "Github"
+      "github": "Github",
+      "time": "Hora"
     },
     "variants": {
       "digital": "Digital",

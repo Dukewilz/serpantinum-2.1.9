@@ -271,7 +271,8 @@
         "save_preset": {
           "title": "Salva preset"
         },
-        "preset_name_placeholder": "Inserisci il nome del preset..."
+        "preset_name_placeholder": "Inserisci il nome del preset...",
+        "screen_desc": "Configura e modifica i widget del desktop"
       }
     },
     "bar": {
@@ -328,6 +329,10 @@
         "hide_empty": {
           "title": "Nascondi spazi di lavoro vuoti",
           "desc": "Mostra solo gli spazi di lavoro occupati e quello attivo"
+        },
+        "style": {
+          "title": "Stile",
+          "desc": "Scegli lo stile visivo per gli indicatori degli spazi di lavoro"
         }
       },
       "opacity": {
@@ -374,6 +379,10 @@
         "show_date": {
           "title": "Mostra data",
           "desc": "Mostra il testo della data accanto all'orologio"
+        },
+        "style": {
+          "title": "Stile",
+          "desc": "Scegli lo stile visivo per l'orologio e la data"
         }
       }
     },
@@ -398,7 +407,8 @@
         "desc": "Cartella in cui cercare gli sfondi",
         "select_dir": "Seleziona cartella...",
         "select_wallpaper": "Seleziona sfondo",
-        "no_wallpaper_selected": "Nessuno sfondo selezionato"
+        "no_wallpaper_selected": "Nessuno sfondo selezionato",
+        "select": "Sfondo"
       }
     },
     "file_picker": {
@@ -1043,7 +1053,8 @@
       "user": "Utente",
       "usage": "Utilizzo",
       "battery": "Batteria",
-      "github": "Github"
+      "github": "Github",
+      "time": "Ora"
     },
     "variants": {
       "digital": "Digitale",

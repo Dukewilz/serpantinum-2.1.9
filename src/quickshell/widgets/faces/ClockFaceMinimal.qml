@@ -1,4 +1,6 @@
 import QtQuick
+import QtQuick.Effects
+import "../../reusables"
 import "../../"
 
 Item {
@@ -26,5 +28,15 @@ Item {
         color: ThemeBackend.text
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: "#000000"
+            shadowVerticalOffset: Scaler.s(1.5)
+            shadowHorizontalOffset: 0
+            shadowBlur: 0.35
+            shadowOpacity: 0.55
+        }
     }
 }

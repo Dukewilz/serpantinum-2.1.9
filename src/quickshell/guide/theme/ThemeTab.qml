@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import "../../"
 import "../../reusables"
+import "../../reusables" as Reusables
 import "../../reusables/guide"
 
 Item {
@@ -24,7 +25,17 @@ Item {
 
     property var defaultThemeSettings: {
         "fontFamily": ThemeBackend.fontFamily,
+        "fontWeight": Font.DemiBold,
         "borderRadius": ThemeBackend.borderRadius,
+        "uiBackground": {
+            "opacity": 96,
+            "contentOpacity": 100,
+            "blur": 68,
+            "useWallpaper": false,
+            "sourceMode": "theme",
+            "customPath": "",
+            "ambientStrength": 100
+        },
         "activePreset": "Matugen",
         "matugen": true,
         "colors": {}
@@ -32,7 +43,20 @@ Item {
 
     property var themeSettings: Config.getSetting("theme", defaultThemeSettings)
     property string currentFontFamily: themeSettings.fontFamily !== undefined ? themeSettings.fontFamily : ThemeBackend.fontFamily
+    property int currentFontWeight: themeSettings.fontWeight !== undefined ? themeSettings.fontWeight : Font.DemiBold
     property int currentBorderRadius: themeSettings.borderRadius !== undefined ? themeSettings.borderRadius : ThemeBackend.borderRadius
+    property bool currentGlossy: themeSettings.uiBackground ? themeSettings.uiBackground.glossy === true : false
+    property int currentUiOpacity: themeSettings.uiBackground && themeSettings.uiBackground.opacity !== undefined ? themeSettings.uiBackground.opacity : 96
+    property int currentContentOpacity: themeSettings.uiBackground && themeSettings.uiBackground.contentOpacity !== undefined ? themeSettings.uiBackground.contentOpacity : 100
+    property int currentUiBlur: themeSettings.uiBackground && themeSettings.uiBackground.blur !== undefined ? themeSettings.uiBackground.blur : 68
+    property bool currentUiUseWallpaper: themeSettings.uiBackground ? themeSettings.uiBackground.useWallpaper === true : false
+    property string currentUiSourceMode: {
+        let bg = themeSettings.uiBackground || {};
+        if (bg.sourceMode !== undefined) return String(bg.sourceMode);
+        return bg.useWallpaper === true ? "current" : "theme";
+    }
+    property string currentUiCustomPath: themeSettings.uiBackground && themeSettings.uiBackground.customPath !== undefined ? String(themeSettings.uiBackground.customPath) : ""
+    property int currentAmbientStrength: themeSettings.uiBackground && themeSettings.uiBackground.ambientStrength !== undefined ? themeSettings.uiBackground.ambientStrength : 100
     property string currentPreset: themeSettings.activePreset !== undefined ? themeSettings.activePreset : "Matugen"
     property bool useMatugen: themeSettings.matugen !== undefined ? themeSettings.matugen : true
 
@@ -151,6 +175,13 @@ Item {
         onTriggered: {
             themeTabRoot.updateBorderRadiusSetting();
         }
+    }
+
+    Timer {
+        id: appearanceDebounceTimer
+        interval: 180
+        repeat: false
+        onTriggered: themeTabRoot.updateAppearanceSettings()
     }
 
     Timer {
@@ -344,6 +375,7 @@ Item {
         } else {
             if (fontDropdown.isOpen) fontDropdown.closePopup();
             if (wpDirDropdown.isOpen) wpDirDropdown.closePopup();
+            backgroundSourceDropdown.closePopup();
             themeEditorPopup.close();
         }
     }
@@ -468,7 +500,17 @@ Item {
         function onSettingsLoaded() {
             let ts = Config.getSetting("theme", themeTabRoot.defaultThemeSettings);
             themeTabRoot.currentFontFamily = ts.fontFamily !== undefined ? ts.fontFamily : ThemeBackend.fontFamily;
+            themeTabRoot.currentFontWeight = ts.fontWeight !== undefined ? ts.fontWeight : Font.DemiBold;
             themeTabRoot.currentBorderRadius = ts.borderRadius !== undefined ? ts.borderRadius : ThemeBackend.borderRadius;
+            let uiBg = ts.uiBackground || {};
+            themeTabRoot.currentGlossy = uiBg.glossy === true;
+            themeTabRoot.currentUiOpacity = uiBg.opacity !== undefined ? uiBg.opacity : 96;
+            themeTabRoot.currentContentOpacity = uiBg.contentOpacity !== undefined ? uiBg.contentOpacity : 100;
+            themeTabRoot.currentUiBlur = uiBg.blur !== undefined ? uiBg.blur : 68;
+            themeTabRoot.currentUiUseWallpaper = uiBg.useWallpaper === true;
+            themeTabRoot.currentUiSourceMode = uiBg.sourceMode !== undefined ? String(uiBg.sourceMode) : (uiBg.useWallpaper === true ? "current" : "theme");
+            themeTabRoot.currentUiCustomPath = uiBg.customPath !== undefined ? String(uiBg.customPath) : "";
+            themeTabRoot.currentAmbientStrength = uiBg.ambientStrength !== undefined ? uiBg.ambientStrength : 100;
             themeTabRoot.currentPreset = ts.activePreset !== undefined ? ts.activePreset : "Matugen";
             themeTabRoot.useMatugen = ts.matugen !== undefined ? ts.matugen : true;
             themeTabRoot.themeSettings = ts;
@@ -481,17 +523,38 @@ Item {
     }
 
     function updateWallpaperDirSetting() {
+        if (!Config.dataReady) return;
         Config.setSetting("wallpaperDir", themeTabRoot.currentWallpaperDir);
     }
 
     function updateFontSetting() {
-        let current = Config.getSetting("theme", themeTabRoot.defaultThemeSettings);
+        if (!Config.dataReady) return;
+        let current = JSON.parse(JSON.stringify(Config.getSetting("theme", themeTabRoot.defaultThemeSettings)));
         current.fontFamily = themeTabRoot.currentFontFamily;
         Config.setSetting("theme", current);
     }
 
+    function updateAppearanceSettings() {
+        if (!Config.dataReady) return;
+        let current = JSON.parse(JSON.stringify(Config.getSetting("theme", themeTabRoot.defaultThemeSettings)));
+        current.fontWeight = themeTabRoot.currentFontWeight;
+        current.uiBackground = {
+            "glossy": themeTabRoot.currentGlossy,
+            "opacity": themeTabRoot.currentUiOpacity,
+            "contentOpacity": themeTabRoot.currentContentOpacity,
+            "blur": themeTabRoot.currentUiBlur,
+            "useWallpaper": themeTabRoot.currentUiSourceMode !== "theme",
+            "sourceMode": themeTabRoot.currentUiSourceMode,
+            "customPath": themeTabRoot.currentUiCustomPath,
+            "ambientStrength": themeTabRoot.currentAmbientStrength
+        };
+        Config.setSetting("theme", current);
+        ThemeBackend.updateAppearance();
+    }
+
     function updateBorderRadiusSetting() {
-        let current = Config.getSetting("theme", themeTabRoot.defaultThemeSettings);
+        if (!Config.dataReady) return;
+        let current = JSON.parse(JSON.stringify(Config.getSetting("theme", themeTabRoot.defaultThemeSettings)));
         current.borderRadius = themeTabRoot.currentBorderRadius;
         Config.setSetting("theme", current);
         if (typeof ThemeBackend !== "undefined") {
@@ -501,12 +564,13 @@ Item {
 
     function applyPreset(modelData) {
         if (!modelData) return;
+        if (!Config.dataReady) return;
 
         let isMatugen = modelData.isMatugen === true;
         themeTabRoot.currentPreset = modelData.name;
         themeTabRoot.useMatugen = isMatugen;
 
-        let current = Config.getSetting("theme", themeTabRoot.defaultThemeSettings);
+        let current = JSON.parse(JSON.stringify(Config.getSetting("theme", themeTabRoot.defaultThemeSettings)));
         current.activePreset = modelData.name;
         current.matugen = isMatugen;
         if (!isMatugen) {
@@ -876,7 +940,71 @@ Item {
         }
     }
 
+    ImagePicker {
+        id: uiBackgroundPicker
+        rootObj: themeTabRoot.rootObj
+        onImageSelected: function(filePath, fileName) {
+            themeTabRoot.currentUiCustomPath = filePath;
+            themeTabRoot.currentUiSourceMode = "custom";
+            themeTabRoot.currentUiUseWallpaper = true;
+            themeTabRoot.updateAppearanceSettings();
+        }
+    }
+
+    // Every row shares the same icon, text and control columns.
+    component BackgroundRow: Item {
+        id: backgroundRow
+        property string title: ""
+        property string detail: ""
+        property string icon: ""
+        default property alias controls: controlsRow.data
+        Layout.fillWidth: true
+        implicitHeight: rootObj.s(48)
+        data: RowLayout {
+            anchors.fill: parent
+            spacing: rootObj.s(12)
+            IconButton {
+                enabled: false
+                Layout.preferredWidth: rootObj.s(32)
+                Layout.preferredHeight: rootObj.s(32)
+                size: rootObj.s(32)
+                buttonIcon: backgroundRow.icon
+                iconFontSize: rootObj.s(14)
+                cornerRadius: ThemeBackend.borderRadius
+                accentColor: ThemeBackend.surface0
+                textColor: ThemeBackend.text
+            }
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                spacing: rootObj.s(2)
+                Text { Layout.fillWidth: true; text: backgroundRow.title; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text; elide: Text.ElideRight }
+                Text { Layout.fillWidth: true; text: backgroundRow.detail; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0; elide: Text.ElideMiddle }
+            }
+            RowLayout {
+                id: controlsRow
+                readonly property real columnWidth: Math.min(rootObj.s(220), backgroundRow.width * 0.38)
+                Layout.minimumWidth: columnWidth
+                Layout.preferredWidth: columnWidth
+                Layout.maximumWidth: columnWidth
+                Layout.alignment: Qt.AlignVCenter
+                spacing: rootObj.s(6)
+            }
+        }
+    }
+
+    Connections {
+        target: themeTabRoot.rootObj
+        function onVisibleChanged() {
+            if (!themeTabRoot.rootObj.visible) backgroundSourceDropdown.closePopup();
+        }
+        function onIntroBaseChanged() {
+            if (themeTabRoot.rootObj.introBase < 0.99) backgroundSourceDropdown.closePopup();
+        }
+    }
+
     Flickable {
+        onMovementStarted: backgroundSourceDropdown.closePopup()
         anchors.fill: parent
         anchors.topMargin: rootObj.s(4)
         anchors.leftMargin: rootObj.s(8)
@@ -1367,6 +1495,150 @@ Item {
                         themeTabRoot.currentBorderRadius = snapped;
                         themeTabRoot.updateBorderRadiusSetting();
                     }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: popupBackgroundGroup.implicitHeight + rootObj.s(24)
+                radius: ThemeBackend.borderRadius
+                color: Qt.alpha(ThemeBackend.surface0, 0.4)
+                border.width: 0
+                ColumnLayout {
+                    id: popupBackgroundGroup
+                    anchors.left: parent.left; anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: rootObj.s(14); anchors.rightMargin: rootObj.s(14)
+                    spacing: rootObj.s(4)
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.bottomMargin: rootObj.s(4)
+                        spacing: rootObj.s(12)
+                        IconButton {
+                            enabled: false
+                            Layout.preferredWidth: rootObj.s(32); Layout.preferredHeight: rootObj.s(32)
+                            size: rootObj.s(32); buttonIcon: "󰋩"; iconFontSize: rootObj.s(16)
+                            cornerRadius: ThemeBackend.borderRadius
+                            accentColor: ThemeBackend.surface0; textColor: ThemeBackend.text
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true; spacing: rootObj.s(2)
+                            Text { Layout.fillWidth: true; text: "Popup background"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
+                            Text { Layout.fillWidth: true; text: "Background source, surface and ambient effects"; font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0; elide: Text.ElideRight }
+                        }
+                    }
+                BackgroundRow {
+                    title: "Background source"; detail: "Keep theme tint, or blend an image beneath it"; icon: "󰋩"
+                    Dropdown {
+                        id: backgroundSourceDropdown
+                        onVisibleChanged: if (!visible) closePopup()
+                        onOpened: { wpDirDropdown.closePopup(); fontDropdown.closePopup(); }
+                        Layout.fillWidth: true; implicitHeight: rootObj.s(32)
+                        options: ["Theme", "Current wallpaper", "Custom image"]
+                        currentIndex: Math.max(0, ["theme", "current", "custom"].indexOf(themeTabRoot.currentUiSourceMode))
+                        fontFamily: ThemeBackend.fontFamily
+                        fontPixelSize: rootObj.s(11)
+                        baseColor: ThemeBackend.surface0
+                        hoverColor: ThemeBackend.surface1
+                        dropdownColor: ThemeBackend.surface0
+                        borderColor: Qt.alpha(ThemeBackend.surface2, 0.6)
+                        textColor: ThemeBackend.text
+                        activeTextColor: ThemeBackend.crust
+                        accentColor: ThemeBackend.mauve
+                        cornerRadius: ThemeBackend.borderRadius
+                        onValueChanged: function(index, value) {
+                            backgroundSourceDropdown.closePopup();
+                            themeTabRoot.currentUiSourceMode = ["theme", "current", "custom"][index];
+                            if (index === 2 && !themeTabRoot.currentUiCustomPath) uiBackgroundPicker.openPicker(themeTabRoot.currentWallpaperDir, false);
+                            themeTabRoot.updateAppearanceSettings();
+                        }
+                    }
+                }
+                BackgroundRow {
+                    visible: themeTabRoot.currentUiSourceMode === "custom"
+                    title: "Custom image"; detail: themeTabRoot.currentUiCustomPath || "Choose a background image"; icon: "󰉋"
+                    ClickButton {
+                        Layout.fillWidth: true; Layout.preferredHeight: rootObj.s(32)
+                        buttonText: "Choose image"; buttonIcon: "󰉋"
+                        textFontSize: rootObj.s(11); iconFontSize: rootObj.s(14)
+                        cornerRadius: ThemeBackend.borderRadius
+                        accentColor: ThemeBackend.surface0; textColor: ThemeBackend.text
+                        onClicked: {
+                            backgroundSourceDropdown.closePopup();
+                            uiBackgroundPicker.openPicker(themeTabRoot.currentUiCustomPath || themeTabRoot.currentWallpaperDir, false);
+                        }
+                    }
+                }
+                BackgroundRow {
+                    title: "Surface opacity"; detail: "Theme-colored surface; glossy mode allows lighter tint"; icon: "󰖙"
+                    Draggable {
+                        Layout.fillWidth: true; implicitHeight: rootObj.s(18)
+                        from: 18; to: 100; stepSize: 1; defaultValue: 96
+                        value: themeTabRoot.currentUiOpacity
+                        showValueBubble: true; valueFormatter: function(v) { return Math.round(v) + "%" }
+                        backgroundColor: ThemeBackend.crust; accentColor: ThemeBackend.mauve
+                        gradColor1: ThemeBackend.mauve; gradColor2: ThemeBackend.mauve; gradColor3: ThemeBackend.mauve
+                        handleColor: ThemeBackend.text; handleBorderColor: ThemeBackend.base
+                        cornerRadius: rootObj.s(9); handleSize: rootObj.s(18)
+                        onMoved: function(v) { themeTabRoot.currentUiOpacity = Math.round(v); appearanceDebounceTimer.restart(); }
+                        onDragFinished: { appearanceDebounceTimer.stop(); themeTabRoot.updateAppearanceSettings(); }
+                    }
+                }
+                BackgroundRow {
+                    title: "Gaussian blur"; detail: "Softens the selected background image"; icon: "󰂃"
+                    Draggable {
+                        Layout.fillWidth: true; implicitHeight: rootObj.s(18)
+                        from: 0; to: 100; stepSize: 1; defaultValue: 68
+                        value: themeTabRoot.currentUiBlur
+                        showValueBubble: true; valueFormatter: function(v) { return Math.round(v) + "%" }
+                        backgroundColor: ThemeBackend.crust; accentColor: ThemeBackend.mauve
+                        gradColor1: ThemeBackend.mauve; gradColor2: ThemeBackend.mauve; gradColor3: ThemeBackend.mauve
+                        handleColor: ThemeBackend.text; handleBorderColor: ThemeBackend.base
+                        cornerRadius: rootObj.s(9); handleSize: rootObj.s(18)
+                        onMoved: function(v) { themeTabRoot.currentUiBlur = Math.round(v); appearanceDebounceTimer.restart(); }
+                        onDragFinished: { appearanceDebounceTimer.stop(); themeTabRoot.updateAppearanceSettings(); }
+                    }
+                }
+                BackgroundRow {
+                    title: "Dynamic ambient"; detail: "Strength of the ambient accents; 0 disables them"; icon: "󰔎"
+                    Draggable {
+                        Layout.fillWidth: true; implicitHeight: rootObj.s(18)
+                        from: 0; to: 160; stepSize: 1; defaultValue: 100
+                        value: themeTabRoot.currentAmbientStrength
+                        showValueBubble: true; valueFormatter: function(v) { return Math.round(v) + "%" }
+                        backgroundColor: ThemeBackend.crust; accentColor: ThemeBackend.mauve
+                        gradColor1: ThemeBackend.mauve; gradColor2: ThemeBackend.mauve; gradColor3: ThemeBackend.mauve
+                        handleColor: ThemeBackend.text; handleBorderColor: ThemeBackend.base
+                        cornerRadius: rootObj.s(9); handleSize: rootObj.s(18)
+                        onMoved: function(v) { themeTabRoot.currentAmbientStrength = Math.round(v); appearanceDebounceTimer.restart(); }
+                        onDragFinished: { appearanceDebounceTimer.stop(); themeTabRoot.updateAppearanceSettings(); }
+                    }
+                }
+                BackgroundRow {
+                    title: "Control Center content"; detail: "Opacity of cards, notifications and quick-action tiles"; icon: "󰒓"
+                    Draggable {
+                        Layout.fillWidth: true; implicitHeight: rootObj.s(18)
+                        from: 0; to: 100; stepSize: 1; defaultValue: 100
+                        value: themeTabRoot.currentContentOpacity
+                        showValueBubble: true; valueFormatter: function(v) { return Math.round(v) + "%" }
+                        backgroundColor: ThemeBackend.crust; accentColor: ThemeBackend.mauve
+                        gradColor1: ThemeBackend.mauve; gradColor2: ThemeBackend.mauve; gradColor3: ThemeBackend.mauve
+                        handleColor: ThemeBackend.text; handleBorderColor: ThemeBackend.base
+                        cornerRadius: rootObj.s(9); handleSize: rootObj.s(18)
+                        onMoved: function(v) { themeTabRoot.currentContentOpacity = Math.round(v); appearanceDebounceTimer.restart(); }
+                        onDragFinished: { appearanceDebounceTimer.stop(); themeTabRoot.updateAppearanceSettings(); }
+                    }
+                }
+                BackgroundRow {
+                    title: "Glossy surface"; detail: "Translucent theme tint with soft highlights and a fine rim"; icon: "󰛨"
+                    Item { Layout.fillWidth: true }
+                    Reusables.Toggle {
+                        checked: themeTabRoot.currentGlossy
+                        accentColor: ThemeBackend.mauve; baseColor: ThemeBackend.crust
+                        handleColor: ThemeBackend.base; handleOffColor: ThemeBackend.text
+                        onToggled: function(value) { themeTabRoot.currentGlossy = value; themeTabRoot.updateAppearanceSettings(); }
+                    }
+                }
                 }
             }
 

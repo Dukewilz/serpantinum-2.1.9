@@ -271,7 +271,8 @@
         "save_preset": {
           "title": "Save Preset"
         },
-        "preset_name_placeholder": "Enter preset name..."
+        "preset_name_placeholder": "Enter preset name...",
+        "screen_desc": "Configure and edit desktop widgets"
       }
     },
     "bar": {
@@ -329,6 +330,10 @@
         "hide_empty": {
           "title": "Hide empty workspaces",
           "desc": "Show only occupied workspaces and the active one"
+        },
+        "style": {
+          "title": "Style",
+          "desc": "Choose the visual style for workspace indicators"
         }
       },
       "opacity": {
@@ -375,6 +380,10 @@
         "show_date": {
           "title": "Show Date",
           "desc": "Display the date text alongside the clock"
+        },
+        "style": {
+          "title": "Style",
+          "desc": "Choose the visual style for the clock and date display"
         }
       }
     },
@@ -399,7 +408,8 @@
         "desc": "Directory to search for wallpapers",
         "select_dir": "Select directory...",
         "select_wallpaper": "Select wallpaper",
-        "no_wallpaper_selected": "No wallpaper selected"
+        "no_wallpaper_selected": "No wallpaper selected",
+        "select": "Wallpaper"
       }
     },
     "file_picker": {
@@ -1044,7 +1054,8 @@
       "user": "User",
       "usage": "Usage",
       "battery": "Battery",
-      "github": "Github"
+      "github": "Github",
+      "time": "Time"
     },
     "variants": {
       "digital": "Digital",

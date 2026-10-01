@@ -15,6 +15,8 @@ Item {
 
     readonly property bool isGuidePopup: true
 
+    signal requestLoadAll()
+
     property int activationCounter: 0
     property var appPaths: Caching
     property int currentTab: 0
@@ -180,60 +182,64 @@ Item {
         return { tabIndex: tabIdx, subIndex: subIdx };
     }
 
-    function registerSearchItem(entry) {
-        if (!entry) return;
+    function normalizeSearchEntry(entry) {
+        if (!entry) return null;
         let id = String(entry.id || entry.settingId || entry.title || "").trim();
-        if (!id) return;
-        let map = Object.assign({}, searchIndexMap);
-        map[id] = {
+        if (!id) return null;
+        let tab = String(entry.tab || entry.searchTab || "").trim();
+        let subtab = String(entry.subtab || entry.searchSubTab || "").trim();
+        let key = String(entry.key || (tab + "|" + subtab + "|" + id)).trim();
+        return {
+            key: key,
             id: id,
             title: String(entry.title || "").trim(),
             desc: String(entry.desc || entry.description || "").trim(),
             description: String(entry.description || entry.desc || "").trim(),
-            tab: String(entry.tab || entry.searchTab || "").trim(),
-            subtab: String(entry.subtab || entry.searchSubTab || "").trim(),
+            tab: tab,
+            subtab: subtab,
             icon: String(entry.icon || "󰒓").trim(),
             keywords: entry.keywords || entry.searchKeywords || "",
             target: entry.target || null,
             onSelected: entry.onSelected || null
         };
-        searchIndexMap = map;
-        rebuildSearchIndex();
+    }
+
+    function registerSearchItem(entry) {
+        let item = normalizeSearchEntry(entry);
+        if (!item) return;
+        searchIndexMap[item.key] = item;
+        searchRebuildTimer.restart();
     }
 
     function registerSearchItems(items) {
         if (!Array.isArray(items)) return;
-        let map = Object.assign({}, searchIndexMap);
+        let changed = false;
         for (let i = 0; i < items.length; i++) {
-            let entry = items[i];
-            if (!entry) continue;
-            let id = String(entry.id || entry.settingId || entry.title || "").trim();
-            if (!id) continue;
-            map[id] = {
-                id: id,
-                title: String(entry.title || "").trim(),
-                desc: String(entry.desc || entry.description || "").trim(),
-                description: String(entry.description || entry.desc || "").trim(),
-                tab: String(entry.tab || entry.searchTab || "").trim(),
-                subtab: String(entry.subtab || entry.searchSubTab || "").trim(),
-                icon: String(entry.icon || "󰒓").trim(),
-                keywords: entry.keywords || entry.searchKeywords || "",
-                target: entry.target || null,
-                onSelected: entry.onSelected || null
-            };
+            let item = normalizeSearchEntry(items[i]);
+            if (item) {
+                searchIndexMap[item.key] = item;
+                changed = true;
+            }
         }
-        searchIndexMap = map;
-        rebuildSearchIndex();
+        if (changed) {
+            searchRebuildTimer.restart();
+        }
     }
 
-    function unregisterSearchItem(id) {
-        if (!id) return;
-        let key = String(id).trim();
+    function unregisterSearchItem(idOrKey) {
+        if (!idOrKey) return;
+        let key = String(idOrKey).trim();
         if (searchIndexMap[key]) {
-            let map = Object.assign({}, searchIndexMap);
-            delete map[key];
-            searchIndexMap = map;
-            rebuildSearchIndex();
+            delete searchIndexMap[key];
+            searchRebuildTimer.restart();
+            return;
+        }
+        for (let k in searchIndexMap) {
+            if (searchIndexMap[k] && searchIndexMap[k].id === key) {
+                delete searchIndexMap[k];
+                searchRebuildTimer.restart();
+                break;
+            }
         }
     }
 
@@ -410,12 +416,35 @@ Item {
         } catch(e) {}
     }
 
+    function ensureTabVisible(idx) {
+        if (!tabsFlickable || idx < 0 || idx >= tabsCol.tabItems.length) return;
+        try {
+            let item = tabsCol.tabItems[idx];
+            if (!item) return;
+            let itemY = item.y;
+            let itemH = item.height;
+            let viewTop = tabsFlickable.contentY;
+            let viewHeight = tabsFlickable.height;
+            let viewBottom = viewTop + viewHeight;
+
+            if (itemY < viewTop) {
+                tabsFlickable.contentY = Math.max(0, itemY - root.s(8));
+            } else if (itemY + itemH > viewBottom) {
+                let maxScroll = Math.max(0, tabsFlickable.contentHeight - viewHeight);
+                tabsFlickable.contentY = Math.min(maxScroll, itemY + itemH - viewHeight + root.s(8));
+            }
+        } catch(e) {}
+    }
+
     function triggerHighlight(settingId) {
         highlightedSettingId = settingId;
         highlightToken++;
     }
 
     function openSearch() {
+        root.requestLoadAll();
+        searchRebuildTimer.stop();
+        rebuildSearchIndex();
         searchClearTimer.stop();
         searchActive = true;
         searchSelectedIndex = -1;
@@ -610,75 +639,6 @@ Item {
         Updater.checkUpdate();
     }
 
-    Timer {
-        id: focusTimer
-        interval: 50
-        repeat: false
-        onTriggered: root.forceActiveFocus()
-    }
-
-    Timer {
-        id: searchFocusTimer
-        interval: 40
-        repeat: false
-        onTriggered: {
-            if (settingsSearchInput) {
-                settingsSearchInput.forceActiveFocus();
-            }
-        }
-    }
-
-    Timer {
-        id: highlightTimer
-        interval: 160
-        repeat: false
-        onTriggered: root.runPendingHighlight()
-    }
-
-    Timer {
-        id: searchClearTimer
-        interval: 260
-        repeat: false
-        onTriggered: {
-            searchQuery = "";
-            if (settingsSearchInput) settingsSearchInput.text = "";
-        }
-    }
-
-    onVisibleChanged: {
-        if (visible) {
-            forceActiveFocus();
-            focusTimer.restart();
-            resetAndPlayIntro();
-        } else {
-            startupSequence.stop();
-            closeSequence.stop();
-            highlightTimer.stop();
-            searchClearTimer.stop();
-            pendingHighlightItem = null;
-            introBase = 0.0;
-            introSidebar = 0.0;
-            introContent = 0.0;
-            introTabs = 0.0;
-            searchActive = false;
-            searchQuery = "";
-            searchSelectedIndex = -1;
-            if (settingsSearchInput) settingsSearchInput.text = "";
-            if (root.chargingSoundHandle !== -1 && typeof Sounds !== "undefined") {
-                Sounds.stopSfx(root.chargingSoundHandle);
-                root.chargingSoundHandle = -1;
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        if (visible) {
-            forceActiveFocus();
-            focusTimer.restart();
-            resetAndPlayIntro();
-        }
-    }
-
     function nextTab() {
         let parentTab = tabsModel[currentTab];
         if (parentTab && parentTab.subtabs && parentTab.subtabs.length > 0 && expandedTab === currentTab) {
@@ -717,8 +677,86 @@ Item {
         }
     }
 
+    Timer {
+        id: focusTimer
+        interval: 50
+        repeat: false
+        onTriggered: root.forceActiveFocus()
+    }
+
+    Timer {
+        id: searchFocusTimer
+        interval: 40
+        repeat: false
+        onTriggered: {
+            if (settingsSearchInput) {
+                settingsSearchInput.forceInputFocus();
+            }
+        }
+    }
+
+    Timer {
+        id: highlightTimer
+        interval: 160
+        repeat: false
+        onTriggered: root.runPendingHighlight()
+    }
+
+    Timer {
+        id: searchClearTimer
+        interval: 260
+        repeat: false
+        onTriggered: {
+            searchQuery = "";
+            if (settingsSearchInput) settingsSearchInput.text = "";
+        }
+    }
+
+    Timer {
+        id: searchRebuildTimer
+        interval: 30
+        repeat: false
+        onTriggered: root.rebuildSearchIndex()
+    }
+
+    onVisibleChanged: {
+        if (visible) {
+            forceActiveFocus();
+            focusTimer.restart();
+            resetAndPlayIntro();
+        } else {
+            startupSequence.stop();
+            closeSequence.stop();
+            highlightTimer.stop();
+            searchClearTimer.stop();
+            searchRebuildTimer.stop();
+            rebuildSearchIndex();
+            pendingHighlightItem = null;
+            introBase = 0.0;
+            introSidebar = 0.0;
+            introContent = 0.0;
+            introTabs = 0.0;
+            searchActive = false;
+            searchQuery = "";
+            searchSelectedIndex = -1;
+            if (settingsSearchInput) settingsSearchInput.text = "";
+            if (root.chargingSoundHandle !== -1 && typeof Sounds !== "undefined") {
+                Sounds.stopSfx(root.chargingSoundHandle);
+                root.chargingSoundHandle = -1;
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        if (visible) {
+            forceActiveFocus();
+            focusTimer.restart();
+            resetAndPlayIntro();
+        }
+    }
+
     Shortcut {
-        sequence: StandardKey.Find
+        sequences: [StandardKey.Find]
         onActivated: root.openSearch()
     }
 
@@ -735,11 +773,29 @@ Item {
         if (root.searchActive) {
             root.navigateSearch(1);
             event.accepted = true;
+        } else {
+            root.nextTab();
+            event.accepted = true;
         }
     }
     Keys.onUpPressed: (event) => {
         if (root.searchActive) {
             root.navigateSearch(-1);
+            event.accepted = true;
+        } else {
+            root.prevTab();
+            event.accepted = true;
+        }
+    }
+    Keys.onLeftPressed: (event) => {
+        if (!root.searchActive) {
+            root.prevTab();
+            event.accepted = true;
+        }
+    }
+    Keys.onRightPressed: (event) => {
+        if (!root.searchActive) {
+            root.nextTab();
             event.accepted = true;
         }
     }
@@ -785,7 +841,10 @@ Item {
         Quickshell.execDetached(["bash", "-c", "echo '" + currentTab + ":" + currentSubTab + "' > '" + Caching.getCacheDir("guide") + "/last_tab.txt'"]);
     }
 
-    onCurrentTabChanged: saveLastTab()
+    onCurrentTabChanged: {
+        saveLastTab();
+        ensureTabVisible(currentTab);
+    }
     onCurrentSubTabChanged: saveLastTab()
 
     FileView {
@@ -921,7 +980,21 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.clampedBorderRadius
-            color: ThemeBackend.base
+            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiPopupBaseOpacity)
+            border.color: ThemeBackend.surface0
+            clip: true
+
+            AmbientBackdrop {
+                anchors.fill: parent
+                z: 0
+                accentColor: root.ambientPurple
+                secondaryColor: root.ambientBlue
+                tertiaryColor: ThemeBackend.teal
+                glyph: "󰒓"
+                strength: 0.72
+                active: root.visible
+                animate: root.visible
+            }
 
             property real time: 0
             NumberAnimation on time {
@@ -1267,6 +1340,7 @@ Item {
                                                         property bool isSelected: root.searchSelectedIndex >= 0 &&
                                                                                   root.searchSelectedIndex < root.flatSearchResults.length &&
                                                                                   (root.flatSearchResults[root.searchSelectedIndex] === directItemRow.modelData ||
+                                                                                   (root.flatSearchResults[root.searchSelectedIndex] && root.flatSearchResults[root.searchSelectedIndex].key === directItemRow.modelData.key) ||
                                                                                    (root.flatSearchResults[root.searchSelectedIndex] && root.flatSearchResults[root.searchSelectedIndex].id === directItemRow.modelData.id))
 
                                                         onIsSelectedChanged: {
@@ -1312,11 +1386,8 @@ Item {
                                                                 cornerRadius: root.s(6)
                                                                 buttonIcon: directItemRow.modelData.icon || "󰒓"
                                                                 iconFontSize: root.s(14)
-                                                                accentColor: directItemRow.isSelected ? Qt.alpha(ThemeBackend.crust, 0.15) : ThemeBackend.surface1
-                                                                textColor: directItemRow.isSelected ? ThemeBackend.crust : ThemeBackend.mauve
-
-                                                                Behavior on accentColor { ColorAnimation { duration: 150 } }
-                                                                Behavior on textColor { ColorAnimation { duration: 150 } }
+                                                                accentColor: ThemeBackend.surface0
+                                                                textColor: "#ffffff"
                                                             }
 
                                                             ColumnLayout {
@@ -1459,6 +1530,7 @@ Item {
                                                                         property bool isSelected: root.searchSelectedIndex >= 0 &&
                                                                                                   root.searchSelectedIndex < root.flatSearchResults.length &&
                                                                                                   (root.flatSearchResults[root.searchSelectedIndex] === subItemRow.modelData ||
+                                                                                                   (root.flatSearchResults[root.searchSelectedIndex] && root.flatSearchResults[root.searchSelectedIndex].key === subItemRow.modelData.key) ||
                                                                                                    (root.flatSearchResults[root.searchSelectedIndex] && root.flatSearchResults[root.searchSelectedIndex].id === subItemRow.modelData.id))
 
                                                                         onIsSelectedChanged: {
@@ -1504,11 +1576,8 @@ Item {
                                                                                 cornerRadius: root.s(6)
                                                                                 buttonIcon: subItemRow.modelData.icon || "󰒓"
                                                                                 iconFontSize: root.s(14)
-                                                                                accentColor: subItemRow.isSelected ? Qt.alpha(ThemeBackend.crust, 0.15) : ThemeBackend.surface1
-                                                                                textColor: subItemRow.isSelected ? ThemeBackend.crust : ThemeBackend.mauve
-
-                                                                                Behavior on accentColor { ColorAnimation { duration: 150 } }
-                                                                                Behavior on textColor { ColorAnimation { duration: 150 } }
+                                                                                accentColor: ThemeBackend.surface0
+                                                                                textColor: "#ffffff"
                                                                             }
 
                                                                             ColumnLayout {
@@ -2925,8 +2994,17 @@ Item {
                                 }
                             }
 
+                            onStatusChanged: {
+                                if (status === Loader.Error) {
+                                    console.warn("Guide tab failed to load:", source);
+                                }
+                            }
+
                             onLoaded: {
                                 root.registerTabSearchItems(item);
+                                Qt.callLater(function() {
+                                    root.registerTabSearchItems(singleTabLoader.item);
+                                });
                             }
 
                             Component.onCompleted: ensureLoaded()
@@ -2935,6 +3013,20 @@ Item {
                                 target: root
                                 function onCurrentTabChanged() {
                                     if (root.currentTab === tabContentWrapper.parentTabIndex && !tabContentWrapper.hasSubtabs) singleTabLoader.ensureLoaded();
+                                }
+                                function onRequestLoadAll() {
+                                    singleTabLoader.ensureLoaded();
+                                }
+                            }
+
+                            Connections {
+                                target: singleTabLoader.item
+                                ignoreUnknownSignals: true
+                                function onSearchItemsChanged() {
+                                    root.registerTabSearchItems(singleTabLoader.item);
+                                }
+                                function onSearchEntriesChanged() {
+                                    root.registerTabSearchItems(singleTabLoader.item);
                                 }
                             }
                         }
@@ -2956,20 +3048,28 @@ Item {
                                     if (status === Loader.Null && subData.file) {
                                         setSource(subData.file, {
                                             "rootObj": root,
-                                            "tabIndex": tabContentWrapper.parentTabIndex,
-                                            "subTabIndex": subIndex
+                                            "tabIndex": tabContentWrapper.parentTabIndex
                                         });
-                                        if (item && "subTabIndex" in item) {
+                                        if (item && item.subTabIndex !== undefined) {
                                             item.subTabIndex = subIndex;
                                         }
                                     }
                                 }
 
+                                onStatusChanged: {
+                                    if (status === Loader.Error) {
+                                        console.warn("Guide tab failed to load:", source);
+                                    }
+                                }
+
                                 onLoaded: {
-                                    if (item && "subTabIndex" in item) {
+                                    if (item && item.subTabIndex !== undefined) {
                                         item.subTabIndex = subIndex;
                                     }
                                     root.registerTabSearchItems(item);
+                                    Qt.callLater(function() {
+                                        root.registerTabSearchItems(subTabLoader.item);
+                                    });
                                 }
 
                                 Component.onCompleted: ensureLoaded()
@@ -2981,6 +3081,20 @@ Item {
                                     }
                                     function onCurrentSubTabChanged() {
                                         if (root.currentTab === tabContentWrapper.parentTabIndex && root.currentSubTab === subIndex) subTabLoader.ensureLoaded();
+                                    }
+                                    function onRequestLoadAll() {
+                                        subTabLoader.ensureLoaded();
+                                    }
+                                }
+
+                                Connections {
+                                    target: subTabLoader.item
+                                    ignoreUnknownSignals: true
+                                    function onSearchItemsChanged() {
+                                        root.registerTabSearchItems(subTabLoader.item);
+                                    }
+                                    function onSearchEntriesChanged() {
+                                        root.registerTabSearchItems(subTabLoader.item);
                                     }
                                 }
                             }

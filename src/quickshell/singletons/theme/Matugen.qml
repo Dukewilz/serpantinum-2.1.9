@@ -294,7 +294,7 @@ Item {
                     let stateDir = (typeof Caching !== "undefined" && Caching.stateDir) ? Caching.stateDir : (Quickshell.env("HOME") + "/.local/state/serpantinum");
                     Quickshell.execDetached(["bash", "-c", "mkdir -p \"" + stateDir + "\" && cp -f \"" + stateDir + "/qs_colors.json\" \"" + stateDir + "/qs_matugen_colors.json\" 2>/dev/null || true"]);
                 }
-                Quickshell.execDetached(["bash", "-c", "bash \"$HOME/.local/bin/serpantinum-apply-kitty-theme.sh\" >/dev/null 2>&1; \"$HOME/.config/cava/reload-theme.sh\" >/dev/null 2>&1 || true"]);
+                Quickshell.execDetached(["bash", "-c", "killall -USR1 .kitty-wrapped 2>/dev/null || pkill -SIGUSR1 kitty 2>/dev/null || true; \"$HOME/.config/cava/reload-theme.sh\" >/dev/null 2>&1 || true"]);
             }
 
             root._currentReqType = "";

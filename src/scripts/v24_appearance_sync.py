@@ -288,12 +288,6 @@ def run(mode):
                                capture_output=True, timeout=5, check=False)
             except (OSError, subprocess.TimeoutExpired):
                 pass
-    kitty_sync_script = HOME / ".local/bin/serpantinum-apply-kitty-theme.sh"
-    if kitty_sync_script.is_file():
-        try:
-            subprocess.run(["bash", str(kitty_sync_script)], capture_output=True, timeout=5, check=False)
-        except Exception:
-            pass
     print("Desktop appearance:", mode, "palette:", chosen["base"])
 
 if __name__ == "__main__":

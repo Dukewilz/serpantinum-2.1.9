@@ -21,6 +21,10 @@ Item {
         return Scaler.s(val);
     }
 
+    function contentColor(value) {
+        return Qt.alpha(value, ThemeBackend.uiContentOpacity);
+    }
+
     readonly property string barPosition: {
         if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.position !== undefined) {
             return Config.rawSettings.bar.position;
@@ -395,7 +399,7 @@ Item {
         signal leftClicked()
         signal rightClicked()
 
-        color: isActive ? activeColor : (qaMa.containsMouse ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04))
+        color: root.contentColor(isActive ? activeColor : (qaMa.containsMouse ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04)))
         Behavior on color {
             enabled: root.visible
             ColorAnimation { duration: 150 }
@@ -407,12 +411,10 @@ Item {
             NumberAnimation { duration: 200; easing.type: Easing.OutQuart }
         }
 
-        Text {
-            anchors.centerIn: parent
-            font.family: qaBtn.customFontFamily !== "" ? qaBtn.customFontFamily : "Iosevka Nerd Font"
-            font.pixelSize: qaBtn.customFontSize > 0 ? qaBtn.customFontSize : root.s(22)
-            font.weight: qaBtn.customFontSize > 0 ? Font.Bold : Font.Normal
-            color: qaBtn.isActive ? ThemeBackend.crust : (qaMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+        CenteredIcon {
+            anchors.fill: parent
+            pixelSize: qaBtn.customFontSize > 0 ? qaBtn.customFontSize : root.s(22)
+            color: qaBtn.isActive ? (ThemeBackend.uiContentOpacity >= 0.75 ? ThemeBackend.crust : ThemeBackend.text) : (qaMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
             text: qaBtn.iconText
             Behavior on color {
                 enabled: root.visible
@@ -436,12 +438,25 @@ Item {
     Rectangle {
         id: sidebarPanel
         anchors.fill: parent
-        color: Qt.rgba(ThemeBackend.base.r, ThemeBackend.base.g, ThemeBackend.base.b, 0.97)
+        color: Qt.alpha(ThemeBackend.surface0, ThemeBackend.uiPopupBaseOpacity)
         radius: Math.min(ThemeBackend.borderRadius, root.s(28))
-        border.width: 0
+        border.width: 1
+        border.color: Qt.alpha(ThemeBackend.text, 0.08)
         clip: true
         opacity: root.introContent
         transform: Translate { x: (root.isLeftAnchored ? -root.slideDistance : root.slideDistance) * (1.0 - root.introContent) }
+
+        PopupSurface {
+            anchors.fill: parent
+            z: 0
+            accentColor: ThemeBackend.mauve
+            secondaryColor: ThemeBackend.sapphire
+            tertiaryColor: ThemeBackend.teal
+            glyph: "󰍹"
+            strength: 0.80
+            active: root.visible
+            animate: root.visible
+        }
 
         Rectangle {
             anchors.top: parent.top
@@ -467,7 +482,7 @@ Item {
                     Layout.preferredHeight: root.s(54)
                     Layout.maximumHeight: root.s(54)
                     radius: root.boxRadius
-                    color: Qt.darker(ThemeBackend.surface0, 1.04)
+                    color: root.contentColor(Qt.darker(ThemeBackend.surface0, 1.04))
                     opacity: root.introTop
                     transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introTop) }
 
@@ -487,6 +502,13 @@ Item {
                             backgroundColor: SystemInfo.avatarPath === "" ? ThemeBackend.surface1 : "transparent"
 
                             Text {
+        id: v24Icon2
+        TextMetrics { id: v24Ink2; text: v24Icon2.text; font: v24Icon2.font }
+        transform: Translate {
+            x: (v24Icon2.implicitWidth - v24Ink2.tightBoundingRect.width) / 2 - v24Ink2.tightBoundingRect.x
+            y: (v24Icon2.implicitHeight - v24Ink2.tightBoundingRect.height) / 2 - v24Ink2.tightBoundingRect.y - v24Icon2.baselineOffset
+        }
+
                                 anchors.centerIn: parent
                                 text: ""
                                 font.family: "Iosevka Nerd Font"
@@ -521,12 +543,13 @@ Item {
 
                         ClickButton {
                             id: logoutBtn
+                            property bool awaitingConfirmation: false
                             Layout.alignment: Qt.AlignTop | Qt.AlignRight
                             Layout.preferredWidth: root.s(92)
                             Layout.preferredHeight: root.s(34)
                             horizontalPadding: root.s(10)
                             cornerRadius: root.s(12)
-                            buttonText: I18n.t("syspanel.user.logout")
+                            buttonText: awaitingConfirmation ? "Confirm" : I18n.t("syspanel.user.logout")
                             textFontSize: root.s(11)
                             buttonIcon: "󰍃"
                             iconFontSize: root.s(14)
@@ -543,7 +566,20 @@ Item {
                                 }
                             }
 
+                            Timer {
+                                id: logoutConfirmTimer
+                                interval: 2600
+                                onTriggered: logoutBtn.awaitingConfirmation = false
+                            }
+
                             onTriggered: {
+                                if (!awaitingConfirmation) {
+                                    awaitingConfirmation = true;
+                                    logoutConfirmTimer.restart();
+                                    return;
+                                }
+                                logoutConfirmTimer.stop();
+                                awaitingConfirmation = false;
                                 logoutOpenTimer.start();
                             }
                         }
@@ -556,7 +592,7 @@ Item {
                     Layout.preferredHeight: slidersCol.implicitHeight + root.s(20)
                     Layout.maximumHeight: slidersCol.implicitHeight + root.s(20)
                     radius: root.boxRadius
-                    color: Qt.darker(ThemeBackend.surface0, 1.04)
+                    color: root.contentColor(Qt.darker(ThemeBackend.surface0, 1.04))
                     opacity: root.introSliders
                     transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introSliders) }
 
@@ -797,29 +833,46 @@ Item {
                                 let target = !nightLightBtn.isActive;
                                 nightLightBtn.isActive = target;
 
-                                let monNames = [];
                                 let ds = typeof Config !== "undefined" ? Config.getSetting("display", {"monitors": {}}) : {"monitors": {}};
                                 let mons = (ds && ds.monitors) ? ds.monitors : {};
-                                for (let m in mons) {
-                                    if (monNames.indexOf(m) === -1) {
-                                        monNames.push(m);
-                                    }
-                                }
-                                if (typeof Quickshell !== "undefined" && Quickshell.screens) {
-                                    for (let i = 0; i < Quickshell.screens.length; i++) {
-                                        let scr = Quickshell.screens[i];
-                                        if (scr && scr.name && monNames.indexOf(scr.name) === -1) {
-                                            monNames.push(scr.name);
+                                if (typeof BlueLight !== "undefined" && typeof BlueLight.setEnabled === "function") {
+                                    let monNames = [];
+                                    for (let m in mons) {
+                                        if (monNames.indexOf(m) === -1) {
+                                            monNames.push(m);
                                         }
                                     }
-                                }
+                                    if (typeof Quickshell !== "undefined" && Quickshell.screens) {
+                                        for (let i = 0; i < Quickshell.screens.length; i++) {
+                                            let scr = Quickshell.screens[i];
+                                            if (scr && scr.name && monNames.indexOf(scr.name) === -1) {
+                                                monNames.push(scr.name);
+                                            }
+                                        }
+                                    }
 
-                                if (monNames.length > 0) {
-                                    for (let i = 0; i < monNames.length; i++) {
-                                        BlueLight.setEnabled(monNames[i], target);
+                                    if (monNames.length > 0) {
+                                        for (let i = 0; i < monNames.length; i++) {
+                                            BlueLight.setEnabled(monNames[i], target);
+                                        }
+                                    } else {
+                                        BlueLight.setEnabled("", target);
                                     }
                                 } else {
-                                    BlueLight.setEnabled("", target);
+                                    for (let mName in mons) {
+                                        let mSet = mons[mName] || {};
+                                        let temp = mSet.temperature !== undefined ? mSet.temperature : 50;
+                                        let kelvin = Math.round(6500 - (temp / 100) * (6500 - 2500));
+                                        if (target) {
+                                            Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/blue_light_filter.sh", "set", kelvin.toString(), mName]);
+                                        } else {
+                                            Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/blue_light_filter.sh", "reset", mName]);
+                                        }
+                                        mSet.enabled = target;
+                                        mons[mName] = mSet;
+                                    }
+                                    ds.monitors = mons;
+                                    Config.setSetting("display", ds);
                                 }
                                 nightLightBtn.updateState();
                             }
@@ -1073,7 +1126,7 @@ Item {
                     Layout.minimumHeight: root.s(68)
                     cornerRadius: root.boxRadius
                     cardRadius: root.cardRadius
-                    baseColor: Qt.darker(ThemeBackend.surface0, 1.04)
+                    baseColor: root.contentColor(Qt.darker(ThemeBackend.surface0, 1.04))
                     rootContext: root
                     opacity: root.introNotifs
                     transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introNotifs) }
@@ -1112,7 +1165,7 @@ Item {
                                 Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introActions) }
                             ]
 
-                            color: (actionMa.containsMouse && !isDisabled) ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04)
+                            color: root.contentColor((actionMa.containsMouse && !isDisabled) ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04))
                             Behavior on color {
                                 enabled: root.visible
                                 ColorAnimation { duration: 200 }
@@ -1244,6 +1297,13 @@ Item {
                             }
 
                             Text {
+        id: v24Icon1
+        TextMetrics { id: v24Ink1; text: v24Icon1.text; font: v24Icon1.font }
+        transform: Translate {
+            x: (v24Icon1.implicitWidth - v24Ink1.tightBoundingRect.width) / 2 - v24Ink1.tightBoundingRect.x
+            y: (v24Icon1.implicitHeight - v24Ink1.tightBoundingRect.height) / 2 - v24Ink1.tightBoundingRect.y - v24Icon1.baselineOffset
+        }
+
                                 anchors.centerIn: parent
                                 font.family: "Iosevka Nerd Font"
                                 font.pixelSize: root.s(24)
@@ -1371,7 +1431,7 @@ Item {
                     Layout.preferredHeight: root.isDesktop ? root.s(52) : root.s(72)
                     Layout.maximumHeight: Layout.preferredHeight
                     radius: root.isDesktop ? root.s(15) : root.boxRadius
-                    color: root.isDesktop ? "transparent" : Qt.darker(ThemeBackend.surface0, 1.04)
+                    color: root.isDesktop ? "transparent" : root.contentColor(Qt.darker(ThemeBackend.surface0, 1.04))
                     clip: true
                     opacity: root.introCore
                     transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introCore) }
@@ -1519,20 +1579,23 @@ Item {
                             implicitWidth: root.isDesktop ? parent.width : (PowerProfiles.hasPerformanceProfile ? root.s(240) : root.s(162))
                             implicitHeight: root.isDesktop ? root.s(48) : root.s(52)
                             cornerRadius: root.s(15)
-                            fontPixelSize: root.isDesktop ? root.s(14) : root.s(22)
+                            fontPixelSize: root.isDesktop ? root.s(13) : root.s(22)
+                            iconPixelSize: root.s(17)
+                            iconSpacing: root.s(9)
+                            optionIcons: PowerProfiles.hasPerformanceProfile ? ["󰌪", "󰗑", "󰓅"] : ["󰌪", "󰗑"]
                             options: {
                                 if (root.isDesktop) {
                                     return PowerProfiles.hasPerformanceProfile
-                                        ? ["󰌪 " + I18n.t("syspanel.profiles.power_saver"), "󰗑 " + I18n.t("syspanel.profiles.balanced"), "󰓅 " + I18n.t("syspanel.profiles.performance")]
-                                        : ["󰌪 " + I18n.t("syspanel.profiles.power_saver"), "󰗑 " + I18n.t("syspanel.profiles.balanced")];
+                                        ? [I18n.t("syspanel.profiles.power_saver"), I18n.t("syspanel.profiles.balanced"), I18n.t("syspanel.profiles.performance")]
+                                        : [I18n.t("syspanel.profiles.power_saver"), I18n.t("syspanel.profiles.balanced")];
                                 } else {
                                     return PowerProfiles.hasPerformanceProfile
-                                        ? ["󰌪", "󰗑", "󰓅"]
-                                        : ["󰌪", "󰗑"];
+                                        ? ["", "", ""]
+                                        : ["", ""];
                                 }
                             }
                             accentColor: root.profileColor
-                            baseColor: ThemeBackend.surface1
+                            baseColor: root.contentColor(ThemeBackend.surface1)
                             textColor: ThemeBackend.text
                             activeTextColor: ThemeBackend.crust
                             currentIndex: {

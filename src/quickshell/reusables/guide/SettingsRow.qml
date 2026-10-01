@@ -56,6 +56,7 @@ Rectangle {
 
     property real highlightFlash: 0.0
     property int handledHighlightToken: -1
+    property string registeredSearchKey: ""
 
     function _releaseGroupList(groups) {
         for (let i = 0; i < groups.length; i++) {
@@ -99,6 +100,32 @@ Rectangle {
         root.heldGroups = [];
         if (selfHeld && root.revealHolds > 0) root.revealHolds--;
         root._releaseGroupList(groups);
+    }
+
+    function isOwnTabLive() {
+        let r = effectiveRootObj;
+        if (!r || r.visible !== true) return false;
+        let tabIdx = -1;
+        let subIdx = -1;
+        let p = root.parent;
+        while (p) {
+            if (subIdx === -1 && p.subTabIndex !== undefined && p.subTabIndex !== null && p.subTabIndex >= 0)
+                subIdx = p.subTabIndex;
+            if (tabIdx === -1 && p.tabIndex !== undefined && p.tabIndex !== null && p.tabIndex >= 0)
+                tabIdx = p.tabIndex;
+            p = p.parent;
+        }
+        if (tabIdx < 0) return false;
+        if (tabIdx !== r.currentTab) return false;
+        if (subIdx >= 0 && subIdx !== r.currentSubTab) return false;
+        return true;
+    }
+
+    function isIndexable() {
+        if (!root.searchable) return false;
+        if (!root.title || root.title === "") return false;
+        if (!root.isOwnTabLive()) return true;
+        return root.isSettingAvailable();
     }
 
     function isSettingAvailable() {
@@ -245,15 +272,17 @@ Rectangle {
     function registerWithSearch() {
         let r = effectiveRootObj;
         if (!r || typeof r.registerSearchItem !== "function") return;
-        if (!root.isSettingAvailable()) {
-            if (root.effectiveSettingId !== "") {
-                r.unregisterSearchItem(root.effectiveSettingId);
-            }
+        if (!root.isIndexable()) {
+            unregisterFromSearch();
             return;
         }
 
         let info = resolveTabInfo();
+        let searchKey = info.tab + "|" + info.subtab + "|" + root.effectiveSettingId;
+        root.registeredSearchKey = searchKey;
+
         r.registerSearchItem({
+            key: searchKey,
             id: root.effectiveSettingId,
             title: root.title,
             desc: root.description,
@@ -270,8 +299,16 @@ Rectangle {
     function unregisterFromSearch() {
         let r = effectiveRootObj;
         if (!r || typeof r.unregisterSearchItem !== "function") return;
-        if (root.effectiveSettingId !== "") {
-            r.unregisterSearchItem(root.effectiveSettingId);
+        let keyToUnregister = root.registeredSearchKey;
+        if (!keyToUnregister || keyToUnregister === "") {
+            let info = resolveTabInfo();
+            if (root.effectiveSettingId !== "") {
+                keyToUnregister = info.tab + "|" + info.subtab + "|" + root.effectiveSettingId;
+            }
+        }
+        if (keyToUnregister && keyToUnregister !== "") {
+            r.unregisterSearchItem(keyToUnregister);
+            root.registeredSearchKey = "";
         }
     }
 
